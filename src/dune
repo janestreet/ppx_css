@@ -1,0 +1,4 @@
+(library (name ppx_css) (public_name ppx_css) (kind ppx_deriver)
+ (ppx_runtime_libraries ppx_css.inline_css)
+ (libraries ppx_here.expander css_jane ppxlib)
+ (preprocess (pps ppxlib.metaquot)))

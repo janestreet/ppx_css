@@ -1,0 +1,8 @@
+(executables (names make_css)
+ (libraries inline_css inline_css_example_lib bonsai.web)
+ (preprocess (pps ppx_jane)))
+
+(rule (targets style.css) (deps make_css.bc.js)
+ (action (bash "%{NODE} %{deps} > %{targets}")))
+
+(alias (name DEFAULT) (deps style.css))

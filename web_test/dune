@@ -1,0 +1,3 @@
+(library (name test_css_bonsai_integration)
+ (libraries core_kernel.core bonsai.web_test)
+ (preprocess (pps ppx_jane ppx_css ppxlib.metaquot)))

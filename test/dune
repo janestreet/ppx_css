@@ -1,0 +1,2 @@
+(library (name ppx_css_test) (libraries core_kernel.core ppx_css)
+ (preprocess (pps ppx_jane ppxlib.metaquot)))

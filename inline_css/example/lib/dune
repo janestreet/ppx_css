@@ -1,0 +1,5 @@
+(library (name inline_css_example_lib) (libraries bonsai.web inline_css)
+ (preprocess (pps ppx_css ppx_jane)))
+
+(alias (name DEFAULT)
+ (deps inline_css_example_lib.ml.pp inline_css_example_lib.mli.pp))
