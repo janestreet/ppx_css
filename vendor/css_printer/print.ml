@@ -114,6 +114,7 @@ and print_component
     | Delim str ->
       begin match is_selector, str with
         | true, "*"-> Format.fprintf formatter "%a*" print_space add_space
+        | false, ("*" | "/" | "+" | "-") -> Format.fprintf formatter " %s " str
         | _ -> Format.fprintf formatter "%s" str
       end;
       false
