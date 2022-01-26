@@ -2,8 +2,4 @@
  (libraries menhirLib compiler-libs.common sedlex)
  (flags (:standard -w -27-34) -w -60) (preprocess (pps sedlex.ppx)))
 
-(rule (targets menhir_parser.mli menhir_parser.ml)
- (deps (:first_dep menhir_parser.mly))
- (action (bash "%{bin:menhir} %{first_dep} 2>&1")))
-
 (alias (name DEFAULT) (deps menhir_parser.ml))

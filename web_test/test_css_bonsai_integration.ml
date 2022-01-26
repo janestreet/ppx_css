@@ -13,5 +13,5 @@ let%expect_test "css censoring" =
   [%expect {| <div class="foo_hash_replaced_in_test"> </div> |}];
   Handle.disable_bonsai_hash_censoring handle;
   Handle.show handle;
-  [%expect {| <div class="foo_hash_4d4438f0f3"> </div> |}]
+  [%expect {| <div class="foo_hash_6126cb4ca7"> </div> |}]
 ;;

@@ -54,12 +54,18 @@ and map_stylesheet (parsed : Css_jane.Stylesheet.t) ~f : Css_jane.Stylesheet.t =
 ;;
 
 let transform ~pos s =
+  let parsed = Stylesheet.of_string ~pos s in
   let hash =
     let filename = Ppx_here_expander.expand_filename pos.pos_fname in
     let hash_prefix = 10 in
-    Md5.digest_string (filename ^ s) |> Md5.to_hex |> Fn.flip String.prefix hash_prefix
+    parsed
+    |> Stylesheet.sexp_of_t
+    |> Sexp.to_string_mach
+    |> sprintf "%s:%s" filename
+    |> Md5.digest_string
+    |> Md5.to_hex
+    |> Fn.flip String.prefix hash_prefix
   in
-  let parsed = Stylesheet.of_string ~pos s in
   let mapping = String.Table.create () in
   let sheet =
     map_stylesheet parsed ~f:(function `Class identifier | `Id identifier ->

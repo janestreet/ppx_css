@@ -30,7 +30,7 @@ let test_sig ast =
 ;;
 
 let%expect_test "basic class" =
-  test_struct [%expr {| 
+  test_struct [%expr {|
      .foo {
        background-color: red;
      }
@@ -43,12 +43,12 @@ let%expect_test "basic class" =
         {|
     /* _none_ */
 
-    *.foo_hash_7d8490d06d {
+    *.foo_hash_33d98f18fa {
      background-color:red
     }|}
     module type S  = sig val foo : string end
     type t = (module S)
-    module Default = struct let foo = {|foo_hash_7d8490d06d|} end
+    module Default = struct let foo = {|foo_hash_33d98f18fa|} end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -72,7 +72,7 @@ let%expect_test "charset" =
 let%expect_test "nested at rule" =
   test_struct
     [%expr
-      {| 
+      {|
 @media screen and (min-width: 900px) {
 
   div#bar {
@@ -95,12 +95,12 @@ let%expect_test "nested at rule" =
     /* _none_ */
 
     @media screen and (min-width:900px){
-     div#bar_hash_d02a77424d {
+     div#bar_hash_9b00fea12b {
       color:red
      }
 
      @media screen and (min-width:900px){
-      article.my_foo_hash_d02a77424d {
+      article.my_foo_hash_9b00fea12b {
        padding:1rem 3rem
       }
 
@@ -112,8 +112,8 @@ let%expect_test "nested at rule" =
     type t = (module S)
     module Default =
       struct
-        let bar = {|bar_hash_d02a77424d|}
-        let my_foo = {|my_foo_hash_d02a77424d|}
+        let bar = {|bar_hash_9b00fea12b|}
+        let my_foo = {|my_foo_hash_9b00fea12b|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -122,7 +122,7 @@ let%expect_test "nested at rule" =
 let%expect_test "at rule" =
   test_struct
     [%expr
-      {| 
+      {|
 @media screen and (min-width: 900px) {
   article.my_foo {
     padding: 1rem 3rem;
@@ -138,14 +138,14 @@ let%expect_test "at rule" =
     /* _none_ */
 
     @media screen and (min-width:900px){
-     article.my_foo_hash_d838a00f83 {
+     article.my_foo_hash_89c052f1ae {
       padding:1rem 3rem
      }
 
     }|}
     module type S  = sig val my_foo : string end
     type t = (module S)
-    module Default = struct let my_foo = {|my_foo_hash_d838a00f83|} end
+    module Default = struct let my_foo = {|my_foo_hash_89c052f1ae|} end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -157,7 +157,7 @@ let%expect_test "not a string" =
 ;;
 
 let%expect_test "basic id" =
-  test_struct [%expr {| 
+  test_struct [%expr {|
      #foo {
        background-color: red;
      }
@@ -170,18 +170,18 @@ let%expect_test "basic id" =
         {|
     /* _none_ */
 
-    *#foo_hash_e82ee99238 {
+    *#foo_hash_734bfa5411 {
      background-color:red
     }|}
     module type S  = sig val foo : string end
     type t = (module S)
-    module Default = struct let foo = {|foo_hash_e82ee99238|} end
+    module Default = struct let foo = {|foo_hash_734bfa5411|} end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
 
 let%expect_test "missing closing brace" =
-  test_struct [%expr {| 
+  test_struct [%expr {|
      #foo {
        background-color: red;
       |}];
@@ -229,4 +229,56 @@ let%expect_test "politicians example" =
         val default : t
         val politicians : string
       end |}]
+;;
+
+let%expect_test "animation" =
+  test_struct
+    [%expr
+      {|
+.spinner {
+  animation-name: spin;
+  animation-duration: 5000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+|}];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let () =
+      Inline_css.Private.append
+        {|
+    /* _none_ */
+
+    *.spinner_hash_89c1bc2218 {
+     animation-name:spin;
+     animation-duration:5000ms;
+     animation-iteration-count:infinite;
+     animation-timing-function:linear
+    }
+
+    @keyframes spin{
+     from {
+      transform:rotate(0deg)
+     }
+
+     to {
+      transform:rotate(360deg)
+     }
+
+    }|}
+    module type S  = sig val spinner : string end
+    type t = (module S)
+    module Default = struct let spinner = {|spinner_hash_89c1bc2218|} end
+    include Default
+    let default : t = (module Default) |xxx}]
 ;;
