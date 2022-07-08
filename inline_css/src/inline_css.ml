@@ -1,60 +1,49 @@
 open! Core
 open Js_of_ocaml
 
-module Style_sheet = struct
-  class type t =
-    object
-      method replaceSync : Js.js_string Js.t -> unit Js.meth
-    end
+module State = struct
+  let all_css = ref Reversed_list.[]
+  let to_string () = !all_css |> Reversed_list.rev |> String.concat ~sep:"\n"
+  let append a = all_css := Reversed_list.(a :: !all_css)
 
-  let t : t Js.t Js.constr = Js.Unsafe.global##._CSSStyleSheet
-
-  let append : t Js.t -> unit =
-    Js.Unsafe.pure_js_expr
-      {js|
-  (function (style_sheet) {
-    // push doesn't work because this field is really weird.
-    document.adoptedStyleSheets =
-      Array.prototype.concat.apply(document.adoptedStyleSheets, [style_sheet]);
-  })
-|js}
+  let print_for_testing =
+    let regex = Re.Str.regexp "_hash_\\([a-z0-9]+\\)*" in
+    fun () ->
+      to_string ()
+      |> Re.Str.global_replace regex "_hash_replaced_in_test"
+      |> print_endline
   ;;
 end
 
-let all_css = ref Reversed_list.[]
-let global_style_sheet = ref None
-let to_string () = !all_css |> Reversed_list.rev |> String.concat ~sep:"\n"
+module Strategy = struct
+  let strategies : (module Strategy_intf.S) list =
+    [ (module Constructed_stylesheet_strategy)
+    ; (module Style_element_strategy.Into_head)
+    ; (module Style_element_strategy.Into_body)
+    ; (module Style_element_strategy.Into_root_element)
+    ]
+  ;;
 
-let print_for_testing =
-  let regex = Re.Str.regexp "_hash_\\([a-z0-9]+\\)*" in
-  fun () ->
-    to_string () |> Re.Str.global_replace regex "_hash_replaced_in_test" |> print_endline
-;;
+  let find () =
+    Or_error.find_map_ok strategies ~f:(fun (module Strategy) ->
+      let%map.Or_error state =
+        Or_error.tag (Strategy.initialize ()) ~tag:Strategy.name
+      in
+      Strategy_intf.T { state; strategy = (module Strategy) })
+  ;;
+
+  let selected : Strategy_intf.t Or_error.t Lazy.t = lazy (find ())
+end
 
 let install_in_dom () =
-  let style_sheet = new%js Style_sheet.t in
-  Style_sheet.append style_sheet;
-  style_sheet##replaceSync (Js.string (to_string ()));
-  global_style_sheet := Some style_sheet
-;;
-
-(* If the ref-cell is None, then we don't need to do anything
-   because all the contents will be loaded when [install_in_dom]
-   is called. *)
-let maybe_update_in_dom () =
-  match !global_style_sheet with
-  | Some style_sheet -> style_sheet##replaceSync (Js.string (to_string ()))
-  | None -> ()
-;;
-
-let append a =
-  (all_css := Reversed_list.(a :: !all_css));
-  maybe_update_in_dom ()
+  match Lazy.force Strategy.selected with
+  | Ok (T { state; strategy = (module M) }) -> M.update state (State.to_string ())
+  | Error e -> eprint_s (Error.sexp_of_t e)
 ;;
 
 let () =
   let ready_state =
-    Option.try_with (fun () -> Dom_html.document##.readyState |> Js.to_string)
+    Option.try_with (fun () -> Js.to_string Dom_html.document##.readyState)
   in
   match ready_state with
   | Some ("interactive" | "complete") -> install_in_dom ()
@@ -73,6 +62,20 @@ let () =
     ()
   | None -> ()
 ;;
+
+let append a =
+  State.append a;
+  match Lazy.peek Strategy.selected with
+  | None ->
+    (* If the lazy isn't forced, then we don't need to do anything because all the
+       contents will be loaded when [install_in_dom] is called. *)
+    ()
+  | Some (Ok (T { state; strategy = (module M) })) -> M.update state (State.to_string ())
+  | Some (Error _) ->
+    (* don't print the error because it already got printed inside [install_in_dom] *) ()
+;;
+
+let print_for_testing = State.print_for_testing
 
 module Private = struct
   let append = append
