@@ -11,8 +11,8 @@ let map_loc (v, loc) ~f = f v, loc
 
 let fold_c_value ~f prev_is_dot = function
   | (Component_value.Delim "." as d), loc -> true, (d, loc)
-  | Ident s, loc when prev_is_dot -> false, (Ident (f (`Class s)), loc)
-  | Hash s, loc -> false, (Hash (f (`Id s)), loc)
+  | Ident s, loc when prev_is_dot -> false, (Ident (f (`Class s) loc), loc)
+  | Hash s, loc -> false, (Hash (f (`Id s) loc), loc)
   | other -> false, other
 ;;
 
@@ -53,7 +53,69 @@ and map_stylesheet (parsed : Css_jane.Stylesheet.t) ~f : Css_jane.Stylesheet.t =
          | At_rule at_rule -> At_rule (map_at_rule ~f at_rule)))
 ;;
 
-let transform ~pos s =
+let fix_identifier =
+  String.map ~f:(function
+    | '-' -> '_'
+    | x -> x)
+;;
+
+let raise_due_to_collision_with_existing_ident ~loc ~original_identifier ~fixed_identifier
+  =
+  Location.raise_errorf
+    ~loc
+    "Unsafe collision of names. Cannot rename '%s' to '%s' because '%s' already exists"
+    original_identifier
+    fixed_identifier
+    fixed_identifier
+;;
+
+let raise_due_to_collision_with_newly_minted_identifier
+      ~loc
+      ~previously_computed_ocaml_identifier
+      ~original_identifier
+      ~fixed_identifier
+  =
+  Location.raise_errorf
+    ~loc
+    "Unsafe collisions of names. Two different unsafe names map to the same fixed name \
+     which might lead to unintended results. Both '%s' and '%s' map to '%s'"
+    previously_computed_ocaml_identifier
+    original_identifier
+    fixed_identifier
+;;
+
+let get_ocaml_identifier original_identifier ~loc ~original_identifiers ~fixed_to_original
+  =
+  match String.exists original_identifier ~f:(Char.equal '-') with
+  | false -> original_identifier
+  | true ->
+    let fixed_identifier = fix_identifier original_identifier in
+    (match Set.mem original_identifiers fixed_identifier with
+     | true ->
+       raise_due_to_collision_with_existing_ident
+         ~loc
+         ~original_identifier
+         ~fixed_identifier
+     | false ->
+       let previously_computed_ocaml_identifier =
+         String.Table.find fixed_to_original fixed_identifier
+       in
+       (match previously_computed_ocaml_identifier with
+        | None ->
+          String.Table.set fixed_to_original ~key:fixed_identifier ~data:original_identifier;
+          fixed_identifier
+        | Some previously_computed_ocaml_identifier ->
+          (match String.equal previously_computed_ocaml_identifier original_identifier with
+           | true -> fixed_identifier
+           | false ->
+             raise_due_to_collision_with_newly_minted_identifier
+               ~loc
+               ~previously_computed_ocaml_identifier
+               ~original_identifier
+               ~fixed_identifier)))
+;;
+
+let transform ~pos ~dont_hash_these s =
   let parsed = Stylesheet.of_string ~pos s in
   let hash =
     let filename = Ppx_here_expander.expand_filename pos.pos_fname in
@@ -67,10 +129,24 @@ let transform ~pos s =
     |> Fn.flip String.prefix hash_prefix
   in
   let mapping = String.Table.create () in
+  let original_identifiers = String.Hash_set.create () in
+  map_stylesheet parsed ~f:(fun (`Class identifier | `Id identifier) _loc ->
+    Hash_set.add original_identifiers identifier;
+    identifier)
+  |> (ignore : Stylesheet.t -> unit);
+  let original_identifiers = Set.of_hash_set (module String) original_identifiers in
+  let fixed_to_original = String.Table.create () in
   let sheet =
-    map_stylesheet parsed ~f:(function `Class identifier | `Id identifier ->
-      let ret = sprintf "%s_hash_%s" identifier hash in
-      String.Table.add mapping ~key:(sprintf "%s" identifier) ~data:ret
+    map_stylesheet parsed ~f:(fun (`Class identifier | `Id identifier) loc ->
+      let ocaml_identifier =
+        get_ocaml_identifier identifier ~loc ~original_identifiers ~fixed_to_original
+      in
+      let ret =
+        match Set.mem dont_hash_these identifier with
+        | true -> identifier
+        | false -> sprintf "%s_hash_%s" identifier hash
+      in
+      String.Table.add mapping ~key:(sprintf "%s" ocaml_identifier) ~data:ret
       |> (ignore : [ `Duplicate | `Ok ] -> unit);
       ret)
   in

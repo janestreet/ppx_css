@@ -12,4 +12,4 @@ type t =
 
    [pos] is the source-code-position of the css string in the ocaml file, so
    that error messages from parsing the css show up in the right location. *)
-val transform : pos:position -> string -> t
+val transform : pos:position -> dont_hash_these:String.Set.t -> string -> t
