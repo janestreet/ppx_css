@@ -98,11 +98,11 @@ let get_ocaml_identifier original_identifier ~loc ~original_identifiers ~fixed_t
          ~fixed_identifier
      | false ->
        let previously_computed_ocaml_identifier =
-         String.Table.find fixed_to_original fixed_identifier
+         Hashtbl.find fixed_to_original fixed_identifier
        in
        (match previously_computed_ocaml_identifier with
         | None ->
-          String.Table.set fixed_to_original ~key:fixed_identifier ~data:original_identifier;
+          Hashtbl.set fixed_to_original ~key:fixed_identifier ~data:original_identifier;
           fixed_identifier
         | Some previously_computed_ocaml_identifier ->
           (match String.equal previously_computed_ocaml_identifier original_identifier with
@@ -146,7 +146,7 @@ let transform ~pos ~dont_hash_these s =
         | true -> identifier
         | false -> sprintf "%s_hash_%s" identifier hash
       in
-      String.Table.add mapping ~key:(sprintf "%s" ocaml_identifier) ~data:ret
+      Hashtbl.add mapping ~key:(sprintf "%s" ocaml_identifier) ~data:ret
       |> (ignore : [ `Duplicate | `Ok ] -> unit);
       ret)
   in

@@ -21,58 +21,17 @@ let module_type_of_identifiers ~loc ~identifiers =
     psig_value (value_description ~name ~type_ ~prim:[]))
 ;;
 
-let exprs_to_class_names ~loc (expr : expression) =
-  let rec helper ~acc ~expr =
-    match expr.pexp_desc with
-    | Pexp_construct ({ txt = Lident "[]"; _ }, None) -> acc
-    | Pexp_construct
-        ( { txt = Lident "::"; _ }
-        , Some
-            { pexp_desc =
-                Pexp_tuple
-                  [ { pexp_desc = Pexp_constant (Pconst_string (s, _, _)); _ }; child ]
-            ; _
-            } ) -> helper ~acc:(Set.add acc s) ~expr:child
-    | _ ->
-      Location.raise_errorf
-        ~loc
-        "[dont_hash] expects a string list, but found something else"
-  in
-  helper ~acc:String.Set.empty ~expr
-;;
-
-let validate_args ~loc (args : (arg_label * expression) list) =
-  match args with
-  | [] -> String.Set.empty
-  | [ (Labelled "dont_hash", expr) ] -> exprs_to_class_names ~loc expr
-  | _ ->
-    Location.raise_errorf
-      ~loc
-      "ppx_css only supports a css_string or a css_string with a single named \
-       \"dont_hash\" argument."
-;;
-
 let generate_struct ~loc ~path:_ (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let open (val Ast_builder.make loc) in
   (* The [Some ""] means that the string will use the multiline string literal
      syntax, but with no termination identifier. *)
   let string_constant l = pexp_constant (Pconst_string (l, loc, Some "")) in
-  let css_string, dont_hash_these =
-    match expr.pexp_desc with
-    | Pexp_constant (Pconst_string (l, _, _)) -> l, Set.empty (module String)
-    | Pexp_apply ({ pexp_desc = Pexp_constant (Pconst_string (l, _, _)); _ }, args) ->
-      l, validate_args ~loc args
-    | _ ->
-      Location.raise_errorf
-        ~loc
-        "%%css must take a single string as input with an optional parameter\n\
-        \         \"dont_hash\""
-  in
+  let css_string, { Options.dont_hash = dont_hash_these } = Options.parse expr ~loc in
   let { Traverse_css.css_string; mapping } =
     Traverse_css.transform ~pos:loc.loc_start css_string ~dont_hash_these
   in
-  let mapping = String.Table.to_alist mapping in
+  let mapping = Hashtbl.to_alist mapping in
   let register =
     [%stri let () = Inline_css.Private.append [%e string_constant css_string]]
   in

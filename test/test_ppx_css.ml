@@ -153,9 +153,7 @@ let%expect_test "at rule" =
 let%expect_test "not a string" =
   test_struct [%expr 5];
   [%expect
-    {xxx|
-    %css must take a single string as input with an optional parameter
-             "dont_hash" |xxx}]
+    {xxx| %css must take a single string as input with an optional parameter "dont_hash" |xxx}]
 ;;
 
 let%expect_test "basic id" =
