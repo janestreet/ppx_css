@@ -1,0 +1,4 @@
+(executables (names css_inliner)
+ (libraries async async_unix apply_style_client core_unix.command_unix
+  ppx_css core)
+ (preprocess (pps ppx_jane)))

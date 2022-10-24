@@ -1,14 +1,11 @@
 open! Core
 open Css_parser
 
-type 'a with_loc = 'a * Location.t
-
 let sexp_of_with_loc sexp_of_a (a, _) = sexp_of_a a
 
 module Sexpers = struct
-  (* All the sexp-of functions are written in a single let-rec 
+  (* All the sexp-of functions are written in a single let-rec
      so that I can avoid having to deal with mutually recursive modules. *)
-
   let rec sexp_of_dimension : Types.dimension -> Sexp.t = function
     | Length -> [%sexp Length]
     | Angle -> [%sexp Angle]
@@ -76,6 +73,74 @@ module Sexpers = struct
     | s -> [%sexp (s : rule list with_loc)]
   ;;
 end
+
+[@@@warning "-30"] (* Disabling duplicate definition of record fields warning. *)
+
+(* NOTE: The reason we have an almost identical type definition AST is because
+   [ppxlib_traverse] ppx needs to be derived on a set of types defined like this for
+   it to be able to fully instrospect and create traverse classes nicely. *)
+type 'a with_loc = 'a * location
+
+and dimension = Types.dimension =
+  | Length
+  | Angle
+  | Time
+  | Frequency
+
+and component_value = Types.Component_value.t =
+  | Paren_block of component_value with_loc list
+  | Bracket_block of component_value with_loc list
+  | Percentage of string
+  | Ident of string
+  | String of string
+  | Uri of string
+  | Operator of string
+  | Delim of string
+  | Function of string with_loc * component_value with_loc list with_loc
+  | Hash of string
+  | Number of string
+  | Unicode_range of string
+  | Float_dimension of (string * string * dimension)
+  | Dimension of (string * string)
+
+and declaration = Types.Declaration.t =
+  { name : string with_loc
+  ; value : component_value with_loc list with_loc
+  ; important : bool with_loc
+  ; loc : location
+  }
+
+and location = Location.t
+
+and brace_block = Types.Brace_block.t =
+  | Empty
+  | Declaration_list of declaration_list
+  | Stylesheet of stylesheet
+
+and at_rule = Types.At_rule.t =
+  { name : string with_loc
+  ; prelude : component_value with_loc list with_loc
+  ; block : brace_block
+  ; loc : location
+  }
+
+and declaration_list_kind = Types.Declaration_list.kind =
+  | Declaration of declaration
+  | At_rule of at_rule
+
+and declaration_list = declaration_list_kind list with_loc
+
+and style_rule = Types.Style_rule.t =
+  { prelude : component_value with_loc list with_loc
+  ; block : declaration_list
+  ; loc : location
+  }
+
+and rule = Types.Rule.t =
+  | Style_rule of style_rule
+  | At_rule of at_rule
+
+and stylesheet = rule list with_loc [@@deriving traverse_map]
 
 module Dimension = struct
   type t = Types.dimension =
@@ -181,12 +246,25 @@ module Stylesheet = struct
   let to_string_minified = to_string Css_printer.Print.minify_printer
 
   let of_string ?pos s =
-    (* the parser produces different output depending on if there is 
-       a leading space or not.  They're equivalent semantically, but 
+    (* the parser produces different output depending on if there is
+       a leading space or not.  They're equivalent semantically, but
        I can add this to remove ambiguity. *)
     let s = " " ^ s in
     Css_parser.Parser.parse_stylesheet ?pos s
   ;;
 
   let sexp_of_t = Sexpers.sexp_of_stylesheet
+end
+
+module Traverse = struct
+  class map' =
+    object
+      inherit map
+      method bool : bool -> bool = Fn.id
+      method list : 'a. ('a -> 'a) -> 'a list -> 'a list = fun f -> List.map ~f
+      method string : string -> string = Fn.id
+      method location__t : Location.t -> Location.t = Fn.id
+    end
+
+  class map = map'
 end

@@ -1,2 +1,3 @@
-(library (name ppx_css_test) (libraries core ppx_css)
+(library (name ppx_css_test)
+ (libraries core ppx_css expect_test_sexp_diff core_kernel.reversed_list)
  (preprocess (pps ppx_jane ppxlib.metaquot)))

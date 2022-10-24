@@ -1,4 +1,13 @@
 open! Bonsai_web
-module Style : [%css.raw: foo bar]
+
+module Style :
+  module type of
+  [%css
+    stylesheet {|
+   .foo #foo #bar {
+       background: 5;
+       red: blue;
+   }
+|}]
 
 val app : string

@@ -3,7 +3,7 @@ open! Bonsai_web
 open! Bonsai_web_test
 
 let%expect_test "css censoring" =
-  let module Style = [%css.raw ".foo {}"] in
+  let module Style = [%css stylesheet ".foo {}"] in
   let handle =
     Handle.create
       (Result_spec.vdom Fn.id)

@@ -1,0 +1,2 @@
+(library (name test_ppx_css_builds) (preprocess (pps ppx_css))
+ (libraries core))
