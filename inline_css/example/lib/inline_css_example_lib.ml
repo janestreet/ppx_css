@@ -1,5 +1,3 @@
-open! Bonsai_web
-
 let () = Inline_css.Private.append "/* direct from lib */"
 let app = "hi there"
 

@@ -4,6 +4,19 @@ open Css_jane
 
 let map_loc (v, loc) ~f = f v, loc
 
+module Identifier_kind = struct
+  module T = struct
+    type t =
+      | Class
+      | Id
+      | Variable
+    [@@deriving compare, sexp]
+  end
+
+  include T
+  include Comparable.Make (T)
+end
+
 module Prev_delimeter = struct
   type t =
     | Other
@@ -16,7 +29,7 @@ open Prev_delimeter
 (* Hashes ".a" within :not(.a). We are taking a "not hash by default" approach rather than
    immediately hashing every identifier in the AST to not break existing apps. *)
 let hash_the_contents_of_these_selector_functions =
-  String.Set.of_list [ "not"; "has"; "where" ]
+  String.Set.of_list [ "not"; "has"; "where"; "is" ]
 ;;
 
 let potentially_accidental_hashing_error_message ~identifiers =
@@ -224,8 +237,7 @@ let raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes =
 module Transform = struct
   type result =
     { css_string : string
-    ; identifier_mapping :
-        [ `Identifier of expression | `Variable of expression ] String.Table.t
+    ; identifier_mapping : (Identifier_kind.Set.t * expression) String.Table.t
     ; reference_order : expression list
     }
 
@@ -321,13 +333,16 @@ module Transform = struct
                    (reference_order := Reversed_list.(expression_to_use :: !reference_order));
                    "%s", expression_to_use
                in
-               let data =
+               let identifier_kind =
                  match token with
-                 | `Class _ | `Id _ -> `Identifier expression
-                 | `Variable _ -> `Variable expression
+                 | `Class _ -> Identifier_kind.Class
+                 | `Id _ -> Id
+                 | `Variable _ -> Variable
                in
-               Hashtbl.add identifier_mapping ~key:(sprintf "%s" ocaml_identifier) ~data
-               |> (ignore : [ `Duplicate | `Ok ] -> unit);
+               Hashtbl.update identifier_mapping ocaml_identifier ~f:(fun prev ->
+                 match prev with
+                 | None -> Identifier_kind.Set.singleton identifier_kind, expression
+                 | Some (prev, expression) -> Set.add prev identifier_kind, expression);
                ret)
     in
     raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes;
@@ -348,7 +363,7 @@ end
 module Get_all_identifiers = struct
   type result =
     { variables : string list
-    ; identifiers : string list
+    ; identifiers : (string * [ `Both | `Only_class | `Only_id ]) list
     }
   [@@deriving sexp_of]
 
@@ -368,7 +383,7 @@ module Get_all_identifiers = struct
   ;;
 
   let f stylesheet =
-    let identifiers = String.Hash_set.create () in
+    let identifiers = String.Table.create () in
     let variables = String.Hash_set.create () in
     let fixed_to_original = String.Table.create () in
     let original_identifiers = get_all_original_identifiers stylesheet in
@@ -378,19 +393,24 @@ module Get_all_identifiers = struct
       stylesheet
       ~f:(fun current_item ->
         let (`Class identifier | `Id identifier | `Variable identifier) = current_item in
-        let set_of_interest =
-          match current_item with
-          | `Class _ | `Id _ -> identifiers
-          | `Variable _ -> variables
+        let fixed_identifier =
+          get_ocaml_identifier
+            identifier
+            ~loc:Location.none
+            ~original_identifiers
+            ~fixed_to_original
         in
-        Hash_set.add
-          set_of_interest
-          (get_ocaml_identifier
-             identifier
-             ~loc:Location.none
-             ~original_identifiers
-             ~fixed_to_original));
-    { identifiers = Hash_set.to_list identifiers; variables = Hash_set.to_list variables }
+        match current_item with
+        | `Variable _ -> Hash_set.add variables fixed_identifier
+        | `Class _ ->
+          Hashtbl.update identifiers fixed_identifier ~f:(function
+            | None | Some `Only_class -> `Only_class
+            | Some `Only_id | Some `Both -> `Both)
+        | `Id _ ->
+          Hashtbl.update identifiers fixed_identifier ~f:(function
+            | None | Some `Only_id -> `Only_id
+            | Some `Only_class | Some `Both -> `Both));
+    { identifiers = Hashtbl.to_alist identifiers; variables = Hash_set.to_list variables }
   ;;
 end
 

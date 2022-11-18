@@ -10,6 +10,13 @@ let disable_warning_32 ~loc =
     ~payload:(PStr [ pstr_eval (estring "-32") [] ])
 ;;
 
+let loc_ghoster =
+  object
+    inherit Ast_traverse.map as super
+    method! location location = super#location { location with loc_ghost = true }
+  end
+;;
+
 let var_builder_signature ~loc ~variables : signature_item option =
   let open (val Ast_builder.make loc) in
   match List.is_empty variables with
@@ -34,24 +41,68 @@ let var_builder_signature ~loc ~variables : signature_item option =
     Some out
 ;;
 
-let module_type_of_identifiers ~loc ~identifiers ~variables =
+let module_type_of_identifiers
+      ~loc
+      ~(identifiers : (string * [ `Both | `Only_class | `Only_id ]) list)
+      ~variables
+  =
   let open (val Ast_builder.make loc) in
   let var_builder = var_builder_signature ~loc ~variables in
+  let identifier_keys = identifiers |> List.map ~f:Tuple2.get1 in
+  let string_module =
+    let signature_items =
+      identifier_keys @ variables
+      |> List.dedup_and_sort ~compare:String.compare
+      |> List.map ~f:(fun ident ->
+        let type_ = [%type: string] in
+        let name = Located.mk ident in
+        psig_value (value_description ~name ~type_ ~prim:[]))
+    in
+    let type_ = pmty_signature signature_items in
+    psig_module (module_declaration ~name:(Located.mk (Some "For_referencing")) ~type_)
+  in
   let identifier_signature_items =
     identifiers
-    (* Sort because the ml and mli might have their identifiers in
-       different orders, but we still want the [module type S] to present
-       them in the same order. *)
-    |> List.dedup_and_sort ~compare:String.compare
-    |> List.map ~f:(fun ident ->
-      let type_ = [%type: string] in
+    (* The [dedup_and_sort] below only really cares about the [dedup] behaviour. We need
+       to dedup the list so that we don't end up with duplicate declarations in the
+       signature. The sorting is a nice bonus for output stability. *)
+    |> List.dedup_and_sort ~compare:(fun (a, _) (b, _) -> String.compare a b)
+    |> List.concat_map ~f:(fun (ident, case) ->
+      let type_ = [%type: Virtual_dom.Vdom.Attr.t] in
       let name = Located.mk ident in
-      psig_value (value_description ~name ~type_ ~prim:[]))
+      match case with
+      | `Only_class | `Only_id ->
+        [ psig_value (value_description ~name ~type_ ~prim:[]) ]
+      | `Both ->
+        let id_name = Located.mk [%string "%{ident}_id"] in
+        let class_name = Located.mk [%string "%{ident}_class"] in
+        let error_attribute =
+          let error_message =
+            pexp_constant
+              (Pconst_string
+                 ( sprintf
+                     "An id and a class both share the name \"%s\" which is \
+                      ambiguous. Please use \"%s_id\" or \"%s_class\" instead."
+                     ident
+                     ident
+                     ident
+                 , loc
+                 , None ))
+          in
+          let payload = PStr [ pstr_eval [%expr unsafe [%e error_message]] [] ] in
+          attribute ~name:(Located.mk "alert") ~payload
+        in
+        [ psig_value
+            { (value_description ~name ~type_ ~prim:[]) with
+              pval_attributes = [ error_attribute ]
+            }
+        ; psig_value (value_description ~name:id_name ~type_ ~prim:[])
+        ; psig_value (value_description ~name:class_name ~type_ ~prim:[])
+        ])
   in
-  Option.value_map
-    var_builder
-    ~f:(fun var_builder -> var_builder :: identifier_signature_items)
-    ~default:identifier_signature_items
+  let base = string_module :: identifier_signature_items in
+  Option.value_map var_builder ~f:(fun var_builder -> var_builder :: base) ~default:base
+  |> List.map ~f:loc_ghoster#signature_item
 ;;
 
 let css_string_to_expression ~loc ~css_string ~(reference_order : expression list) =
@@ -145,7 +196,7 @@ let var_builder_structure ~loc ~variables : structure_item option =
            in
            let acc = match var2 with
              | None -> acc
-             | Some value -> ("--var1", value) :: acc
+             | Some value -> ("--var2", value) :: acc
            in
            in_ ]}
       *)
@@ -193,6 +244,33 @@ let var_builder_structure ~loc ~variables : structure_item option =
     Some out
 ;;
 
+let validate_no_collisions_after_warnings_and_rewrites
+      ~loc
+      ~(identifiers : (label * [ `Both | `Only_class | `Only_id ]) list)
+  =
+  (* This function only checks that there are no collisions from the potentially newly
+     minted names that occur from occurrances on `Both. Since original ^ "_id" and
+     original ^ "_class"  are added, these conditions must be checked for. *)
+  let all_identifiers = String.Set.of_list (List.map identifiers ~f:Tuple2.get1) in
+  let newly_minted_names =
+    String.Set.of_list
+      (List.concat_map identifiers ~f:(fun (label, case) ->
+         match case with
+         | `Both -> [ label ^ "_id"; label ^ "_class" ]
+         | `Only_class | `Only_id -> []))
+  in
+  let conflicts = Set.inter all_identifiers newly_minted_names in
+  match Set.is_empty conflicts with
+  | true -> ()
+  | false ->
+    Location.raise_errorf
+      ~loc
+      "Collision between identifiers! This occurs when a disambiguated identifier \
+       matches an existing identifier. To resolve this, rename the following \
+       identifiers: %s."
+      (Sexp.to_string_hum ([%sexp_of: String.Set.t] conflicts))
+;;
+
 (* Creates the module struct that - given "var1" and "var2" as variables, and "classname_1"
    as an identifier  will create the below code:
 
@@ -215,18 +293,61 @@ let var_builder_structure ~loc ~variables : structure_item option =
        let classname_1 = "classname-1_hash_2341"
      end
    ]}*)
-let create_default_module_struct ~loc ~identifiers ~variables : module_expr =
+let create_default_module_struct
+      ~loc
+      ~(identifiers : (label * ([ `Both | `Only_class | `Only_id ] * expression)) list)
+      ~variables
+  : module_expr
+  =
+  validate_no_collisions_after_warnings_and_rewrites
+    ~loc
+    ~identifiers:(List.map identifiers ~f:(Tuple2.map_snd ~f:Tuple2.get1));
   let open (val Ast_builder.make loc) in
   let variable_module = var_builder_structure ~loc ~variables in
-  let identifiers =
+  let identifiers_structure_items =
     identifiers
+    |> List.concat_map ~f:(fun (original_name, (case, e)) ->
+      match case with
+      | `Both ->
+        let id_string = original_name ^ "_id" in
+        let class_string = original_name ^ "_class" in
+        let original_pattern = ppat_var (Located.mk original_name) in
+        let id_pattern = ppat_var (Located.mk id_string) in
+        let class_pattern = ppat_var (Located.mk class_string) in
+        [ [%stri let [%p original_pattern] = Virtual_dom.Vdom.Attr.empty]
+        ; [%stri let [%p class_pattern] = Virtual_dom.Vdom.Attr.class_ [%e e]]
+        ; [%stri let [%p id_pattern] = Virtual_dom.Vdom.Attr.id [%e e]]
+        ]
+      | `Only_class ->
+        [ [%stri
+          let [%p ppat_var (Located.mk original_name)] =
+            Virtual_dom.Vdom.Attr.class_ [%e e]
+          ;;]
+        ]
+      | `Only_id ->
+        [ [%stri
+          let [%p ppat_var (Located.mk original_name)] =
+            Virtual_dom.Vdom.Attr.id [%e e]
+          ;;]
+        ])
+  in
+  let identifiers_and_variables_as_string =
+    List.map identifiers ~f:(fun (label, (_, expression)) -> label, expression)
+    @ variables
     |> List.map ~f:(fun (k, e) -> [%stri let [%p ppat_var (Located.mk k)] = [%e e]])
   in
-  let structure_items =
-    Option.value_map variable_module ~default:identifiers ~f:(fun variable_module ->
-      variable_module :: identifiers)
+  let string_module =
+    pstr_module
+      (module_binding
+         ~name:(Located.mk (Some "For_referencing"))
+         ~expr:(pmod_structure identifiers_and_variables_as_string))
   in
-  pmod_structure structure_items
+  let base = string_module :: identifiers_structure_items in
+  let structure_items =
+    Option.value_map variable_module ~default:base ~f:(fun variable_module ->
+      variable_module :: base)
+  in
+  pmod_structure structure_items |> loc_ghoster#module_expr
 ;;
 
 let generate_struct_from_css_string_and_options
@@ -249,21 +370,23 @@ let generate_struct_from_css_string_and_options
     create_type_info_function ~loc ~stylesheet_location:options.stylesheet_location
   in
   let variables =
-    List.filter_map identifier_mapping ~f:(fun (k, v) ->
-      match v with
-      | `Identifier _ -> None
-      | `Variable e -> Some (k, e))
+    List.filter_map identifier_mapping ~f:(fun (k, (identifier_kinds, e)) ->
+      match Set.mem identifier_kinds Variable with
+      | false -> None
+      | true -> Some (k, e))
   in
   let identifiers =
-    List.filter_map identifier_mapping ~f:(fun (k, v) ->
-      match v with
-      | `Identifier e -> Some (k, e)
-      | `Variable _ -> None)
+    List.filter_map identifier_mapping ~f:(fun (k, (identifier_kinds, e)) ->
+      match Set.mem identifier_kinds Class, Set.mem identifier_kinds Id with
+      | true, true -> Some (k, (`Both, e))
+      | true, false -> Some (k, (`Only_class, e))
+      | false, true -> Some (k, (`Only_id, e))
+      | false, false -> None)
   in
   let t_sig =
     module_type_of_identifiers
       ~loc
-      ~identifiers:(List.map identifiers ~f:fst)
+      ~identifiers:(List.map identifiers ~f:(Tuple2.map_snd ~f:Tuple2.get1))
       ~variables:(List.map variables ~f:fst)
     |> pmty_signature
   in
@@ -274,7 +397,7 @@ let generate_struct_from_css_string_and_options
     ; type_info_function
     ; [%stri module type S = [%m t_sig]]
     ; [%stri type t = (module S)]
-    ; [%stri module Default = [%m t_module]]
+    ; [%stri module Default : S = [%m t_module]]
     ; [%stri include Default]
     ; [%stri let default : t = (module Default)]
     ]
@@ -282,6 +405,7 @@ let generate_struct_from_css_string_and_options
 
 let generate_struct ~allow_potential_accidental_hashing ~loc ~path:_ (expr : expression) =
   let loc = { loc with loc_ghost = true } in
+  let expr = loc_ghoster#expression expr in
   let options = Options.parse expr in
   generate_struct_from_css_string_and_options
     ~allow_potential_accidental_hashing
@@ -289,8 +413,13 @@ let generate_struct ~allow_potential_accidental_hashing ~loc ~path:_ (expr : exp
     ~options
 ;;
 
-let create_sig_from_idents ~loc ~(identifiers : string list) ~variables =
+let create_sig_from_idents
+      ~loc
+      ~(identifiers : (string * [> `Both | `Only_class | `Only_id ]) list)
+      ~variables
+  =
   let open (val Ast_builder.make loc) in
+  validate_no_collisions_after_warnings_and_rewrites ~loc ~identifiers;
   let basic_sig = module_type_of_identifiers ~loc ~identifiers ~variables in
   pmty_signature
     ([ [%sigi: module type S = [%m pmty_signature basic_sig]]

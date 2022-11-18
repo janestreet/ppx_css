@@ -57,9 +57,17 @@ let%expect_test "basic class" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val foo : string end
+    module type S  =
+      sig
+        module For_referencing : sig val foo : string end
+        val foo : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let foo = {|foo_hash_33d98f18fa|} end
+    module Default : S =
+      struct
+        module For_referencing = struct let foo = {|foo_hash_33d98f18fa|} end
+        let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_33d98f18fa|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -80,9 +88,9 @@ let%expect_test "charset" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig  end
+    module type S  = sig module For_referencing : sig  end end
     type t = (module S)
-    module Default = struct  end
+    module Default : S = struct module For_referencing = struct  end end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -134,12 +142,22 @@ let%expect_test "nested at rule" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val bar : string val my_foo : string end
+    module type S  =
+      sig
+        module For_referencing : sig val bar : string val my_foo : string end
+        val bar : Virtual_dom.Vdom.Attr.t
+        val my_foo : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
-        let bar = {|bar_hash_9b00fea12b|}
-        let my_foo = {|my_foo_hash_9b00fea12b|}
+        module For_referencing =
+          struct
+            let bar = {|bar_hash_9b00fea12b|}
+            let my_foo = {|my_foo_hash_9b00fea12b|}
+          end
+        let bar = Virtual_dom.Vdom.Attr.id {|bar_hash_9b00fea12b|}
+        let my_foo = Virtual_dom.Vdom.Attr.class_ {|my_foo_hash_9b00fea12b|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -177,9 +195,18 @@ let%expect_test "at rule" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val my_foo : string end
+    module type S  =
+      sig
+        module For_referencing : sig val my_foo : string end
+        val my_foo : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let my_foo = {|my_foo_hash_89c052f1ae|} end
+    module Default : S =
+      struct
+        module For_referencing =
+          struct let my_foo = {|my_foo_hash_89c052f1ae|} end
+        let my_foo = Virtual_dom.Vdom.Attr.class_ {|my_foo_hash_89c052f1ae|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -223,9 +250,17 @@ let%expect_test "basic id" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val foo : string end
+    module type S  =
+      sig
+        module For_referencing : sig val foo : string end
+        val foo : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let foo = {|foo_hash_734bfa5411|} end
+    module Default : S =
+      struct
+        module For_referencing = struct let foo = {|foo_hash_734bfa5411|} end
+        let foo = Virtual_dom.Vdom.Attr.id {|foo_hash_734bfa5411|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -247,12 +282,21 @@ let%expect_test "listed identifiers" =
   [%expect
     {|
       sig
-        module type S  = sig val a : string val b : string val c : string end
+        module type S  =
+          sig
+            module For_referencing :
+            sig val a : string val b : string val c : string end
+            val a : Virtual_dom.Vdom.Attr.t
+            val b : Virtual_dom.Vdom.Attr.t
+            val c : Virtual_dom.Vdom.Attr.t
+          end
         type t = (module S)
         val default : t
-        val a : string
-        val b : string
-        val c : string |}]
+        module For_referencing :
+        sig val a : string val b : string val c : string end
+        val a : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+        val c : Virtual_dom.Vdom.Attr.t |}]
 ;;
 
 let%expect_test "duplicates sig" =
@@ -264,11 +308,25 @@ let%expect_test "duplicates sig" =
   [%expect
     {|
       sig
-        module type S  = sig val a : string val b : string end
+        module type S  =
+          sig
+            module For_referencing : sig val a : string val b : string end
+            val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                             unsafe
+                                               "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+            val a_id : Virtual_dom.Vdom.Attr.t
+            val a_class : Virtual_dom.Vdom.Attr.t
+            val b : Virtual_dom.Vdom.Attr.t
+          end
         type t = (module S)
         val default : t
-        val a : string
-        val b : string |}]
+        module For_referencing : sig val a : string val b : string end
+        val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                         unsafe
+                                           "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+        val a_id : Virtual_dom.Vdom.Attr.t
+        val a_class : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t |}]
 ;;
 
 let%expect_test "politicians example" =
@@ -276,10 +334,15 @@ let%expect_test "politicians example" =
   [%expect
     {|
       sig
-        module type S  = sig val politicians : string end
+        module type S  =
+          sig
+            module For_referencing : sig val politicians : string end
+            val politicians : Virtual_dom.Vdom.Attr.t
+          end
         type t = (module S)
         val default : t
-        val politicians : string |}]
+        module For_referencing : sig val politicians : string end
+        val politicians : Virtual_dom.Vdom.Attr.t |}]
 ;;
 
 let%expect_test "variables on signature generation" =
@@ -303,7 +366,9 @@ let%expect_test "variables on signature generation" =
               ?bg_color:string ->
                 ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
           end
-          val card : string
+          module For_referencing :
+          sig val bg_color : string val card : string val fg_color : string end
+          val card : Virtual_dom.Vdom.Attr.t
         end
       type t = (module S)
       val default : t
@@ -312,7 +377,9 @@ let%expect_test "variables on signature generation" =
         val set :
           ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
       end
-      val card : string |}]
+      module For_referencing :
+      sig val bg_color : string val card : string val fg_color : string end
+      val card : Virtual_dom.Vdom.Attr.t |}]
 ;;
 
 let%expect_test "animation" =
@@ -368,9 +435,18 @@ let%expect_test "animation" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val spinner : string end
+    module type S  =
+      sig
+        module For_referencing : sig val spinner : string end
+        val spinner : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let spinner = {|spinner_hash_89c1bc2218|} end
+    module Default : S =
+      struct
+        module For_referencing =
+          struct let spinner = {|spinner_hash_89c1bc2218|} end
+        let spinner = Virtual_dom.Vdom.Attr.class_ {|spinner_hash_89c1bc2218|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -429,18 +505,32 @@ let%expect_test "dont hash flag" =
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
     module type S  =
       sig
-        val dont_hash_me : string
-        val dont_hash_me_id : string
-        val hash_me : string
-        val hash_me_id : string
+        module For_referencing :
+        sig
+          val dont_hash_me : string
+          val dont_hash_me_id : string
+          val hash_me : string
+          val hash_me_id : string
+        end
+        val dont_hash_me : Virtual_dom.Vdom.Attr.t
+        val dont_hash_me_id : Virtual_dom.Vdom.Attr.t
+        val hash_me : Virtual_dom.Vdom.Attr.t
+        val hash_me_id : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
-        let hash_me_id = {|hash-me-id_hash_1e8ab0f0e7|}
-        let hash_me = {|hash-me_hash_1e8ab0f0e7|}
-        let dont_hash_me_id = {|dont-hash-me-id|}
-        let dont_hash_me = {|dont-hash-me|}
+        module For_referencing =
+          struct
+            let hash_me_id = {|hash-me-id_hash_1e8ab0f0e7|}
+            let hash_me = {|hash-me_hash_1e8ab0f0e7|}
+            let dont_hash_me_id = {|dont-hash-me-id|}
+            let dont_hash_me = {|dont-hash-me|}
+          end
+        let hash_me_id = Virtual_dom.Vdom.Attr.id {|hash-me-id_hash_1e8ab0f0e7|}
+        let hash_me = Virtual_dom.Vdom.Attr.class_ {|hash-me_hash_1e8ab0f0e7|}
+        let dont_hash_me_id = Virtual_dom.Vdom.Attr.id {|dont-hash-me-id|}
+        let dont_hash_me = Virtual_dom.Vdom.Attr.class_ {|dont-hash-me|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -512,9 +602,9 @@ let%expect_test "empty rewrite" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig  end
+    module type S  = sig module For_referencing : sig  end end
     type t = (module S)
-    module Default = struct  end
+    module Default : S = struct module For_referencing = struct  end end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -649,10 +739,11 @@ let%test_module "Testing the difference between [%css] and [%css.hash_variables]
        sig
          module Variables :
          sig val set : ?bg_color:string -> unit -> Virtual_dom.Vdom.Attr.t end
-         val a : string
+         module For_referencing : sig val a : string val bg_color : string end
+         val a : Virtual_dom.Vdom.Attr.t
        end
      type t = (module S)
-     module Default =
+     module Default : S =
        struct
          module Variables =
            struct
@@ -665,7 +756,10 @@ let%test_module "Testing the difference between [%css] and [%css.hash_variables]
                      ({|--bg-color|}, ppx_css_value__002_) :: ppx_css_acc__001_ in
                Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__001_
            end
-         let a = {|a_hash_0e50ba5d7c|}
+         module For_referencing =
+           struct let a = {|a_hash_0e50ba5d7c|}
+                  let bg_color = {|--bg-color|} end
+         let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_0e50ba5d7c|}
        end
      include Default
      let default : t = (module Default) |xxx}];
@@ -698,10 +792,11 @@ let%test_module "Testing the difference between [%css] and [%css.hash_variables]
        sig
          module Variables :
          sig val set : ?bg_color:string -> unit -> Virtual_dom.Vdom.Attr.t end
-         val a : string
+         module For_referencing : sig val a : string val bg_color : string end
+         val a : Virtual_dom.Vdom.Attr.t
        end
      type t = (module S)
-     module Default =
+     module Default : S =
        struct
          module Variables =
            struct
@@ -715,7 +810,12 @@ let%test_module "Testing the difference between [%css] and [%css.hash_variables]
                      ppx_css_acc__003_ in
                Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__003_
            end
-         let a = {|a_hash_0e50ba5d7c|}
+         module For_referencing =
+           struct
+             let a = {|a_hash_0e50ba5d7c|}
+             let bg_color = {|--bg-color_hash_0e50ba5d7c|}
+           end
+         let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_0e50ba5d7c|}
        end
      include Default
      let default : t = (module Default) |xxx}]
@@ -756,9 +856,17 @@ let%test_module "Testing the difference between [%css] and [%css.hash_variables]
        =
        fun ?rewrite:_ ->
          fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-     module type S  = sig val a : string end
+     module type S  =
+       sig
+         module For_referencing : sig val a : string end
+         val a : Virtual_dom.Vdom.Attr.t
+       end
      type t = (module S)
-     module Default = struct let a = {|a|} end
+     module Default : S =
+       struct
+         module For_referencing = struct let a = {|a|} end
+         let a = Virtual_dom.Vdom.Attr.class_ {|a|}
+       end
      include Default
      let default : t = (module Default) |xxx}];
       test_struct
@@ -784,9 +892,17 @@ let%test_module "Testing the difference between [%css] and [%css.hash_variables]
        =
        fun ?rewrite:_ ->
          fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-     module type S  = sig val a : string end
+     module type S  =
+       sig
+         module For_referencing : sig val a : string end
+         val a : Virtual_dom.Vdom.Attr.t
+       end
      type t = (module S)
-     module Default = struct let a = {|a_hash_17f4534609|} end
+     module Default : S =
+       struct
+         module For_referencing = struct let a = {|a_hash_17f4534609|} end
+         let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_17f4534609|}
+       end
      include Default
      let default : t = (module Default) |xxx}]
     ;;
@@ -822,9 +938,17 @@ let%expect_test "simple use of [~rewrite]." =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val a : string end
+    module type S  =
+      sig
+        module For_referencing : sig val a : string end
+        val a : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let a = M.a end
+    module Default : S =
+      struct
+        module For_referencing = struct let a = M.a end
+        let a = Virtual_dom.Vdom.Attr.class_ M.a
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -849,9 +973,17 @@ let%expect_test "simple use of [~rewrite] through a string constant." =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val a : string end
+    module type S  =
+      sig
+        module For_referencing : sig val a : string end
+        val a : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let a = {|a|} end
+    module Default : S =
+      struct
+        module For_referencing = struct let a = {|a|} end
+        let a = Virtual_dom.Vdom.Attr.class_ {|a|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -916,20 +1048,36 @@ let%expect_test "weirder ordering of [~rewrite]." =
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
     module type S  =
       sig
-        val a : string
-        val b : string
-        val c : string
-        val d : string
-        val other : string
+        module For_referencing :
+        sig
+          val a : string
+          val b : string
+          val c : string
+          val d : string
+          val other : string
+        end
+        val a : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+        val c : Virtual_dom.Vdom.Attr.t
+        val d : Virtual_dom.Vdom.Attr.t
+        val other : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
-        let c = c
-        let other = {|other_hash_46adddeee6|}
-        let b = M.b
-        let d = {|d|}
-        let a = M.a
+        module For_referencing =
+          struct
+            let c = c
+            let other = {|other_hash_46adddeee6|}
+            let b = M.b
+            let d = {|d|}
+            let a = M.a
+          end
+        let c = Virtual_dom.Vdom.Attr.class_ c
+        let other = Virtual_dom.Vdom.Attr.class_ {|other_hash_46adddeee6|}
+        let b = Virtual_dom.Vdom.Attr.class_ M.b
+        let d = Virtual_dom.Vdom.Attr.class_ {|d|}
+        let a = Virtual_dom.Vdom.Attr.class_ M.a
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -973,13 +1121,26 @@ let%expect_test "both use of string constants and arbitrary expressions in use."
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val a : string val b : string val c : string end
+    module type S  =
+      sig
+        module For_referencing :
+        sig val a : string val b : string val c : string end
+        val a : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+        val c : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
-        let c = {|c_hash_0c073e40ac|}
-        let b = {|b_but_unhashed|}
-        let a = f M.a
+        module For_referencing =
+          struct
+            let c = {|c_hash_0c073e40ac|}
+            let b = {|b_but_unhashed|}
+            let a = f M.a
+          end
+        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_0c073e40ac|}
+        let b = Virtual_dom.Vdom.Attr.class_ {|b_but_unhashed|}
+        let a = Virtual_dom.Vdom.Attr.class_ (f M.a)
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1026,7 +1187,7 @@ let%test_unit "ordering of mapping iteration is the same as the css string." =
 
 let%expect_test "unused [~rewrite] target warning" =
   test_struct [%expr stylesheet {|
-    .a { }
+  .a { }
   |} ~rewrite:[ "b", "b" ]];
   [%expect {xxx|
     Unused keys: (b) |xxx}]
@@ -1077,20 +1238,36 @@ let%test_module "css_inliner_tests" =
             =
             fun ?rewrite:_ ->
               fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-          module type S  = sig val a : string val b : string end
+          module type S  =
+            sig
+              module For_referencing : sig val a : string val b : string end
+              val a : Virtual_dom.Vdom.Attr.t
+              val b : Virtual_dom.Vdom.Attr.t
+            end
           type t = (module S)
-          module Default =
-            struct let b = {|b_hash_0c732ee1e6|}
-                   let a = {|a_hash_0c732ee1e6|} end
+          module Default : S =
+            struct
+              module For_referencing =
+                struct let b = {|b_hash_0c732ee1e6|}
+                       let a = {|a_hash_0c732ee1e6|} end
+              let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_0c732ee1e6|}
+              let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_0c732ee1e6|}
+            end
           include Default
           let default : t = (module Default)
         ==sig==
         sig
-          module type S  = sig val a : string val b : string end
+          module type S  =
+            sig
+              module For_referencing : sig val a : string val b : string end
+              val a : Virtual_dom.Vdom.Attr.t
+              val b : Virtual_dom.Vdom.Attr.t
+            end
           type t = (module S)
           val default : t
-          val a : string
-          val b : string |xxx}]
+          module For_referencing : sig val a : string val b : string end
+          val a : Virtual_dom.Vdom.Attr.t
+          val b : Virtual_dom.Vdom.Attr.t |xxx}]
     ;;
 
     let%expect_test "generation with duplicate names." =
@@ -1128,17 +1305,69 @@ let%test_module "css_inliner_tests" =
             =
             fun ?rewrite:_ ->
               fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-          module type S  = sig val a : string end
+          module type S  =
+            sig
+              module For_referencing : sig val a : string end
+              val a : Virtual_dom.Vdom.Attr.t
+            end
           type t = (module S)
-          module Default = struct let a = {|a_hash_7dfc841c58|} end
+          module Default : S =
+            struct
+              module For_referencing = struct let a = {|a_hash_7dfc841c58|} end
+              let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_7dfc841c58|}
+            end
           include Default
           let default : t = (module Default)
         ==sig==
         sig
-          module type S  = sig val a : string end
+          module type S  =
+            sig
+              module For_referencing : sig val a : string end
+              val a : Virtual_dom.Vdom.Attr.t
+            end
           type t = (module S)
           val default : t
-          val a : string |xxx}]
+          module For_referencing : sig val a : string end
+          val a : Virtual_dom.Vdom.Attr.t |xxx}]
+    ;;
+  end)
+;;
+
+let%test_module "Variable setter creation" =
+  (module struct
+    let%expect_test "two variables variable creation" =
+      test_sig {|
+.a-class {
+  --bg-color: white;
+  --fg-color: black
+}
+        |};
+      [%expect
+        {|
+          sig
+            module type S  =
+              sig
+                module Variables :
+                sig
+                  val set :
+                    ?bg_color:string ->
+                      ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+                end
+                module For_referencing :
+                sig val a_class : string val bg_color : string val fg_color : string
+                end
+                val a_class : Virtual_dom.Vdom.Attr.t
+              end
+            type t = (module S)
+            val default : t
+            module Variables :
+            sig
+              val set :
+                ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+            end
+            module For_referencing :
+            sig val a_class : string val bg_color : string val fg_color : string end
+            val a_class : Virtual_dom.Vdom.Attr.t |}]
     ;;
   end)
 ;;
@@ -1161,9 +1390,17 @@ let%expect_test "rewrite on identifier which would eventually get unkebab'ed" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val a_b : string end
+    module type S  =
+      sig
+        module For_referencing : sig val a_b : string end
+        val a_b : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let a_b = {|a_b|} end
+    module Default : S =
+      struct
+        module For_referencing = struct let a_b = {|a_b|} end
+        let a_b = Virtual_dom.Vdom.Attr.class_ {|a_b|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -1218,14 +1455,28 @@ let%expect_test "apostrophe syntax" =
         fun ?rewrite:_ ->
           fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
       module type S  =
-        sig val a : string val aa : string val b : string val bb : string end
+        sig
+          module For_referencing :
+          sig val a : string val aa : string val b : string val bb : string end
+          val a : Virtual_dom.Vdom.Attr.t
+          val aa : Virtual_dom.Vdom.Attr.t
+          val b : Virtual_dom.Vdom.Attr.t
+          val bb : Virtual_dom.Vdom.Attr.t
+        end
       type t = (module S)
-      module Default =
+      module Default : S =
         struct
-          let bb = {|bb_hash_267f25fb39|}
-          let b = {|b|}
-          let a = {|a|}
-          let aa = {|aa|}
+          module For_referencing =
+            struct
+              let bb = {|bb_hash_267f25fb39|}
+              let b = {|b|}
+              let a = {|a|}
+              let aa = {|aa|}
+            end
+          let bb = Virtual_dom.Vdom.Attr.class_ {|bb_hash_267f25fb39|}
+          let b = Virtual_dom.Vdom.Attr.class_ {|b|}
+          let a = Virtual_dom.Vdom.Attr.class_ {|a|}
+          let aa = Virtual_dom.Vdom.Attr.class_ {|aa|}
         end
       include Default
       let default : t = (module Default) |xxx}]
@@ -1279,10 +1530,11 @@ let%expect_test "ppx_css hashes variables" =
       sig
         module Variables :
         sig val set : ?my_variable:string -> unit -> Virtual_dom.Vdom.Attr.t end
-        val a : string
+        module For_referencing : sig val a : string val my_variable : string end
+        val a : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
         module Variables =
           struct
@@ -1296,7 +1548,12 @@ let%expect_test "ppx_css hashes variables" =
                     ppx_css_acc__005_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__005_
           end
-        let a = {|a_hash_b519a9dc79|}
+        module For_referencing =
+          struct
+            let a = {|a_hash_b519a9dc79|}
+            let my_variable = {|--my-variable_hash_b519a9dc79|}
+          end
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_b519a9dc79|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1349,10 +1606,12 @@ let%expect_test "nested variables" =
             ?a:string ->
               ?b:string -> ?c:string -> unit -> Virtual_dom.Vdom.Attr.t
         end
-        val navbar : string
+        module For_referencing :
+        sig val a : string val b : string val c : string val navbar : string end
+        val navbar : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
         module Variables =
           struct
@@ -1378,7 +1637,14 @@ let%expect_test "nested variables" =
                     ppx_css_acc__007_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__007_
           end
-        let navbar = {|navbar_hash_0ac8471275|}
+        module For_referencing =
+          struct
+            let navbar = {|navbar_hash_0ac8471275|}
+            let c = {|--c_hash_0ac8471275|}
+            let b = {|--b_hash_0ac8471275|}
+            let a = {|--a_hash_0ac8471275|}
+          end
+        let navbar = Virtual_dom.Vdom.Attr.class_ {|navbar_hash_0ac8471275|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1434,10 +1700,12 @@ let%expect_test "css variables still respect [~rewrite]" =
             ?a:string ->
               ?b:string -> ?c:string -> unit -> Virtual_dom.Vdom.Attr.t
         end
-        val navbar : string
+        module For_referencing :
+        sig val a : string val b : string val c : string val navbar : string end
+        val navbar : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
         module Variables =
           struct
@@ -1461,7 +1729,14 @@ let%expect_test "css variables still respect [~rewrite]" =
                     ppx_css_acc__009_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__009_
           end
-        let navbar = {|navbar_hash_0ac8471275|}
+        module For_referencing =
+          struct
+            let navbar = {|navbar_hash_0ac8471275|}
+            let c = {|--c_hash_0ac8471275|}
+            let b = Other_library.b
+            let a = {|--a|}
+          end
+        let navbar = Virtual_dom.Vdom.Attr.class_ {|navbar_hash_0ac8471275|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1490,9 +1765,17 @@ let%expect_test "css variables still hashed under pseudo-selectors" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val navbar : string end
+    module type S  =
+      sig
+        module For_referencing : sig val navbar : string end
+        val navbar : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let navbar = {|navbar_hash|} end
+    module Default : S =
+      struct
+        module For_referencing = struct let navbar = {|navbar_hash|} end
+        let navbar = Virtual_dom.Vdom.Attr.class_ {|navbar_hash|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -1535,13 +1818,59 @@ let%expect_test "enumeration of supported selector functions" =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val has : string val not : string val where : string end
+    module type S  =
+      sig
+        module For_referencing :
+        sig val has : string val not : string val where : string end
+        val has : Virtual_dom.Vdom.Attr.t
+        val not : Virtual_dom.Vdom.Attr.t
+        val where : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
-        let has = {|has_hash|}
-        let not = {|not_hash|}
-        let where = {|where_hash|}
+        module For_referencing =
+          struct
+            let has = {|has_hash|}
+            let not = {|not_hash|}
+            let where = {|where_hash|}
+          end
+        let has = Virtual_dom.Vdom.Attr.class_ {|has_hash|}
+        let not = Virtual_dom.Vdom.Attr.class_ {|not_hash|}
+        let where = Virtual_dom.Vdom.Attr.class_ {|where_hash|}
+      end
+    include Default
+    let default : t = (module Default) |xxx}]
+;;
+
+let%expect_test "demonstrate support of hashing for :is" =
+  test_struct [%expr stylesheet {| :is(.is) {} |} ~rewrite:[ "is", "is_hash" ]];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let () = Inline_css.Private.append {|
+    /* _none_ */
+
+    *:is(.is_hash) {
+
+    }|}
+    let (__type_info_for_ppx_css :
+      ?rewrite:(string * string) list ->
+        ?dont_hash:string list ->
+          ?dont_hash_prefixes:string list -> string -> unit)
+      =
+      fun ?rewrite:_ ->
+        fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
+    module type S  =
+      sig
+        module For_referencing : sig val is : string end
+        val is : Virtual_dom.Vdom.Attr.t
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module For_referencing = struct let is = {|is_hash|} end
+        let is = Virtual_dom.Vdom.Attr.class_ {|is_hash|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1575,12 +1904,27 @@ let%expect_test "more complicated nested identifiers within selector functions" 
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val a : string val c : string val navbar : string end
+    module type S  =
+      sig
+        module For_referencing :
+        sig val a : string val c : string val navbar : string end
+        val a : Virtual_dom.Vdom.Attr.t
+        val c : Virtual_dom.Vdom.Attr.t
+        val navbar : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default =
-      struct let c = {|c_hash|}
-             let navbar = {|navbar_hash|}
-             let a = {|a_hash|} end
+    module Default : S =
+      struct
+        module For_referencing =
+          struct
+            let c = {|c_hash|}
+            let navbar = {|navbar_hash|}
+            let a = {|a_hash|}
+          end
+        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash|}
+        let navbar = Virtual_dom.Vdom.Attr.class_ {|navbar_hash|}
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;
@@ -1614,11 +1958,73 @@ let%expect_test "Does not hash invalid places for selectors." =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig  end
+    module type S  = sig module For_referencing : sig  end end
     type t = (module S)
-    module Default = struct  end
+    module Default : S = struct module For_referencing = struct  end end
     include Default
     let default : t = (module Default) |xxx}]
+;;
+
+let%expect_test "collision of names between ids and classes results in an alert." =
+  test_struct [%expr stylesheet {|
+#foo {}
+.foo {}
+  |}];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let () =
+      Inline_css.Private.append
+        {|
+    /* _none_ */
+
+    *#foo_hash_ba79671496 {
+
+    }
+
+    *.foo_hash_ba79671496 {
+
+    }|}
+    let (__type_info_for_ppx_css :
+      ?rewrite:(string * string) list ->
+        ?dont_hash:string list ->
+          ?dont_hash_prefixes:string list -> string -> unit)
+      =
+      fun ?rewrite:_ ->
+        fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
+    module type S  =
+      sig
+        module For_referencing : sig val foo : string end
+        val foo : Virtual_dom.Vdom.Attr.t[@@alert
+                                           unsafe
+                                             "An id and a class both share the name \"foo\" which is ambiguous. Please use \"foo_id\" or \"foo_class\" instead."]
+        val foo_id : Virtual_dom.Vdom.Attr.t
+        val foo_class : Virtual_dom.Vdom.Attr.t
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module For_referencing = struct let foo = {|foo_hash_ba79671496|} end
+        let foo = Virtual_dom.Vdom.Attr.empty
+        let foo_class = Virtual_dom.Vdom.Attr.class_ {|foo_hash_ba79671496|}
+        let foo_id = Virtual_dom.Vdom.Attr.id {|foo_hash_ba79671496|}
+      end
+    include Default
+    let default : t = (module Default) |xxx}]
+;;
+
+let%expect_test "collision of names between ids and classes colliding with a third party \
+                 identifier elsewhere results in an error"
+  =
+  test_struct [%expr stylesheet {|
+#foo {}
+.foo {}
+.foo_class {}
+.foo_id {}
+  |}];
+  [%expect
+    {xxx|
+    Collision between identifiers! This occurs when a disambiguated identifier matches an existing identifier. To resolve this, rename the following identifiers: (foo_class foo_id). |xxx}]
 ;;
 
 let%expect_test "behavior on sharing of id and class names" =
@@ -1648,9 +2054,23 @@ let%expect_test "behavior on sharing of id and class names" =
         =
         fun ?rewrite:_ ->
           fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-      module type S  = sig val a : string end
+      module type S  =
+        sig
+          module For_referencing : sig val a : string end
+          val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                           unsafe
+                                             "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+          val a_id : Virtual_dom.Vdom.Attr.t
+          val a_class : Virtual_dom.Vdom.Attr.t
+        end
       type t = (module S)
-      module Default = struct let a = {|a_hash_b7f7689df5|} end
+      module Default : S =
+        struct
+          module For_referencing = struct let a = {|a_hash_b7f7689df5|} end
+          let a = Virtual_dom.Vdom.Attr.empty
+          let a_class = Virtual_dom.Vdom.Attr.class_ {|a_hash_b7f7689df5|}
+          let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_b7f7689df5|}
+        end
       include Default
       let default : t = (module Default) |xxx}];
   test_sig {|
@@ -1660,10 +2080,23 @@ let%expect_test "behavior on sharing of id and class names" =
   [%expect
     {|
     sig
-      module type S  = sig val a : string end
+      module type S  =
+        sig
+          module For_referencing : sig val a : string end
+          val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                           unsafe
+                                             "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+          val a_id : Virtual_dom.Vdom.Attr.t
+          val a_class : Virtual_dom.Vdom.Attr.t
+        end
       type t = (module S)
       val default : t
-      val a : string |}]
+      module For_referencing : sig val a : string end
+      val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                       unsafe
+                                         "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+      val a_id : Virtual_dom.Vdom.Attr.t
+      val a_class : Virtual_dom.Vdom.Attr.t |}]
 ;;
 
 let%expect_test "dont_hash" =
@@ -1704,11 +2137,13 @@ let%expect_test "dont_hash" =
       sig
         module Variables :
         sig val set : ?a_variable:string -> unit -> Virtual_dom.Vdom.Attr.t end
-        val a_class : string
-        val an_id : string
+        module For_referencing :
+        sig val a_class : string val a_variable : string val an_id : string end
+        val a_class : Virtual_dom.Vdom.Attr.t
+        val an_id : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
         module Variables =
           struct
@@ -1721,8 +2156,14 @@ let%expect_test "dont_hash" =
                     ({|--a-variable|}, ppx_css_value__012_) :: ppx_css_acc__011_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__011_
           end
-        let an_id = {|an_id|}
-        let a_class = {|a-class|}
+        module For_referencing =
+          struct
+            let an_id = {|an_id|}
+            let a_class = {|a-class|}
+            let a_variable = {|--a-variable|}
+          end
+        let an_id = Virtual_dom.Vdom.Attr.id {|an_id|}
+        let a_class = Virtual_dom.Vdom.Attr.class_ {|a-class|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1813,10 +2254,12 @@ let%expect_test "dont_hash_prefixes" =
             ?bg_color:string ->
               ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
         end
-        val a : string
+        module For_referencing :
+        sig val a : string val bg_color : string val fg_color : string end
+        val a : Virtual_dom.Vdom.Attr.t
       end
     type t = (module S)
-    module Default =
+    module Default : S =
       struct
         module Variables =
           struct
@@ -1835,7 +2278,13 @@ let%expect_test "dont_hash_prefixes" =
                     ppx_css_acc__013_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__013_
           end
-        let a = {|a_hash_785a41f00f|}
+        module For_referencing =
+          struct
+            let a = {|a_hash_785a41f00f|}
+            let fg_color = {|--fg-color_hash_785a41f00f|}
+            let bg_color = {|--bg-color|}
+          end
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_785a41f00f|}
       end
     include Default
     let default : t = (module Default) |xxx}]
@@ -1900,10 +2349,21 @@ let%expect_test "[~rewrite] takes priority over [~dont_hash_prefixes]." =
       =
       fun ?rewrite:_ ->
         fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
-    module type S  = sig val abc : string val abcde : string end
+    module type S  =
+      sig
+        module For_referencing : sig val abc : string val abcde : string end
+        val abc : Virtual_dom.Vdom.Attr.t
+        val abcde : Virtual_dom.Vdom.Attr.t
+      end
     type t = (module S)
-    module Default = struct let abcde = {|i-take-priority|}
-                            let abc = {|abc|} end
+    module Default : S =
+      struct
+        module For_referencing =
+          struct let abcde = {|i-take-priority|}
+                 let abc = {|abc|} end
+        let abcde = Virtual_dom.Vdom.Attr.class_ {|i-take-priority|}
+        let abc = Virtual_dom.Vdom.Attr.class_ {|abc|}
+      end
     include Default
     let default : t = (module Default) |xxx}]
 ;;

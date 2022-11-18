@@ -27,7 +27,13 @@ val empty : css_string:string -> t
 
 module Serializable_options : sig
   type options := t
-  type t = { rewrite : string String.Map.t } [@@deriving of_sexp]
+
+  type t =
+    { rewrite : string String.Map.t
+    ; dont_hash : string list
+    ; dont_hash_prefixes : string list
+    }
+  [@@deriving of_sexp]
 
   val to_options : t -> css_string:string -> options
 end

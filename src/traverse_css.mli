@@ -2,11 +2,20 @@ open! Core
 open! Ppxlib
 open Css_jane
 
+module Identifier_kind : sig
+  type t =
+    | Class
+    | Id
+    | Variable
+  [@@deriving compare, sexp]
+
+  include Comparable.S with type t := t
+end
+
 module Transform : sig
   type result =
     { css_string : string
-    ; identifier_mapping :
-        [ `Identifier of expression | `Variable of expression ] String.Table.t
+    ; identifier_mapping : (Identifier_kind.Set.t * expression) String.Table.t
     ; reference_order : expression list
     }
 
@@ -27,7 +36,7 @@ end
 module Get_all_identifiers : sig
   type result =
     { variables : string list
-    ; identifiers : string list
+    ; identifiers : (string * [ `Both | `Only_class | `Only_id ]) list
     }
   [@@deriving sexp_of]
 

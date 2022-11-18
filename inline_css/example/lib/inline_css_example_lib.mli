@@ -1,5 +1,3 @@
-open! Bonsai_web
-
 module Style :
   module type of
   [%css

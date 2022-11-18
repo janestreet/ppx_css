@@ -8,8 +8,44 @@ type t =
   ; dont_hash_prefixes : String.Set.t
   }
 
+let combine_rewrite_and_dont_hash ~loc ~rewrite ~dont_hash =
+  List.fold dont_hash ~init:rewrite ~f:(fun acc dont_hash_this ->
+    Map.update acc dont_hash_this ~f:(function
+      | None ->
+        let open (val Ast_builder.make loc) in
+        pexp_constant (Pconst_string (dont_hash_this, loc, None))
+      | Some _ ->
+        Location.raise_errorf
+          ~loc
+          {|Found duplicate value \"%s\" between [dont_hash] and [rewrite].|}
+          dont_hash_this))
+;;
+
 module Serializable_options = struct
-  type t = { rewrite : string String.Map.t } [@@deriving of_sexp]
+  type t =
+    { rewrite : string String.Map.t
+    ; dont_hash : string list [@sexp.list]
+    ; dont_hash_prefixes : string list [@sexp.list]
+    }
+  [@@sexp.allow_extra_fields] [@@deriving sexp]
+
+  let test s =
+    let parsed = t_of_sexp (Sexp.of_string s) in
+    print_s (sexp_of_t parsed)
+  ;;
+
+  let%expect_test "Regression test against non-forwards compatible serialization with \
+                   Jenga Rule."
+    =
+    test {|((rewrite ()))|};
+    [%expect {| ((rewrite ())) |}];
+    test {|((rewrite ()) (brand_new_field ()))|};
+    [%expect {| ((rewrite ())) |}];
+    test {|((rewrite ()) (dont_hash ()))|};
+    [%expect {| ((rewrite ())) |}];
+    test {|((rewrite ()) (dont_hash (1 2 3)))|};
+    [%expect {| ((rewrite ()) (dont_hash (1 2 3))) |}]
+  ;;
 
   (* Parses the string "A.B.x" into a Ppxlib AST corresponding to an identifier.
 
@@ -18,23 +54,25 @@ module Serializable_options = struct
   *)
   let parse_string_to_expression : string -> expression =
     fun s ->
-    let loc = Location.none in
-    let open (val Ast_builder.make loc) in
-    let items = String.split ~on:'.' s in
-    match items with
-    | [ single ] -> pexp_constant (Pconst_string (single, Location.none, None))
-    | first :: tl ->
-      List.fold ~init:(Lident first) tl ~f:(fun acc item -> Ldot (acc, item))
-      |> Located.mk
-      |> pexp_ident
-    | _ -> raise_s (Sexp.Atom "Expected a valid Ocaml identifier expression")
+      let loc = Location.none in
+      let open (val Ast_builder.make loc) in
+      let items = String.split ~on:'.' s in
+      match items with
+      | [ single ] -> pexp_constant (Pconst_string (single, Location.none, None))
+      | first :: tl ->
+        List.fold ~init:(Lident first) tl ~f:(fun acc item -> Ldot (acc, item))
+        |> Located.mk
+        |> pexp_ident
+      | _ -> raise_s (Sexp.Atom "Expected a valid Ocaml identifier expression")
   ;;
 
-  let to_options { rewrite } ~css_string =
-    { rewrite = Map.map rewrite ~f:(fun s -> parse_string_to_expression s)
+  let to_options { rewrite; dont_hash; dont_hash_prefixes } ~css_string =
+    { rewrite =
+        (let rewrite = Map.map rewrite ~f:(fun s -> parse_string_to_expression s) in
+         combine_rewrite_and_dont_hash ~loc:Location.none ~rewrite ~dont_hash)
     ; css_string
     ; stylesheet_location = Location.none
-    ; dont_hash_prefixes = String.Set.empty
+    ; dont_hash_prefixes = String.Set.of_list dont_hash_prefixes
     }
   ;;
 end
