@@ -5,7 +5,7 @@ type t =
   { rewrite : expression String.Map.t
   ; css_string : string
   ; stylesheet_location : location
-  ; dont_hash_prefixes : String.Set.t
+  ; dont_hash_prefixes : string list
   }
 
 let combine_rewrite_and_dont_hash ~loc ~rewrite ~dont_hash =
@@ -72,7 +72,7 @@ module Serializable_options = struct
          combine_rewrite_and_dont_hash ~loc:Location.none ~rewrite ~dont_hash)
     ; css_string
     ; stylesheet_location = Location.none
-    ; dont_hash_prefixes = String.Set.of_list dont_hash_prefixes
+    ; dont_hash_prefixes
     }
   ;;
 end
@@ -81,7 +81,7 @@ let empty ~css_string =
   { rewrite = String.Map.empty
   ; css_string
   ; stylesheet_location = Location.none
-  ; dont_hash_prefixes = String.Set.empty
+  ; dont_hash_prefixes = []
   }
 ;;
 
@@ -288,9 +288,7 @@ let validate_args ~loc args =
                ~loc:expression.pexp_loc
                expression)
         | _ -> None)
-      |> Option.value_map
-           ~f:(Tuple2.map_fst ~f:String.Set.of_list)
-           ~default:(String.Set.empty, remaining_args)
+      |> Option.value ~default:([], remaining_args)
     in
     let rewrite =
       List.fold dont_hash ~init:rewrite ~f:(fun acc dont_hash_this ->

@@ -9,15 +9,12 @@ module For_css_inliner : sig
 end
 
 module For_testing : sig
-  val generate_struct
-    :  allow_potential_accidental_hashing:bool
-    -> expression
-    -> module_expr
+  val generate_struct : expression -> module_expr
 
   val map_style_sheet
     :  Stylesheet.t
-    -> allow_potential_accidental_hashing:bool
     -> rewrite:expression String.Map.t
+    -> dont_hash_prefixes:string list
     -> f:([ `Class of label | `Id of label | `Variable of label ] -> location -> label)
     -> Stylesheet.t
 

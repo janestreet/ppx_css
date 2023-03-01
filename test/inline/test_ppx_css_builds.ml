@@ -4,7 +4,7 @@ module Normal = [%css stylesheet {|
                       |}]
 
 module With_variables =
-  [%css.hash_variables
+  [%css
     stylesheet
       {|
 :root {

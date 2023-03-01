@@ -32,25 +32,7 @@ let hash_the_contents_of_these_selector_functions =
   String.Set.of_list [ "not"; "has"; "where"; "is" ]
 ;;
 
-let potentially_accidental_hashing_error_message ~identifiers =
-  sprintf
-    {|The following identifiers will be hashed when they previously were not: %s
-If your application relies on the identifiers, being unhashed, this could
-potentially break the styles of your app. To enable hashing, please use
-[%%css.hash_variables] instead of [%%css].
-
-To disable hashing an keep the default behavior you can make use of the [~rewrite]
-flag. To ppx_css. You can do so by adding:
-
-~dont_hash:[%s]
-  |}
-    (Sexp.to_string_hum ([%sexp_of: String.Set.t] identifiers))
-    (Set.to_list identifiers
-     |> List.map ~f:(fun s -> [%string {|"%{s}"|}])
-     |> String.concat ~sep:"; ")
-;;
-
-let rec fold_c_value ~allow_potential_accidental_hashing ~rewrite ~f prev v =
+let rec fold_c_value ~rewrite ~dont_hash_prefixes ~f prev v =
   match prev, v with
   | _, ((Component_value.Delim "." as d), loc) -> Dot, (d, loc)
   | _, ((Delim ":" as d), loc) -> Colon, (d, loc)
@@ -58,35 +40,22 @@ let rec fold_c_value ~allow_potential_accidental_hashing ~rewrite ~f prev v =
   | _, (Hash s, loc) -> Other, (Hash (f (`Id s) loc), loc)
   | Colon, (Function (((fn_name, _) as first), second), loc)
     when Set.mem hash_the_contents_of_these_selector_functions fn_name ->
-    let f ((`Class i | `Id i | `Variable i) as case) loc =
-      match Map.mem rewrite i with
-      | true -> f case loc
-      | false when allow_potential_accidental_hashing -> f case loc
-      | false ->
-        Location.raise_errorf
-          ~loc
-          "%s"
-          (potentially_accidental_hashing_error_message
-             ~identifiers:(String.Set.singleton i))
-    in
     let component_value =
       let second =
         Tuple2.map_fst
           second
-          ~f:(map_component_value_list ~allow_potential_accidental_hashing ~rewrite ~f)
+          ~f:(map_component_value_list ~rewrite ~f ~dont_hash_prefixes)
       in
       Component_value.Function (first, second)
     in
     Other, (component_value, loc)
   | _, other -> Other, other
 
-and map_component_value_list ~allow_potential_accidental_hashing ~f ~rewrite =
-  List.folding_map
-    ~init:Other
-    ~f:(fold_c_value ~allow_potential_accidental_hashing ~rewrite ~f)
+and map_component_value_list ~f ~rewrite ~dont_hash_prefixes =
+  List.folding_map ~init:Other ~f:(fold_c_value ~rewrite ~dont_hash_prefixes ~f)
 ;;
 
-let map_stylesheet ~allow_potential_accidental_hashing ~rewrite stylesheet ~f =
+let map_stylesheet ~rewrite ~dont_hash_prefixes stylesheet ~f =
   let mapper =
     object
       inherit Css_jane.Traverse.map as super
@@ -98,7 +67,7 @@ let map_stylesheet ~allow_potential_accidental_hashing ~rewrite stylesheet ~f =
             ~f:
               (List.folding_map
                  ~init:Other
-                 ~f:(fold_c_value ~allow_potential_accidental_hashing ~rewrite ~f))
+                 ~f:(fold_c_value ~rewrite ~f ~dont_hash_prefixes))
         in
         super#style_rule { style_rule with prelude }
 
@@ -132,13 +101,13 @@ let map_stylesheet ~allow_potential_accidental_hashing ~rewrite stylesheet ~f =
 ;;
 
 (* Iterates over class, id, and variables in the file *)
-let iter_identifiers ~allow_potential_accidental_hashing ~rewrite stylesheet ~f =
+let iter_identifiers ~rewrite ~dont_hash_prefixes stylesheet ~f =
   let f ((`Class identifier | `Id identifier | `Variable identifier) as case) _loc =
     f case;
     identifier
   in
   (ignore : Stylesheet.t -> unit)
-    (map_stylesheet stylesheet ~rewrite ~allow_potential_accidental_hashing ~f)
+    (map_stylesheet stylesheet ~rewrite ~f ~dont_hash_prefixes)
 ;;
 
 let fix_identifier =
@@ -223,7 +192,9 @@ let raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers =
 
 let raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes =
   let unused_prefixes =
-    Set.diff dont_hash_prefixes (String.Set.of_hash_set used_prefixes)
+    Set.diff
+      (String.Set.of_list dont_hash_prefixes)
+      (String.Set.of_hash_set used_prefixes)
   in
   match Set.is_empty unused_prefixes with
   | true -> ()
@@ -242,7 +213,6 @@ module Transform = struct
     }
 
   let f
-        ~allow_potential_accidental_hashing
         ~loc
         ~pos
         ~options:
@@ -264,24 +234,13 @@ module Transform = struct
     let original_identifiers = String.Hash_set.create () in
     let reference_order = ref Reversed_list.[] in
     let unused_rewrite_identifiers = String.Hash_set.of_list (Map.keys rewrite) in
-    let newly_hashed_variables = String.Hash_set.create () in
-    iter_identifiers ~allow_potential_accidental_hashing ~rewrite parsed ~f:(function
-      | `Class _ | `Id _ -> ()
-      | `Variable identifier -> Hash_set.add newly_hashed_variables identifier);
-    let unfixed_variables =
-      Set.diff (String.Set.of_hash_set newly_hashed_variables) (Map.key_set rewrite)
-    in
-    (match Set.is_empty unfixed_variables with
-     | true -> ()
-     | false when allow_potential_accidental_hashing -> ()
-     | false ->
-       Location.raise_errorf
-         ~loc
-         "%s"
-         (potentially_accidental_hashing_error_message ~identifiers:unfixed_variables));
+    (let newly_hashed_variables = String.Hash_set.create () in
+     iter_identifiers ~rewrite ~dont_hash_prefixes parsed ~f:(function
+       | `Class _ | `Id _ -> ()
+       | `Variable identifier -> Hash_set.add newly_hashed_variables identifier));
     iter_identifiers
-      ~allow_potential_accidental_hashing
       ~rewrite
+      ~dont_hash_prefixes
       parsed
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
         Hash_set.add original_identifiers identifier;
@@ -294,9 +253,15 @@ module Transform = struct
       let dont_hash_prefixes =
         (* Sorted from most general to least general (i.e. shorter prefix to longest
            prefix)*)
-        List.sort
-          ~compare:(fun a b -> Int.compare (String.length a) (String.length b))
-          (Set.to_list dont_hash_prefixes)
+        List.dedup_and_sort
+          ~compare:(fun a_1 b_1 ->
+            Comparable.lexicographic
+              [ (fun a b -> Comparable.lift Int.ascending ~f:String.length a b)
+              ; String.compare
+              ]
+              a_1
+              b_1)
+          dont_hash_prefixes
       in
       fun identifier ->
         List.exists dont_hash_prefixes ~f:(fun prefix ->
@@ -309,7 +274,7 @@ module Transform = struct
     let sheet =
       map_stylesheet
         ~rewrite
-        ~allow_potential_accidental_hashing
+        ~dont_hash_prefixes
         parsed
         ~f:(fun ((`Class identifier | `Id identifier | `Variable identifier) as token) loc
              ->
@@ -370,12 +335,8 @@ module Get_all_identifiers = struct
   let get_all_original_identifiers stylesheet =
     let out = String.Hash_set.create () in
     iter_identifiers
-      (* NOTE: Safe to set [allow_potential_accidental_hashing] to true since the css inliner
-         change should happen on top/after the change that potentially makes hashing new
-         variables dangerous.
-      *)
-      ~allow_potential_accidental_hashing:true
       ~rewrite:String.Map.empty
+      ~dont_hash_prefixes:[]
       stylesheet
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
         Hash_set.add out identifier);
@@ -388,8 +349,8 @@ module Get_all_identifiers = struct
     let fixed_to_original = String.Table.create () in
     let original_identifiers = get_all_original_identifiers stylesheet in
     iter_identifiers
-      ~allow_potential_accidental_hashing:true
       ~rewrite:String.Map.empty
+      ~dont_hash_prefixes:[]
       stylesheet
       ~f:(fun current_item ->
         let (`Class identifier | `Id identifier | `Variable identifier) = current_item in
@@ -415,7 +376,7 @@ module Get_all_identifiers = struct
 end
 
 module For_testing = struct
-  let map_style_sheet s ~allow_potential_accidental_hashing ~rewrite ~f =
-    map_stylesheet s ~f ~allow_potential_accidental_hashing ~rewrite
+  let map_style_sheet s ~rewrite ~dont_hash_prefixes ~f =
+    map_stylesheet s ~f ~rewrite ~dont_hash_prefixes
   ;;
 end

@@ -161,7 +161,7 @@ let nested_at_rule =
     ( "@",
       ( "document" | "keyframes"
       | vendor_prefix, "keyframes"
-      | "media" | "supports" | "scope" ) )]
+      | "media" | "supports" | "scope" | "layer" ) )]
 
 let _a = [%sedlex.regexp? 'A' | 'a']
 

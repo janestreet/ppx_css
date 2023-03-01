@@ -16,7 +16,7 @@ type t =
   (** Equivalent to where the "stylesheet" identifier is located from within the call to
       ppx_css. This is used to potentially give merlin information for MerlinTypeOf to
       know the type of the [stylesheet] function. *)
-  ; dont_hash_prefixes : String.Set.t
+  ; dont_hash_prefixes : string list
   }
 
 (** Given the AST of an expression like [stylesheet ~rewrite:[] ""] will result in a

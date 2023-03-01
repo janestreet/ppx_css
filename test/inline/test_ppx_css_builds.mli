@@ -8,7 +8,7 @@ module Normal :
 
 module With_variables :
   module type of
-  [%css.hash_variables
+  [%css
     stylesheet
       {|
 :root {

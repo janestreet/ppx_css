@@ -350,18 +350,10 @@ let create_default_module_struct
   pmod_structure structure_items |> loc_ghoster#module_expr
 ;;
 
-let generate_struct_from_css_string_and_options
-      ~allow_potential_accidental_hashing
-      ~loc
-      ~options
-  =
+let generate_struct_from_css_string_and_options ~loc ~options =
   let open (val Ast_builder.make loc) in
   let { Traverse_css.Transform.css_string; identifier_mapping; reference_order } =
-    Traverse_css.Transform.f
-      ~allow_potential_accidental_hashing
-      ~loc
-      ~pos:loc.loc_start
-      ~options
+    Traverse_css.Transform.f ~loc ~pos:loc.loc_start ~options
   in
   let identifier_mapping = Hashtbl.to_alist identifier_mapping in
   let css_string = css_string_to_expression ~loc ~css_string ~reference_order in
@@ -403,14 +395,11 @@ let generate_struct_from_css_string_and_options
     ]
 ;;
 
-let generate_struct ~allow_potential_accidental_hashing ~loc ~path:_ (expr : expression) =
+let generate_struct ~loc ~path:_ (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
   let options = Options.parse expr in
-  generate_struct_from_css_string_and_options
-    ~allow_potential_accidental_hashing
-    ~loc
-    ~options
+  generate_struct_from_css_string_and_options ~loc ~options
 ;;
 
 let create_sig_from_idents
@@ -433,14 +422,7 @@ module For_css_inliner = struct
   let gen_struct ~options =
     let buffer = Buffer.create 1024 in
     let loc = Location.none in
-    generate_struct_from_css_string_and_options
-      (* NOTE: It is safe to set [allow_potential_accidental_hashing] to true since the css inliner
-         change should happen on top/after the change that potentially makes hashing new
-         variables dangerous.
-      *)
-      ~allow_potential_accidental_hashing:true
-      ~loc
-      ~options
+    generate_struct_from_css_string_and_options ~loc ~options
     |> Pprintast.module_expr (Format.formatter_of_buffer buffer);
     Buffer.contents buffer
   ;;
@@ -466,22 +448,10 @@ let ml_extension =
     "css"
     Extension.Context.module_expr
     Ast_pattern.(single_expr_payload __)
-    (generate_struct ~allow_potential_accidental_hashing:false)
+    generate_struct
 ;;
 
-let ml_extension_with_safe_to_hash_variables_names =
-  Extension.declare
-    "css.hash_variables"
-    Extension.Context.module_expr
-    Ast_pattern.(single_expr_payload __)
-    (generate_struct ~allow_potential_accidental_hashing:true)
-;;
-
-let () =
-  Driver.register_transformation
-    "css"
-    ~extensions:[ ml_extension; ml_extension_with_safe_to_hash_variables_names ]
-;;
+let () = Driver.register_transformation "css" ~extensions:[ ml_extension ]
 
 module For_testing = struct
   let generate_struct = generate_struct ~loc:Location.none ~path:()

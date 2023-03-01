@@ -55,6 +55,8 @@ for said classes.
             ~f:Options.Serializable_options.t_of_sexp)
      in
      fun () -> standalone ~serializable_options ~src)
+    ~behave_nicely_in_pipeline:false
 ;;
+
 
 let () = Command_unix.run command
