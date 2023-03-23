@@ -2,10 +2,9 @@ open! Core
 open Js_of_ocaml
 
 module Style_sheet = struct
-  class type t =
-    object
-      method replaceSync : Js.js_string Js.t -> unit Js.meth
-    end
+  class type t = object
+    method replaceSync : Js.js_string Js.t -> unit Js.meth
+  end
 
   let t : t Js.t Js.constr Js.Optdef.t = Js.Unsafe.global##._CSSStyleSheet
 

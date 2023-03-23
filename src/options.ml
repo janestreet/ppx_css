@@ -145,8 +145,7 @@ let parse_rewrite ~loc expression =
               [ { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ }; value ]
         ; _
         } -> key, loc_ghoster#expression value
-      | { pexp_desc = _; _ } ->
-        raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
+      | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
   in
   match String.Map.of_alist alist with
   | `Ok rewrite -> rewrite

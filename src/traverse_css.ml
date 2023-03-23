@@ -165,7 +165,9 @@ let get_ocaml_identifier original_identifier ~loc ~original_identifiers ~fixed_t
           Hashtbl.set fixed_to_original ~key:fixed_identifier ~data:original_identifier;
           fixed_identifier
         | Some previously_computed_ocaml_identifier ->
-          (match String.equal previously_computed_ocaml_identifier original_identifier with
+          (match
+             String.equal previously_computed_ocaml_identifier original_identifier
+           with
            | true -> fixed_identifier
            | false ->
              raise_due_to_collision_with_newly_minted_identifier
@@ -276,39 +278,40 @@ module Transform = struct
         ~rewrite
         ~dont_hash_prefixes
         parsed
-        ~f:(fun ((`Class identifier | `Id identifier | `Variable identifier) as token) loc
-             ->
-               let ocaml_identifier =
-                 get_ocaml_identifier identifier ~loc ~original_identifiers ~fixed_to_original
-               in
-               let ret, expression =
-                 match Map.find rewrite identifier with
-                 | None ->
-                   (match is_matched_by_a_prefix identifier with
-                    | false ->
-                      let ret = sprintf "%s_hash_%s" identifier hash in
-                      ret, string_constant ~loc ret
-                    | true -> identifier, string_constant ~loc identifier)
-                 | Some
-                     { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
-                     ; pexp_loc = loc
-                     ; _
-                     } -> identifier, string_constant ~loc identifier
-                 | Some expression_to_use ->
-                   (reference_order := Reversed_list.(expression_to_use :: !reference_order));
-                   "%s", expression_to_use
-               in
-               let identifier_kind =
-                 match token with
-                 | `Class _ -> Identifier_kind.Class
-                 | `Id _ -> Id
-                 | `Variable _ -> Variable
-               in
-               Hashtbl.update identifier_mapping ocaml_identifier ~f:(fun prev ->
-                 match prev with
-                 | None -> Identifier_kind.Set.singleton identifier_kind, expression
-                 | Some (prev, expression) -> Set.add prev identifier_kind, expression);
-               ret)
+        ~f:
+          (fun
+            ((`Class identifier | `Id identifier | `Variable identifier) as token) loc ->
+            let ocaml_identifier =
+              get_ocaml_identifier identifier ~loc ~original_identifiers ~fixed_to_original
+            in
+            let ret, expression =
+              match Map.find rewrite identifier with
+              | None ->
+                (match is_matched_by_a_prefix identifier with
+                 | false ->
+                   let ret = sprintf "%s_hash_%s" identifier hash in
+                   ret, string_constant ~loc ret
+                 | true -> identifier, string_constant ~loc identifier)
+              | Some
+                  { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
+                  ; pexp_loc = loc
+                  ; _
+                  } -> identifier, string_constant ~loc identifier
+              | Some expression_to_use ->
+                (reference_order := Reversed_list.(expression_to_use :: !reference_order));
+                "%s", expression_to_use
+            in
+            let identifier_kind =
+              match token with
+              | `Class _ -> Identifier_kind.Class
+              | `Id _ -> Id
+              | `Variable _ -> Variable
+            in
+            Hashtbl.update identifier_mapping ocaml_identifier ~f:(fun prev ->
+              match prev with
+              | None -> Identifier_kind.Set.singleton identifier_kind, expression
+              | Some (prev, expression) -> Set.add prev identifier_kind, expression);
+            ret)
     in
     raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes;
     let css_string = Stylesheet.to_string_hum sheet in

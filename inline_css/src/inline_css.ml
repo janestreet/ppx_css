@@ -26,9 +26,7 @@ module Strategy = struct
 
   let find () =
     Or_error.find_map_ok strategies ~f:(fun (module Strategy) ->
-      let%map.Or_error state =
-        Or_error.tag (Strategy.initialize ()) ~tag:Strategy.name
-      in
+      let%map.Or_error state = Or_error.tag (Strategy.initialize ()) ~tag:Strategy.name in
       Strategy_intf.T { state; strategy = (module Strategy) })
   ;;
 

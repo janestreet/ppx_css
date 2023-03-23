@@ -7,14 +7,14 @@ let%expect_test "css censoring" =
   let handle =
     Handle.create
       (Result_spec.vdom Fn.id)
-      (Bonsai.const (Vdom.Node.div ~attr:Style.foo []))
+      (Bonsai.const (Vdom.Node.div ~attrs:[ Style.foo ] []))
   in
   Handle.show handle;
   [%expect {| <div class="foo_hash_replaced_in_test"> </div> |}];
   let handle =
     Handle.create
       (Result_spec.vdom ~censor_hash:false Fn.id)
-      (Bonsai.const (Vdom.Node.div ~attr:Style.foo []))
+      (Bonsai.const (Vdom.Node.div ~attrs:[ Style.foo ] []))
   in
   Handle.show handle;
   [%expect {| <div class="foo_hash_6126cb4ca7"> </div> |}]

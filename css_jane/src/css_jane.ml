@@ -24,13 +24,13 @@ module Sexpers = struct
     | Delim s -> [%sexp Delim (s : string)]
     | Function (s, t_list) ->
       [%sexp
-        Function (s, t_list : string with_loc * component_value with_loc list with_loc)]
+        Function ((s, t_list) : string with_loc * component_value with_loc list with_loc)]
     | Hash s -> [%sexp Hash (s : string)]
     | Number s -> [%sexp Number (s : string)]
     | Unicode_range s -> [%sexp Unicode_range (s : string)]
     | Float_dimension (s1, s2, dim) ->
-      [%sexp Float_dimension (s1, s2, dim : string * string * dimension)]
-    | Dimension (s1, s2) -> [%sexp Dimension (s1, s2 : string * string)]
+      [%sexp Float_dimension ((s1, s2, dim) : string * string * dimension)]
+    | Dimension (s1, s2) -> [%sexp Dimension ((s1, s2) : string * string)]
 
   and sexp_of_declaration : Types.Declaration.t -> Sexp.t = function
     | { name; value; important; loc = _ } ->
