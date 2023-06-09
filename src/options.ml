@@ -54,16 +54,16 @@ module Serializable_options = struct
   *)
   let parse_string_to_expression : string -> expression =
     fun s ->
-      let loc = Location.none in
-      let open (val Ast_builder.make loc) in
-      let items = String.split ~on:'.' s in
-      match items with
-      | [ single ] -> pexp_constant (Pconst_string (single, Location.none, None))
-      | first :: tl ->
-        List.fold ~init:(Lident first) tl ~f:(fun acc item -> Ldot (acc, item))
-        |> Located.mk
-        |> pexp_ident
-      | _ -> raise_s (Sexp.Atom "Expected a valid Ocaml identifier expression")
+    let loc = Location.none in
+    let open (val Ast_builder.make loc) in
+    let items = String.split ~on:'.' s in
+    match items with
+    | [ single ] -> pexp_constant (Pconst_string (single, Location.none, None))
+    | first :: tl ->
+      List.fold ~init:(Lident first) tl ~f:(fun acc item -> Ldot (acc, item))
+      |> Located.mk
+      |> pexp_ident
+    | _ -> raise_s (Sexp.Atom "Expected a valid Ocaml identifier expression")
   ;;
 
   let to_options { rewrite; dont_hash; dont_hash_prefixes } ~css_string =
