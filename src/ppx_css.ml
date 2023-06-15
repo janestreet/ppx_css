@@ -3,6 +3,42 @@ open! Ppxlib
 open Css_jane
 module Options = Options
 
+let () =
+  Driver.add_arg
+    "-rewrite"
+    ~doc:
+      "{string:string} Lets you override or rewrite the identifier that is used for an \
+       identifier. Syntax: '-rewrite=classname:new_classname'"
+    (String
+       (fun s ->
+          match String.lsplit2 s ~on:':' with
+          | Some (from, to_) -> Preprocess_arguments.add_rewrite ~from ~to_
+          | None ->
+            raise_s
+              [%message
+                "Invalid '-rewrite' arg"
+                  ~expected_something_like:"existing_identifier:identifier_to_use"
+                  ~but_got:(s : string)]))
+;;
+
+let () =
+  Driver.add_arg
+    "-dont-hash"
+    ~doc:
+      "{string} Disable hashing behavior for an identifier. Syntax: \
+       '-dont-hash=table-header'"
+    (String (fun s -> Preprocess_arguments.add_dont_hash s))
+;;
+
+let () =
+  Driver.add_arg
+    "-dont-hash-prefixes"
+    ~doc:
+      "{string} Disable hashing behavior for an identifier. Syntax: \
+       '-dont-hash=table-header'"
+    (String (fun s -> Preprocess_arguments.add_dont_hash_prefixes s))
+;;
+
 let disable_warning_32 ~loc =
   let open (val Ast_builder.make loc) in
   attribute

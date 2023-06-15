@@ -312,16 +312,61 @@ let validate_args ~loc args =
     css_string, rewrite, dont_hash_prefixes
 ;;
 
+let add_identifiers_from_jbuild_parameters ~loc (options : t) =
+  let open (val Ast_builder.make loc) in
+  let { Preprocess_arguments.dont_hash = jbuild_dont_hash
+      ; dont_hash_prefixes = jbuild_dont_hash_prefixes
+      ; rewrite = jbuild_rewrite
+      }
+    =
+    Preprocess_arguments.get ()
+  in
+  let jbuild_rewrite =
+    let jbuild_dont_hash = Set.to_map jbuild_dont_hash ~f:Fn.id in
+    let jbuild_rewrite =
+      Map.merge jbuild_rewrite jbuild_dont_hash ~f:(fun ~key -> function
+        | `Right x | `Left x -> Some x
+        | `Both _ ->
+          raise_s
+            [%message
+              "ppx_css received duplicate entries on [rewrite] and [dont_hash]. This \
+               occured on the jbuild's preprocess parameters."
+                ~duplicate_key:(key : string)])
+    in
+    String.Map.map jbuild_rewrite ~f:Serializable_options.parse_string_to_expression
+  in
+  let rewrite =
+    Map.merge jbuild_rewrite options.rewrite ~f:(fun ~key -> function
+      | `Left x | `Right x -> Some x
+      | `Both _ ->
+        raise_s
+          [%message
+            "ppx_css received duplicate [rewrite] entries. One of them was given through \
+             the jbuild ppx, and the other via the ppx"
+              ~duplicate_key:(key : string)])
+  in
+  let dont_hash_prefixes =
+    options.dont_hash_prefixes @ Set.to_list jbuild_dont_hash_prefixes
+  in
+  { rewrite
+  ; dont_hash_prefixes
+  ; css_string = options.css_string
+  ; stylesheet_location = options.stylesheet_location
+  }
+;;
+
 let parse (expression : expression) =
   let loc = expression.pexp_loc in
   let loc = { loc with loc_ghost = true } in
   match expression.pexp_desc with
   | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident "stylesheet"; loc }; _ }, args) ->
     let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
-    { css_string
-    ; rewrite
-    ; stylesheet_location = { loc with loc_ghost = true }
-    ; dont_hash_prefixes
-    }
+    add_identifiers_from_jbuild_parameters
+      ~loc
+      { css_string
+      ; rewrite
+      ; stylesheet_location = { loc with loc_ghost = true }
+      ; dont_hash_prefixes
+      }
   | _ -> raise_misparse_with_syntax_instructions ~extra_message:"" ~loc
 ;;
