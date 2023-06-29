@@ -363,6 +363,8 @@ let%expect_test "variables on signature generation" =
             val set :
               ?bg_color:string ->
                 ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+            val set_all :
+              bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
           end
           module For_referencing :
           sig val bg_color : string val card : string val fg_color : string end
@@ -374,6 +376,8 @@ let%expect_test "variables on signature generation" =
       sig
         val set :
           ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+        val set_all :
+          bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
       end
       module For_referencing :
       sig val bg_color : string val card : string val fg_color : string end
@@ -1116,6 +1120,8 @@ let%test_module "Variable setter creation" =
                   val set :
                     ?bg_color:string ->
                       ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+                  val set_all :
+                    bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
                 end
                 module For_referencing :
                 sig val a_class : string val bg_color : string val fg_color : string
@@ -1128,6 +1134,8 @@ let%test_module "Variable setter creation" =
             sig
               val set :
                 ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+              val set_all :
+                bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
             end
             module For_referencing :
             sig val a_class : string val bg_color : string val fg_color : string end
@@ -1292,7 +1300,10 @@ let%expect_test "ppx_css hashes variables" =
     module type S  =
       sig
         module Variables :
-        sig val set : ?my_variable:string -> unit -> Virtual_dom.Vdom.Attr.t end
+        sig
+          val set : ?my_variable:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all : my_variable:string -> Virtual_dom.Vdom.Attr.t
+        end
         module For_referencing : sig val a : string val my_variable : string end
         val a : Virtual_dom.Vdom.Attr.t
       end
@@ -1301,7 +1312,7 @@ let%expect_test "ppx_css hashes variables" =
       struct
         module Variables =
           struct
-            let set ?my_variable  () =
+            let ppx_css_variable_set__003_ ?my_variable  () =
               let ppx_css_acc__001_ = [] in
               let ppx_css_acc__001_ =
                 match my_variable with
@@ -1310,6 +1321,9 @@ let%expect_test "ppx_css hashes variables" =
                     ({|--my-variable_hash_b519a9dc79|}, ppx_css_value__002_) ::
                     ppx_css_acc__001_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__001_
+            let set = ppx_css_variable_set__003_
+            let set_all ~my_variable  =
+              ppx_css_variable_set__003_ () ~my_variable
           end
         module For_referencing =
           struct
@@ -1367,6 +1381,8 @@ let%expect_test "nested variables" =
           val set :
             ?a:string ->
               ?b:string -> ?c:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all :
+            a:string -> b:string -> c:string -> Virtual_dom.Vdom.Attr.t
         end
         module For_referencing :
         sig val a : string val b : string val c : string val navbar : string end
@@ -1377,27 +1393,29 @@ let%expect_test "nested variables" =
       struct
         module Variables =
           struct
-            let set ?a  ?b  ?c  () =
-              let ppx_css_acc__003_ = [] in
-              let ppx_css_acc__003_ =
+            let ppx_css_variable_set__006_ ?a  ?b  ?c  () =
+              let ppx_css_acc__004_ = [] in
+              let ppx_css_acc__004_ =
                 match a with
-                | None -> ppx_css_acc__003_
-                | Some ppx_css_value__004_ ->
-                    ({|--a_hash_0ac8471275|}, ppx_css_value__004_) ::
-                    ppx_css_acc__003_ in
-              let ppx_css_acc__003_ =
+                | None -> ppx_css_acc__004_
+                | Some ppx_css_value__005_ ->
+                    ({|--a_hash_0ac8471275|}, ppx_css_value__005_) ::
+                    ppx_css_acc__004_ in
+              let ppx_css_acc__004_ =
                 match b with
-                | None -> ppx_css_acc__003_
-                | Some ppx_css_value__004_ ->
-                    ({|--b_hash_0ac8471275|}, ppx_css_value__004_) ::
-                    ppx_css_acc__003_ in
-              let ppx_css_acc__003_ =
+                | None -> ppx_css_acc__004_
+                | Some ppx_css_value__005_ ->
+                    ({|--b_hash_0ac8471275|}, ppx_css_value__005_) ::
+                    ppx_css_acc__004_ in
+              let ppx_css_acc__004_ =
                 match c with
-                | None -> ppx_css_acc__003_
-                | Some ppx_css_value__004_ ->
-                    ({|--c_hash_0ac8471275|}, ppx_css_value__004_) ::
-                    ppx_css_acc__003_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__003_
+                | None -> ppx_css_acc__004_
+                | Some ppx_css_value__005_ ->
+                    ({|--c_hash_0ac8471275|}, ppx_css_value__005_) ::
+                    ppx_css_acc__004_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__004_
+            let set = ppx_css_variable_set__006_
+            let set_all ~a  ~b  ~c  = ppx_css_variable_set__006_ () ~a ~b ~c
           end
         module For_referencing =
           struct
@@ -1460,6 +1478,8 @@ let%expect_test "css variables still respect [~rewrite]" =
           val set :
             ?a:string ->
               ?b:string -> ?c:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all :
+            a:string -> b:string -> c:string -> Virtual_dom.Vdom.Attr.t
         end
         module For_referencing :
         sig val a : string val b : string val c : string val navbar : string end
@@ -1470,25 +1490,27 @@ let%expect_test "css variables still respect [~rewrite]" =
       struct
         module Variables =
           struct
-            let set ?a  ?b  ?c  () =
-              let ppx_css_acc__005_ = [] in
-              let ppx_css_acc__005_ =
+            let ppx_css_variable_set__009_ ?a  ?b  ?c  () =
+              let ppx_css_acc__007_ = [] in
+              let ppx_css_acc__007_ =
                 match a with
-                | None -> ppx_css_acc__005_
-                | Some ppx_css_value__006_ -> ({|--a|}, ppx_css_value__006_) ::
-                    ppx_css_acc__005_ in
-              let ppx_css_acc__005_ =
+                | None -> ppx_css_acc__007_
+                | Some ppx_css_value__008_ -> ({|--a|}, ppx_css_value__008_) ::
+                    ppx_css_acc__007_ in
+              let ppx_css_acc__007_ =
                 match b with
-                | None -> ppx_css_acc__005_
-                | Some ppx_css_value__006_ ->
-                    (Other_library.b, ppx_css_value__006_) :: ppx_css_acc__005_ in
-              let ppx_css_acc__005_ =
+                | None -> ppx_css_acc__007_
+                | Some ppx_css_value__008_ ->
+                    (Other_library.b, ppx_css_value__008_) :: ppx_css_acc__007_ in
+              let ppx_css_acc__007_ =
                 match c with
-                | None -> ppx_css_acc__005_
-                | Some ppx_css_value__006_ ->
-                    ({|--c_hash_0ac8471275|}, ppx_css_value__006_) ::
-                    ppx_css_acc__005_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__005_
+                | None -> ppx_css_acc__007_
+                | Some ppx_css_value__008_ ->
+                    ({|--c_hash_0ac8471275|}, ppx_css_value__008_) ::
+                    ppx_css_acc__007_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__007_
+            let set = ppx_css_variable_set__009_
+            let set_all ~a  ~b  ~c  = ppx_css_variable_set__009_ () ~a ~b ~c
           end
         module For_referencing =
           struct
@@ -1895,7 +1917,10 @@ let%expect_test "dont_hash" =
     module type S  =
       sig
         module Variables :
-        sig val set : ?a_variable:string -> unit -> Virtual_dom.Vdom.Attr.t end
+        sig
+          val set : ?a_variable:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all : a_variable:string -> Virtual_dom.Vdom.Attr.t
+        end
         module For_referencing :
         sig val a_class : string val a_variable : string val an_id : string end
         val a_class : Virtual_dom.Vdom.Attr.t
@@ -1906,14 +1931,16 @@ let%expect_test "dont_hash" =
       struct
         module Variables =
           struct
-            let set ?a_variable  () =
-              let ppx_css_acc__007_ = [] in
-              let ppx_css_acc__007_ =
+            let ppx_css_variable_set__012_ ?a_variable  () =
+              let ppx_css_acc__010_ = [] in
+              let ppx_css_acc__010_ =
                 match a_variable with
-                | None -> ppx_css_acc__007_
-                | Some ppx_css_value__008_ ->
-                    ({|--a-variable|}, ppx_css_value__008_) :: ppx_css_acc__007_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__007_
+                | None -> ppx_css_acc__010_
+                | Some ppx_css_value__011_ ->
+                    ({|--a-variable|}, ppx_css_value__011_) :: ppx_css_acc__010_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__010_
+            let set = ppx_css_variable_set__012_
+            let set_all ~a_variable  = ppx_css_variable_set__012_ () ~a_variable
           end
         module For_referencing =
           struct
@@ -2011,6 +2038,8 @@ let%expect_test "dont_hash_prefixes" =
           val set :
             ?bg_color:string ->
               ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all :
+            bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
         end
         module For_referencing :
         sig val a : string val bg_color : string val fg_color : string end
@@ -2021,20 +2050,23 @@ let%expect_test "dont_hash_prefixes" =
       struct
         module Variables =
           struct
-            let set ?bg_color  ?fg_color  () =
-              let ppx_css_acc__009_ = [] in
-              let ppx_css_acc__009_ =
+            let ppx_css_variable_set__015_ ?bg_color  ?fg_color  () =
+              let ppx_css_acc__013_ = [] in
+              let ppx_css_acc__013_ =
                 match bg_color with
-                | None -> ppx_css_acc__009_
-                | Some ppx_css_value__010_ ->
-                    ({|--bg-color|}, ppx_css_value__010_) :: ppx_css_acc__009_ in
-              let ppx_css_acc__009_ =
+                | None -> ppx_css_acc__013_
+                | Some ppx_css_value__014_ ->
+                    ({|--bg-color|}, ppx_css_value__014_) :: ppx_css_acc__013_ in
+              let ppx_css_acc__013_ =
                 match fg_color with
-                | None -> ppx_css_acc__009_
-                | Some ppx_css_value__010_ ->
-                    ({|--fg-color_hash_785a41f00f|}, ppx_css_value__010_) ::
-                    ppx_css_acc__009_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__009_
+                | None -> ppx_css_acc__013_
+                | Some ppx_css_value__014_ ->
+                    ({|--fg-color_hash_785a41f00f|}, ppx_css_value__014_) ::
+                    ppx_css_acc__013_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__013_
+            let set = ppx_css_variable_set__015_
+            let set_all ~bg_color  ~fg_color  =
+              ppx_css_variable_set__015_ () ~bg_color ~fg_color
           end
         module For_referencing =
           struct
@@ -2113,7 +2145,9 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
     module type S  =
       sig
         module Variables :
-        sig val set : ?aa:string -> ?bb:string -> unit -> Virtual_dom.Vdom.Attr.t
+        sig
+          val set : ?aa:string -> ?bb:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all : aa:string -> bb:string -> Virtual_dom.Vdom.Attr.t
         end
         module For_referencing :
         sig val a : string val aa : string val b : string val bb : string end
@@ -2125,19 +2159,21 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
       struct
         module Variables =
           struct
-            let set ?aa  ?bb  () =
-              let ppx_css_acc__011_ = [] in
-              let ppx_css_acc__011_ =
+            let ppx_css_variable_set__018_ ?aa  ?bb  () =
+              let ppx_css_acc__016_ = [] in
+              let ppx_css_acc__016_ =
                 match aa with
-                | None -> ppx_css_acc__011_
-                | Some ppx_css_value__012_ -> ({|--aa|}, ppx_css_value__012_) ::
-                    ppx_css_acc__011_ in
-              let ppx_css_acc__011_ =
+                | None -> ppx_css_acc__016_
+                | Some ppx_css_value__017_ -> ({|--aa|}, ppx_css_value__017_) ::
+                    ppx_css_acc__016_ in
+              let ppx_css_acc__016_ =
                 match bb with
-                | None -> ppx_css_acc__011_
-                | Some ppx_css_value__012_ -> ({|--bb|}, ppx_css_value__012_) ::
-                    ppx_css_acc__011_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__011_
+                | None -> ppx_css_acc__016_
+                | Some ppx_css_value__017_ -> ({|--bb|}, ppx_css_value__017_) ::
+                    ppx_css_acc__016_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__016_
+            let set = ppx_css_variable_set__018_
+            let set_all ~aa  ~bb  = ppx_css_variable_set__018_ () ~aa ~bb
           end
         module For_referencing =
           struct
@@ -2275,7 +2311,10 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
         module type S  =
           sig
             module Variables :
-            sig val set : ?cm_bg_color:string -> unit -> Virtual_dom.Vdom.Attr.t end
+            sig
+              val set : ?cm_bg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+              val set_all : cm_bg_color:string -> Virtual_dom.Vdom.Attr.t
+            end
             module For_referencing : sig val cm_bg_color : string end
           end
         type t = (module S)
@@ -2283,14 +2322,17 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
           struct
             module Variables =
               struct
-                let set ?cm_bg_color  () =
-                  let ppx_css_acc__013_ = [] in
-                  let ppx_css_acc__013_ =
+                let ppx_css_variable_set__021_ ?cm_bg_color  () =
+                  let ppx_css_acc__019_ = [] in
+                  let ppx_css_acc__019_ =
                     match cm_bg_color with
-                    | None -> ppx_css_acc__013_
-                    | Some ppx_css_value__014_ ->
-                        ({|--cm-bg-color|}, ppx_css_value__014_) :: ppx_css_acc__013_ in
-                  Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__013_
+                    | None -> ppx_css_acc__019_
+                    | Some ppx_css_value__020_ ->
+                        ({|--cm-bg-color|}, ppx_css_value__020_) :: ppx_css_acc__019_ in
+                  Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__019_
+                let set = ppx_css_variable_set__021_
+                let set_all ~cm_bg_color  =
+                  ppx_css_variable_set__021_ () ~cm_bg_color
               end
             module For_referencing = struct let cm_bg_color = {|--cm-bg-color|} end
           end

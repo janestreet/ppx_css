@@ -59,18 +59,27 @@ let var_builder_signature ~loc ~variables : signature_item option =
   | true -> None
   | false ->
     let variables = List.sort variables ~compare:String.compare in
-    let set_function_type =
-      List.fold_right
-        variables
-        ~init:[%type: unit -> Virtual_dom.Vdom.Attr.t]
-        ~f:(fun variable_name acc ->
-          ptyp_arrow (Optional variable_name) [%type: string] acc)
+    let create_function_type ~name ~return_type ~create_arg =
+      let set_function_type =
+        List.fold_right variables ~init:return_type ~f:(fun variable_name acc ->
+          ptyp_arrow (create_arg variable_name) [%type: string] acc)
+      in
+      psig_value
+        (value_description ~name:(Located.mk name) ~prim:[] ~type_:set_function_type)
     in
     let set =
-      psig_value
-        (value_description ~name:(Located.mk "set") ~prim:[] ~type_:set_function_type)
+      create_function_type
+        ~name:"set"
+        ~return_type:[%type: unit -> Virtual_dom.Vdom.Attr.t]
+        ~create_arg:(fun arg_name -> Optional arg_name)
     in
-    let type_ = pmty_signature [ set ] in
+    let set_all =
+      create_function_type
+        ~name:"set_all"
+        ~return_type:[%type: Virtual_dom.Vdom.Attr.t]
+        ~create_arg:(fun arg_name -> Labelled arg_name)
+    in
+    let type_ = pmty_signature [ set; set_all ] in
     let out =
       psig_module (module_declaration ~name:(Located.mk (Some "Variables")) ~type_)
     in
@@ -270,12 +279,42 @@ let var_builder_structure ~loc ~variables : structure_item option =
         ~init:[%expr fun () -> [%e set_function_body]]
         ~f:(fun (k, _) acc -> pexp_fun (Optional k) None (ppat_var (Located.mk k)) acc)
     in
+    (* NOTE: A hygenic name is minted in case there is a collision with a variable
+       parameter called [set]. *)
+    let unique_set_name = gen_symbol ~prefix:"ppx_css_variable_set" () in
+    let unique_set =
+      pstr_value
+        Nonrecursive
+        [ value_binding
+            ~pat:(ppat_var (Located.mk unique_set_name))
+            ~expr:set_function_expression
+        ]
+    in
     let set =
       pstr_value
         Nonrecursive
-        [ value_binding ~pat:[%pat? set] ~expr:set_function_expression ]
+        [ value_binding
+            ~pat:[%pat? set]
+            ~expr:(pexp_ident (Located.mk (Lident unique_set_name)))
+        ]
     in
-    let expr = pmod_structure [ set ] in
+    let set_all =
+      let set_all_body =
+        pexp_apply
+          (pexp_ident (Located.mk (Lident unique_set_name)))
+          ((Nolabel, [%expr ()])
+           :: List.map variables ~f:(fun (identifier, _) ->
+             Labelled identifier, pexp_ident (Located.mk (Lident identifier))))
+      in
+      let set_all_function_expression =
+        List.fold_right variables ~init:set_all_body ~f:(fun (identifier, _) acc ->
+          pexp_fun (Labelled identifier) None (ppat_var (Located.mk identifier)) acc)
+      in
+      pstr_value
+        Nonrecursive
+        [ value_binding ~pat:[%pat? set_all] ~expr:set_all_function_expression ]
+    in
+    let expr = pmod_structure [ unique_set; set; set_all ] in
     let out = pstr_module (module_binding ~name:(Located.mk (Some "Variables")) ~expr) in
     Some out
 ;;

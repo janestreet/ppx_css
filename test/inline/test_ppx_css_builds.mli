@@ -24,3 +24,14 @@ module Clashing_id_and_class :
   module type of [%css stylesheet {|
 .a #a {}
                       |}]
+
+module Variable_clashes_called_set :
+  module type of
+  [%css
+    stylesheet
+      {|
+.foo {
+  color: var(--set);
+  width: var(--width);
+}
+                      |}]

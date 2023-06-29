@@ -19,3 +19,12 @@ module With_variables =
 module Clashing_id_and_class = [%css stylesheet {|
 .a #a {}
                       |}]
+
+module Variable_clashes_called_set =
+  [%css
+    stylesheet {|
+.foo {
+  color: var(--set);
+  width: var(--width);
+}
+|}]

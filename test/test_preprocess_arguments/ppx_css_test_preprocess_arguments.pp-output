@@ -27,6 +27,9 @@ module Foo =
           val set :
             ?another_color:string ->
               ?background_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all :
+            another_color:string ->
+              background_color:string -> Virtual_dom.Vdom.Attr.t
         end
         module For_referencing :
         sig
@@ -43,7 +46,8 @@ module Foo =
       struct
         module Variables =
           struct
-            let set ?another_color  ?background_color  () =
+            let ppx_css_variable_set__003_ ?another_color  ?background_color 
+              () =
               let ppx_css_acc__001_ = [] in
               let ppx_css_acc__001_ =
                 match another_color with
@@ -58,6 +62,9 @@ module Foo =
                     ({|--background-color|}, ppx_css_value__002_) ::
                     ppx_css_acc__001_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__001_
+            let set = ppx_css_variable_set__003_
+            let set_all ~another_color  ~background_color  =
+              ppx_css_variable_set__003_ () ~another_color ~background_color
           end
         module For_referencing =
           struct
