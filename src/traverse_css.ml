@@ -183,13 +183,22 @@ let string_constant ~loc l =
 ;;
 
 let raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers =
-  match Hash_set.is_empty unused_rewrite_identifiers with
+  let unused_rewrite_identifiers =
+    Set.of_hash_set (module String) unused_rewrite_identifiers
+  in
+  let identifier_allow_list =
+    let { Preprocess_arguments.dont_hash; rewrite; dont_hash_prefixes = _ } =
+      Preprocess_arguments.get ()
+    in
+    Set.union dont_hash (Map.key_set rewrite)
+  in
+  match Set.is_subset unused_rewrite_identifiers ~of_:identifier_allow_list with
   | true -> ()
   | false ->
     Location.raise_errorf
       ~loc
       "Unused keys: %s"
-      (Sexp.to_string_hum ([%sexp_of: String.Hash_set.t] unused_rewrite_identifiers))
+      (Sexp.to_string_hum ([%sexp_of: String.Set.t] unused_rewrite_identifiers))
 ;;
 
 let raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes =
@@ -198,7 +207,13 @@ let raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes =
       (String.Set.of_list dont_hash_prefixes)
       (String.Set.of_hash_set used_prefixes)
   in
-  match Set.is_empty unused_prefixes with
+  let prefix_allow_list =
+    let { Preprocess_arguments.dont_hash = _; rewrite = _; dont_hash_prefixes } =
+      Preprocess_arguments.get ()
+    in
+    dont_hash_prefixes
+  in
+  match Set.is_subset unused_prefixes ~of_:prefix_allow_list with
   | true -> ()
   | false ->
     Location.raise_errorf

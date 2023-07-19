@@ -1,0 +1,4 @@
+(library (name test_aggressive_unused_variables) (libraries core)
+ (preprocess
+  (pps ppx_css -dont-hash=class1 -dont-hash-prefixes=--
+   -rewrite=class2:class3)))
