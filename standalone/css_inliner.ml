@@ -5,7 +5,7 @@ open Async
 let standalone ~serializable_options ~src =
   let css_string = Core.In_channel.read_all src in
   let options =
-    Options.Serializable_options.to_options ~css_string serializable_options
+    Options.Serializable_options.to_stylesheet_options ~css_string serializable_options
   in
   let name = Filename.chop_extension src in
   let generated_name = name ^ "__generated" in
@@ -16,7 +16,13 @@ let standalone ~serializable_options ~src =
   let%bind () =
     Writer.with_file out_ml ~f:(fun w ->
       Writer.write w "include ";
-      Writer.write w (For_css_inliner.gen_struct ~options);
+      Writer.write
+        w
+        (For_css_inliner.gen_struct
+           ~rewrite:options.rewrite
+           ~css_string:options.css_string
+           ~dont_hash_prefixes:options.dont_hash_prefixes
+           ~stylesheet_location:options.stylesheet_location);
       Writer.write w " end";
       Writer.close w)
   and () =

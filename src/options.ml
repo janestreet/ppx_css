@@ -39,18 +39,20 @@ module Serializable_options = struct
     =
     test {|((rewrite ()))|};
     [%expect {| ((rewrite ())) |}];
-    test {|((rewrite ()) (brand_new_field ()))|};
+    test {|((rewrite ())
+    (brand_new_field ()))|};
     [%expect {| ((rewrite ())) |}];
-    test {|((rewrite ()) (dont_hash ()))|};
+    test {|((rewrite ())
+    (dont_hash ()))|};
     [%expect {| ((rewrite ())) |}];
-    test {|((rewrite ()) (dont_hash (1 2 3)))|};
+    test {|((rewrite ()) (dont_hash (1
+    2 3)))|};
     [%expect {| ((rewrite ()) (dont_hash (1 2 3))) |}]
   ;;
 
   (* Parses the string "A.B.x" into a Ppxlib AST corresponding to an identifier.
 
-     Also parses the string "x" into a Ppxlib AST correponding to the string constant
-     "x".
+     Also parses the string "x" into a Ppxlib AST correponding to the string constant "x".
   *)
   let parse_string_to_expression : string -> expression =
     fun s ->
@@ -66,7 +68,7 @@ module Serializable_options = struct
     | _ -> raise_s (Sexp.Atom "Expected a valid Ocaml identifier expression")
   ;;
 
-  let to_options { rewrite; dont_hash; dont_hash_prefixes } ~css_string =
+  let to_stylesheet_options { rewrite; dont_hash; dont_hash_prefixes } ~css_string =
     { rewrite =
         (let rewrite = Map.map rewrite ~f:(fun s -> parse_string_to_expression s) in
          combine_rewrite_and_dont_hash ~loc:Location.none ~rewrite ~dont_hash)
@@ -77,7 +79,7 @@ module Serializable_options = struct
   ;;
 end
 
-let empty ~css_string =
+let empty_stylesheet ~css_string =
   { rewrite = String.Map.empty
   ; css_string
   ; stylesheet_location = Location.none
@@ -218,7 +220,7 @@ end
 let raise_misparse_with_syntax_instructions ~extra_message ~loc =
   Location.raise_errorf
     ~loc
-    "%s%%css must contain a call to [val stylesheet : ?rewrite:(string * string) list -> \
+    "%s%%css must contain a call to [?rewrite:(string * string) list -> \
      ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit]"
     extra_message
 ;;
@@ -355,7 +357,7 @@ let add_identifiers_from_jbuild_parameters ~loc (options : t) =
   }
 ;;
 
-let parse (expression : expression) =
+let parse_stylesheet (expression : expression) =
   let loc = expression.pexp_loc in
   let loc = { loc with loc_ghost = true } in
   match expression.pexp_desc with
@@ -369,4 +371,32 @@ let parse (expression : expression) =
       ; dont_hash_prefixes
       }
   | _ -> raise_misparse_with_syntax_instructions ~extra_message:"" ~loc
+;;
+
+let parse_inline_expression (expression : expression) =
+  let loc = expression.pexp_loc in
+  let loc = { loc with loc_ghost = true } in
+  let css_string, rewrite, dont_hash_prefixes =
+    match expression.pexp_desc with
+    | Pexp_apply
+        (({ pexp_desc = Pexp_constant (Pconst_string (_, loc, _)); _ } as string), args)
+      ->
+      let args = (Nolabel, string) :: args in
+      let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
+      css_string, rewrite, dont_hash_prefixes
+    | Pexp_constant (Pconst_string (_, loc, _)) ->
+      let args = [ Nolabel, expression ] in
+      let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
+      css_string, rewrite, dont_hash_prefixes
+    | _ ->
+      Location.raise_errorf
+        ~loc
+        "%%css must contain a call to [val {|css string|} : ?rewrite:(string * string) \
+         list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> \
+         unit]"
+  in
+  let stylesheet_location = { loc with loc_ghost = true } in
+  add_identifiers_from_jbuild_parameters
+    ~loc
+    { css_string; rewrite; stylesheet_location; dont_hash_prefixes }
 ;;

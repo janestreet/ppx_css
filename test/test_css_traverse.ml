@@ -8,7 +8,7 @@ let%test_module "Get_all_identifiers" =
 
     let test (s : string) =
       let stylesheet = Css_jane.Stylesheet.of_string s in
-      let result = Get_all_identifiers.f stylesheet in
+      let result = Get_all_identifiers.ocaml_identifiers stylesheet in
       print_s (Get_all_identifiers.sexp_of_result result)
     ;;
 

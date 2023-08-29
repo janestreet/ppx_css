@@ -25,7 +25,15 @@ module Transform : sig
 
      [pos] is the source-code-position of the css string in the ocaml file, so
      that error messages from parsing the css show up in the right location. *)
-  val f : loc:location -> pos:position -> options:Options.t -> result
+  val f
+    :  loc:location
+    -> pos:position
+    -> rewrite:expression String.Map.t
+    -> css_string:string
+    -> dont_hash_prefixes:string list
+    -> unused_allow_set:String.Set.t
+    -> always_hash:String.Set.t
+    -> result
 end
 
 module Get_all_identifiers : sig
@@ -35,7 +43,8 @@ module Get_all_identifiers : sig
     }
   [@@deriving sexp_of]
 
-  val f : Stylesheet.t -> result
+  val css_variables : Stylesheet.t -> String.Set.t
+  val ocaml_identifiers : Stylesheet.t -> result
 end
 
 module For_testing : sig

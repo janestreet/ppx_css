@@ -20,6 +20,7 @@ depends: [
   "ppx_jane"
   "ppx_let"
   "ppx_sexp_conv"
+  "ppx_string"
   "stdio"
   "virtual_dom"
   "dune"            {>= "2.0.0"}

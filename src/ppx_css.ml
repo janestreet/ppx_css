@@ -3,6 +3,19 @@ open! Ppxlib
 open Css_jane
 module Options = Options
 
+module With_hoisted_expression = struct
+  type 'a t =
+    { txt : 'a
+    ; ppx_css_string_expression : expression
+    }
+end
+
+module Expansion_kind = struct
+  type t =
+    | Stylesheet
+    | Styled_component of Anonymous_declarations.t
+end
+
 let () =
   Driver.add_arg
     "-rewrite"
@@ -53,12 +66,12 @@ let loc_ghoster =
   end
 ;;
 
-let var_builder_signature ~loc ~variables : signature_item option =
+let var_builder_signature ~loc ~user_variables : signature_item option =
   let open (val Ast_builder.make loc) in
-  match List.is_empty variables with
+  match List.is_empty user_variables with
   | true -> None
   | false ->
-    let variables = List.sort variables ~compare:String.compare in
+    let variables = List.sort user_variables ~compare:String.compare in
     let create_function_type ~name ~return_type ~create_arg =
       let set_function_type =
         List.fold_right variables ~init:return_type ~f:(fun variable_name acc ->
@@ -89,14 +102,14 @@ let var_builder_signature ~loc ~variables : signature_item option =
 let module_type_of_identifiers
       ~loc
       ~(identifiers : (string * [ `Both | `Only_class | `Only_id ]) list)
-      ~variables
+      ~user_variables
   =
   let open (val Ast_builder.make loc) in
-  let var_builder = var_builder_signature ~loc ~variables in
+  let var_builder = var_builder_signature ~loc ~user_variables in
   let identifier_keys = identifiers |> List.map ~f:Tuple2.get1 in
   let string_module =
     let signature_items =
-      identifier_keys @ variables
+      identifier_keys @ user_variables
       |> List.dedup_and_sort ~compare:String.compare
       |> List.map ~f:(fun ident ->
         let type_ = [%type: string] in
@@ -216,7 +229,9 @@ end
        ;;
      end
    ]} *)
-let var_builder_structure ~loc ~variables : structure_item option =
+let var_builder_structure ~loc ~variables ~maybe_combine_with_anonymous_variables
+  : structure_item option
+  =
   let open (val Ast_builder.make loc) in
   match List.is_empty variables with
   | true -> None
@@ -268,7 +283,15 @@ let var_builder_structure ~loc ~variables : structure_item option =
           pexp_let Nonrecursive [ value_binding ~pat:acc_pattern ~expr ] acc)
     in
     let call_to_vdom_attr_acc =
-      [%expr Virtual_dom.Vdom.Attr.__css_vars_no_kebabs [%e acc_expression]]
+      let actual_call =
+        [%expr Virtual_dom.Vdom.Attr.__css_vars_no_kebabs [%e acc_expression]]
+      in
+      match maybe_combine_with_anonymous_variables with
+      | None -> actual_call
+      | Some unique_name ->
+        let anonymous_variables_setter = pexp_ident (Located.mk (Lident unique_name)) in
+        [%expr
+          Virtual_dom.Vdom.Attr.combine [%e anonymous_variables_setter] [%e actual_call]]
     in
     let set_function_body =
       initial_acc_binding ~in_:(inline_folding_of_acc ~in_:call_to_vdom_attr_acc)
@@ -317,6 +340,17 @@ let var_builder_structure ~loc ~variables : structure_item option =
     let expr = pmod_structure [ unique_set; set; set_all ] in
     let out = pstr_module (module_binding ~name:(Located.mk (Some "Variables")) ~expr) in
     Some out
+;;
+
+let calculate_user_variables ~variables ~anonymous_variables =
+  let anonymous_variable_names =
+    List.map
+      anonymous_variables.Anonymous_variable.Collection.variables
+      ~f:(fun anonymous_variable ->
+        Anonymous_variable.name anonymous_variable |> Anonymous_variable.Name.to_string)
+    |> String.Set.of_list
+  in
+  List.filter variables ~f:(fun (name, _) -> not (Set.mem anonymous_variable_names name))
 ;;
 
 let validate_no_collisions_after_warnings_and_rewrites
@@ -372,70 +406,186 @@ let create_default_module_struct
       ~loc
       ~(identifiers : (label * ([ `Both | `Only_class | `Only_id ] * expression)) list)
       ~variables
+      ~(expansion_kind : Expansion_kind.t)
+      ~(anonymous_variables : Anonymous_variable.Collection.t)
   : module_expr
   =
   validate_no_collisions_after_warnings_and_rewrites
     ~loc
     ~identifiers:(List.map identifiers ~f:(Tuple2.map_snd ~f:Tuple2.get1));
   let open (val Ast_builder.make loc) in
-  let variable_module = var_builder_structure ~loc ~variables in
+  let anonymous_variable_setter : structure_item option =
+    match anonymous_variables.variables with
+    | [] -> None
+    | _ :: _ ->
+      let open struct
+        type t =
+          { css_variable_name_after_name_resolution : expression
+          ; anonymous_variable : Anonymous_variable.t
+          }
+      end in
+      let unique_name = anonymous_variables.unique_name in
+      let anonymous_variables =
+        List.filter_map anonymous_variables.variables ~f:(fun anonymous_variable ->
+          let%map.Option css_variable_name_after_name_resolution =
+            List.Assoc.find
+              variables
+              ~equal:[%equal: string]
+              (Anonymous_variable.name anonymous_variable
+               |> Anonymous_variable.Name.to_string)
+          in
+          With_temporary_name.mint
+            { css_variable_name_after_name_resolution; anonymous_variable })
+      in
+      let call_to_css_var_no_kebabs =
+        let kebabs =
+          List.fold_right
+            anonymous_variables
+            ~init:[%expr []]
+            ~f:
+              (fun
+                { txt =
+                    { css_variable_name_after_name_resolution; anonymous_variable = _ }
+                ; temporary_name
+                }
+                acc
+                ->
+                  let temporary_name = pexp_ident (Located.mk (Lident temporary_name)) in
+                  [%expr
+                    (::)
+                      ( ([%e css_variable_name_after_name_resolution], [%e temporary_name])
+                      , [%e acc] )])
+        in
+        [%expr Virtual_dom.Vdom.Attr.__css_vars_no_kebabs [%e kebabs]]
+      in
+      let setter_expression =
+        List.fold_right
+          anonymous_variables
+          ~init:call_to_css_var_no_kebabs
+          ~f:
+            (fun
+              { txt = { css_variable_name_after_name_resolution = _; anonymous_variable }
+              ; temporary_name
+              }
+              acc
+              ->
+                pexp_let
+                  Nonrecursive
+                  [ (let pat = ppat_var (Located.mk temporary_name) in
+                     value_binding ~pat ~expr:(Anonymous_variable.expression anonymous_variable))
+                  ]
+                  acc)
+      in
+      let setter_structure_item =
+        pstr_value
+          Nonrecursive
+          [ value_binding ~pat:(ppat_var (Located.mk unique_name)) ~expr:setter_expression
+          ]
+      in
+      Some setter_structure_item
+  in
+  let variable_module =
+    match expansion_kind with
+    | Stylesheet ->
+      let user_variables = calculate_user_variables ~variables ~anonymous_variables in
+      var_builder_structure
+        ~loc
+        ~variables:user_variables
+        ~maybe_combine_with_anonymous_variables:
+          (Option.map anonymous_variable_setter ~f:(fun _ ->
+             anonymous_variables.unique_name))
+    | Styled_component _ -> None
+  in
   let identifiers_structure_items =
+    let maybe_set_anon_variables expression =
+      match anonymous_variables.variables with
+      | [] -> expression
+      | _ :: _ ->
+        let preconstructed_attr_expression =
+          pexp_ident (Located.mk (Lident anonymous_variables.unique_name))
+        in
+        [%expr
+          Virtual_dom.Vdom.Attr.combine
+            [%e expression]
+            [%e preconstructed_attr_expression]]
+    in
     identifiers
     |> List.concat_map ~f:(fun (original_name, (case, e)) ->
       match case with
       | `Both ->
         let id_string = original_name ^ "_id" in
         let class_string = original_name ^ "_class" in
-        let original_pattern = ppat_var (Located.mk original_name) in
         let id_pattern = ppat_var (Located.mk id_string) in
+        let original_pattern = ppat_var (Located.mk original_name) in
         let class_pattern = ppat_var (Located.mk class_string) in
         [ [%stri let [%p original_pattern] = Virtual_dom.Vdom.Attr.empty]
-        ; [%stri let [%p class_pattern] = Virtual_dom.Vdom.Attr.class_ [%e e]]
+        ; [%stri
+          let [%p class_pattern] =
+            [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.class_ [%e e]]]
+          ;;]
         ; [%stri let [%p id_pattern] = Virtual_dom.Vdom.Attr.id [%e e]]
         ]
       | `Only_class ->
         [ [%stri
           let [%p ppat_var (Located.mk original_name)] =
-            Virtual_dom.Vdom.Attr.class_ [%e e]
+            [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.class_ [%e e]]]
           ;;]
         ]
       | `Only_id ->
         [ [%stri
           let [%p ppat_var (Located.mk original_name)] =
-            Virtual_dom.Vdom.Attr.id [%e e]
+            [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.id [%e e]]]
           ;;]
         ])
   in
   let identifiers_and_variables_as_string =
     List.map identifiers ~f:(fun (label, (_, expression)) -> label, expression)
-    @ variables
+    @ calculate_user_variables ~variables ~anonymous_variables
     |> List.map ~f:(fun (k, e) -> [%stri let [%p ppat_var (Located.mk k)] = [%e e]])
   in
-  let string_module =
-    pstr_module
-      (module_binding
-         ~name:(Located.mk (Some "For_referencing"))
-         ~expr:(pmod_structure identifiers_and_variables_as_string))
+  let base =
+    match expansion_kind with
+    | Styled_component _ -> identifiers_structure_items
+    | Stylesheet ->
+      let string_module =
+        pstr_module
+          (module_binding
+             ~name:(Located.mk (Some "For_referencing"))
+             ~expr:(pmod_structure identifiers_and_variables_as_string))
+      in
+      string_module :: identifiers_structure_items
   in
-  let base = string_module :: identifiers_structure_items in
   let structure_items =
-    Option.value_map variable_module ~default:base ~f:(fun variable_module ->
-      variable_module :: base)
+    List.filter_opt [ anonymous_variable_setter; variable_module ] @ base
   in
   pmod_structure structure_items |> loc_ghoster#module_expr
 ;;
 
-let generate_struct_from_css_string_and_options ~loc ~options =
+let generate_struct_from_css_string_and_options
+      ~loc
+      ~rewrite
+      ~css_string
+      ~dont_hash_prefixes
+      ~stylesheet_location
+      ~(expansion_kind : Expansion_kind.t)
+      ~unused_allow_set
+      ~always_hash
+      ~anonymous_variables
+  : structure With_hoisted_expression.t
+  =
   let open (val Ast_builder.make loc) in
   let { Traverse_css.Transform.css_string; identifier_mapping; reference_order } =
-    Traverse_css.Transform.f ~loc ~pos:loc.loc_start ~options
+    Traverse_css.Transform.f
+      ~loc
+      ~pos:loc.loc_start
+      ~rewrite
+      ~css_string
+      ~dont_hash_prefixes
+      ~unused_allow_set
+      ~always_hash
   in
   let identifier_mapping = Hashtbl.to_alist identifier_mapping in
   let css_string = css_string_to_expression ~loc ~css_string ~reference_order in
-  let register = [%stri let () = Inline_css.Private.append [%e css_string]] in
-  let type_info_function =
-    create_type_info_function ~loc ~stylesheet_location:options.stylesheet_location
-  in
   let variables =
     List.filter_map identifier_mapping ~f:(fun (k, (identifier_kinds, e)) ->
       match Set.mem identifier_kinds Variable with
@@ -450,41 +600,141 @@ let generate_struct_from_css_string_and_options ~loc ~options =
       | false, true -> Some (k, (`Only_id, e))
       | false, false -> None)
   in
-  let t_sig =
-    module_type_of_identifiers
+  let t_module =
+    create_default_module_struct
       ~loc
-      ~identifiers:(List.map identifiers ~f:(Tuple2.map_snd ~f:Tuple2.get1))
-      ~variables:(List.map variables ~f:fst)
-    |> pmty_signature
+      ~identifiers
+      ~variables
+      ~expansion_kind
+      ~anonymous_variables
   in
-  let t_module = create_default_module_struct ~loc ~identifiers ~variables in
-  pmod_structure
-    [ pstr_attribute (disable_warning_32 ~loc)
-    ; register
-    ; type_info_function
-    ; [%stri module type S = [%m t_sig]]
-    ; [%stri type t = (module S)]
-    ; [%stri module Default : S = [%m t_module]]
-    ; [%stri include Default]
-    ; [%stri let default : t = (module Default)]
-    ]
+  let structure =
+    match expansion_kind with
+    | Styled_component _ -> [ [%stri include [%m t_module]] ]
+    | Stylesheet ->
+      (* We want to remove the variables that were introduced during the interpolation. *)
+      let user_variables =
+        calculate_user_variables ~variables ~anonymous_variables |> List.map ~f:fst
+      in
+      let t_sig =
+        module_type_of_identifiers
+          ~loc
+          ~identifiers:(List.map identifiers ~f:(Tuple2.map_snd ~f:Tuple2.get1))
+          ~user_variables
+        |> pmty_signature
+      in
+      [ pstr_attribute (disable_warning_32 ~loc)
+      ; create_type_info_function ~loc ~stylesheet_location
+      ; [%stri module type S = [%m t_sig]]
+      ; [%stri type t = (module S)]
+      ; [%stri module Default : S = [%m t_module]]
+      ; [%stri include Default]
+      ; [%stri let default : t = (module Default)]
+      ]
+  in
+  { With_hoisted_expression.txt = structure; ppx_css_string_expression = css_string }
 ;;
 
-let generate_struct ~loc ~path:_ (expr : expression) =
+let generate_struct ~loc (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let options = Options.parse expr in
-  generate_struct_from_css_string_and_options ~loc ~options
+  let { Options.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
+    Options.parse_stylesheet expr
+  in
+  let anonymous_declarations =
+    Anonymous_declarations.For_stylesheet.create
+      ~string_loc:stylesheet_location
+      css_string
+  in
+  generate_struct_from_css_string_and_options
+    ~expansion_kind:Stylesheet
+    ~loc
+    ~rewrite
+    ~css_string:
+      (Anonymous_declarations.For_stylesheet.to_stylesheet_string anonymous_declarations)
+    ~dont_hash_prefixes
+    ~stylesheet_location
+    ~unused_allow_set:String.Set.empty
+    ~always_hash:
+      (Anonymous_declarations.For_stylesheet.always_hash anonymous_declarations)
+    ~anonymous_variables:
+      (Anonymous_declarations.For_stylesheet.anonymous_variables anonymous_declarations)
+;;
+
+let generate_expression_from_css_declarations_and_options
+      ~loc
+      ~rewrite
+      ~anonymous_declarations
+      ~dont_hash_prefixes
+      ~stylesheet_location
+  : expression With_hoisted_expression.t
+  =
+  let open (val Ast_builder.make loc) in
+  let inferred_do_not_hash =
+    Anonymous_declarations.inferred_do_not_hash anonymous_declarations
+  in
+  let rewrite =
+    List.fold inferred_do_not_hash ~init:rewrite ~f:(fun rewrite dont_hash ->
+      match Map.add rewrite ~key:dont_hash ~data:(estring dont_hash) with
+      | `Ok rewrite -> rewrite
+      | `Duplicate ->
+        (* NOTE: [rewrite] takes precedence over [inferred_dont_hash] *)
+        rewrite)
+  in
+  let { With_hoisted_expression.txt = module_; ppx_css_string_expression } =
+    let unused_allow_set = String.Set.of_list inferred_do_not_hash in
+    generate_struct_from_css_string_and_options
+      ~expansion_kind:(Styled_component anonymous_declarations)
+      ~loc
+      ~css_string:(Anonymous_declarations.to_stylesheet_string anonymous_declarations)
+      ~rewrite
+      ~dont_hash_prefixes
+      ~stylesheet_location
+      ~unused_allow_set
+      ~always_hash:(Anonymous_declarations.always_hash anonymous_declarations)
+      ~anonymous_variables:
+        (Anonymous_declarations.anonymous_variables anonymous_declarations)
+  in
+  let style_module_name = gen_symbol ~prefix:"Ppx_css_anonymous_style" () in
+  let body =
+    pexp_ident
+      (Located.mk
+         (Ldot (Lident style_module_name, Anonymous_declarations.anonymous_class_name)))
+  in
+  { With_hoisted_expression.txt =
+      pexp_letmodule (Located.mk (Some style_module_name)) (pmod_structure module_) body
+  ; ppx_css_string_expression
+  }
+;;
+
+let generate_inline_expression ~loc (expr : expression)
+  : expression With_hoisted_expression.t
+  =
+  let open (val Ast_builder.make loc) in
+  let loc = { loc with loc_ghost = true } in
+  let expr = loc_ghoster#expression expr in
+  let { Options.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
+    Options.parse_inline_expression expr
+  in
+  let anonymous_declarations =
+    Anonymous_declarations.create ~string_loc:stylesheet_location css_string
+  in
+  generate_expression_from_css_declarations_and_options
+    ~loc
+    ~rewrite
+    ~anonymous_declarations
+    ~dont_hash_prefixes
+    ~stylesheet_location
 ;;
 
 let create_sig_from_idents
       ~loc
       ~(identifiers : (string * [> `Both | `Only_class | `Only_id ]) list)
-      ~variables
+      ~user_variables
   =
   let open (val Ast_builder.make loc) in
   validate_no_collisions_after_warnings_and_rewrites ~loc ~identifiers;
-  let basic_sig = module_type_of_identifiers ~loc ~identifiers ~variables in
+  let basic_sig = module_type_of_identifiers ~loc ~identifiers ~user_variables in
   pmty_signature
     ([ [%sigi: module type S = [%m pmty_signature basic_sig]]
      ; [%sigi: type t = (module S)]
@@ -494,11 +744,28 @@ let create_sig_from_idents
 ;;
 
 module For_css_inliner = struct
-  let gen_struct ~options =
+  let gen_struct ~rewrite ~css_string ~dont_hash_prefixes ~stylesheet_location =
     let buffer = Buffer.create 1024 in
     let loc = Location.none in
-    generate_struct_from_css_string_and_options ~loc ~options
-    |> Pprintast.module_expr (Format.formatter_of_buffer buffer);
+    let%tydi { txt = module_expr; ppx_css_string_expression } =
+      generate_struct_from_css_string_and_options
+        ~expansion_kind:Stylesheet
+        ~loc
+        ~rewrite
+        ~css_string
+        ~dont_hash_prefixes
+        ~stylesheet_location
+        ~unused_allow_set:String.Set.empty
+        ~always_hash:String.Set.empty
+        ~anonymous_variables:Anonymous_variable.Collection.empty
+    in
+    let module_expr =
+      let open (val Ast_builder.make loc) in
+      pmod_structure
+        (Hoister.ppx_css_expression_to_structure_item ~loc ppx_css_string_expression
+         :: module_expr)
+    in
+    Pprintast.module_expr (Format.formatter_of_buffer buffer) module_expr;
     Buffer.contents buffer
   ;;
 
@@ -508,10 +775,12 @@ module For_css_inliner = struct
     let buffer = Buffer.create 1024 in
     let stylesheet = Stylesheet.of_string css in
     let { Get_all_identifiers.identifiers; variables } =
-      Get_all_identifiers.f stylesheet
+      Get_all_identifiers.ocaml_identifiers stylesheet
     in
     let mli_as_an_ast =
-      create_sig_from_idents ~loc:Location.none ~identifiers ~variables
+      (* interpolation is currently not allowed in the css inliner so all variables are
+         user variables. *)
+      create_sig_from_idents ~loc:Location.none ~identifiers ~user_variables:variables
     in
     Pprintast.module_type (Format.formatter_of_buffer buffer) mli_as_an_ast;
     Buffer.contents buffer
@@ -523,14 +792,59 @@ let ml_extension =
     "css"
     Extension.Context.module_expr
     Ast_pattern.(single_expr_payload __)
-    generate_struct
+    (fun ~loc ~path:_ (expr : expression) ->
+       let%tydi { txt = module_; ppx_css_string_expression } = generate_struct ~loc expr in
+       Hoister.register ~ppx_css_string_expression;
+       let open (val Ast_builder.make loc) in
+       pmod_structure module_)
 ;;
 
-let () = Driver.register_transformation "css" ~extensions:[ ml_extension ]
+let inline_extension =
+  Extension.declare
+    "css"
+    Extension.Context.expression
+    Ast_pattern.(single_expr_payload __)
+    (fun ~loc ~path:_ (expr : expression) ->
+       let%tydi { txt = expression; ppx_css_string_expression } =
+         generate_inline_expression ~loc expr
+       in
+       Hoister.register ~ppx_css_string_expression;
+       expression)
+;;
+
+let private_register_ppx_css =
+  Extension.declare_inline
+    "css.__private_register_css"
+    Extension.Context.structure_item
+    Ast_pattern.(pstr nil)
+    (fun ~loc ~path:_ ->
+       let loc = { loc with loc_ghost = true } in
+       match Hoister.is_empty () with
+       | true -> []
+       | false -> [ Hoister.create_hoisted_module ~loc ])
+;;
+
+let enclose_impl (loc : location option) =
+  let header = [] in
+  let footer =
+    Option.value_map loc ~default:[] ~f:(fun loc -> [%str [%%css.__private_register_css]])
+  in
+  header, footer
+;;
+
+let () =
+  Driver.register_transformation
+    "css"
+    ~enclose_impl
+    ~extensions:[ ml_extension; inline_extension; private_register_ppx_css ]
+;;
 
 module For_testing = struct
-  let generate_struct = generate_struct ~loc:Location.none ~path:()
+  let generate_struct = generate_struct ~loc:Location.none
+  let generate_inline_expression = generate_inline_expression ~loc:Location.none
   let map_style_sheet = Traverse_css.For_testing.map_style_sheet
 
   module Traverse_css = Traverse_css
+
+  let ppx_css_expression_to_structure_item = Hoister.ppx_css_expression_to_structure_item
 end

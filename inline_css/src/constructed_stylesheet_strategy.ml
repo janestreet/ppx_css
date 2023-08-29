@@ -37,3 +37,7 @@ let initialize () =
 ;;
 
 let update t content = t##replaceSync (Js.string content)
+
+module For_testing = struct
+  let dump_testing_state _ = "constructed-stylesheet-strategy has an opaque state"
+end

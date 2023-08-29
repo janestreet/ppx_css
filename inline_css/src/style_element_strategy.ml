@@ -25,6 +25,10 @@ struct
        with
        | exn -> Or_error.of_exn exn)
   ;;
+
+  module For_testing = struct
+    let dump_testing_state _ = [%string "%{T.name} has an opauque testing state"]
+  end
 end
 
 module Into_head = Make (struct

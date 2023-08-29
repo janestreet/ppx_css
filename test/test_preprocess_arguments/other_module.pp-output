@@ -1,25 +1,11 @@
 module Foo =
   struct
     [@@@ocaml.warning "-32"]
-    let () =
-      Inline_css.Private.append
-        {|
-/* ppx/ppx_css/test/test_preprocess_arguments/other_module.ml */
-
-*.class1 {
- color:var(--background-color)
-}
-
-*.class3 {
- background-color:var(--another-color)
-}|}
     let (__type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
           ?dont_hash_prefixes:string list -> string -> unit)
-      =
-      fun ?rewrite:_ ->
-        fun ?dont_hash:_ -> fun ?dont_hash_prefixes:_ -> fun _ -> ()
+      = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
         module Variables :
@@ -46,7 +32,7 @@ module Foo =
       struct
         module Variables =
           struct
-            let ppx_css_variable_set__003_ ?another_color  ?background_color 
+            let ppx_css_variable_set__003_ ?another_color ?background_color
               () =
               let ppx_css_acc__001_ = [] in
               let ppx_css_acc__001_ =
@@ -63,7 +49,7 @@ module Foo =
                     ppx_css_acc__001_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__001_
             let set = ppx_css_variable_set__003_
-            let set_all ~another_color  ~background_color  =
+            let set_all ~another_color ~background_color =
               ppx_css_variable_set__003_ () ~another_color ~background_color
           end
         module For_referencing =
@@ -80,3 +66,18 @@ module Foo =
     let default : t = (module Default)
   end
 module _ = Foo
+module _ =
+  struct
+    let () =
+      Inline_css.Private.append
+        {|
+/* ppx/ppx_css/test/test_preprocess_arguments/other_module.ml */
+
+*.class1 {
+ color:var(--background-color)
+}
+
+*.class3 {
+ background-color:var(--another-color)
+}|}
+  end

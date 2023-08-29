@@ -182,7 +182,8 @@ let string_constant ~loc l =
   pexp_constant (Pconst_string (l, loc, Some ""))
 ;;
 
-let raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers =
+let raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers ~unused_allow_set
+  =
   let unused_rewrite_identifiers =
     Set.of_hash_set (module String) unused_rewrite_identifiers
   in
@@ -190,7 +191,7 @@ let raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers =
     let { Preprocess_arguments.dont_hash; rewrite; dont_hash_prefixes = _ } =
       Preprocess_arguments.get ()
     in
-    Set.union dont_hash (Map.key_set rewrite)
+    Set.union_list (module String) [ dont_hash; Map.key_set rewrite; unused_allow_set ]
   in
   match Set.is_subset unused_rewrite_identifiers ~of_:identifier_allow_list with
   | true -> ()
@@ -232,8 +233,11 @@ module Transform = struct
   let f
         ~loc
         ~pos
-        ~options:
-        { Options.rewrite; css_string = s; dont_hash_prefixes; stylesheet_location = _ }
+        ~rewrite
+        ~css_string:s
+        ~dont_hash_prefixes
+        ~unused_allow_set
+        ~always_hash
     =
     let parsed = Stylesheet.of_string ~pos s in
     let hash =
@@ -251,18 +255,16 @@ module Transform = struct
     let original_identifiers = String.Hash_set.create () in
     let reference_order = ref Reversed_list.[] in
     let unused_rewrite_identifiers = String.Hash_set.of_list (Map.keys rewrite) in
-    (let newly_hashed_variables = String.Hash_set.create () in
-     iter_identifiers ~rewrite ~dont_hash_prefixes parsed ~f:(function
-       | `Class _ | `Id _ -> ()
-       | `Variable identifier -> Hash_set.add newly_hashed_variables identifier));
     iter_identifiers
       ~rewrite
       ~dont_hash_prefixes
       parsed
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
         Hash_set.add original_identifiers identifier;
-        Hash_set.remove unused_rewrite_identifiers identifier);
-    raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers;
+        match Set.mem always_hash identifier with
+        | true -> ()
+        | false -> Hash_set.remove unused_rewrite_identifiers identifier);
+    raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers ~unused_allow_set;
     let original_identifiers = Set.of_hash_set (module String) original_identifiers in
     let fixed_to_original = String.Table.create () in
     let used_prefixes = String.Hash_set.create () in
@@ -299,20 +301,27 @@ module Transform = struct
             let ocaml_identifier =
               get_ocaml_identifier identifier ~loc ~original_identifiers ~fixed_to_original
             in
+            let hashed =
+              lazy
+                (let ret = sprintf "%s_hash_%s" identifier hash in
+                 ret, string_constant ~loc ret)
+            in
             let ret, expression =
-              match Map.find rewrite identifier with
-              | None ->
+              match
+                `Always_hash (Set.mem always_hash identifier), Map.find rewrite identifier
+              with
+              | `Always_hash true, _ -> force hashed
+              | `Always_hash false, None ->
                 (match is_matched_by_a_prefix identifier with
-                 | false ->
-                   let ret = sprintf "%s_hash_%s" identifier hash in
-                   ret, string_constant ~loc ret
+                 | false -> force hashed
                  | true -> identifier, string_constant ~loc identifier)
-              | Some
-                  { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
-                  ; pexp_loc = loc
-                  ; _
-                  } -> identifier, string_constant ~loc identifier
-              | Some expression_to_use ->
+              | ( `Always_hash false
+                , Some
+                    { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
+                    ; pexp_loc = loc
+                    ; _
+                    } ) -> identifier, string_constant ~loc identifier
+              | `Always_hash false, Some expression_to_use ->
                 (reference_order := Reversed_list.(expression_to_use :: !reference_order));
                 "%s", expression_to_use
             in
@@ -350,7 +359,19 @@ module Get_all_identifiers = struct
     }
   [@@deriving sexp_of]
 
-  let get_all_original_identifiers stylesheet =
+  let css_variables stylesheet =
+    let out = String.Hash_set.create () in
+    iter_identifiers
+      ~rewrite:String.Map.empty
+      ~dont_hash_prefixes:[]
+      stylesheet
+      ~f:(function
+        | `Class _ | `Id _ -> ()
+        | `Variable identifier -> Hash_set.add out identifier);
+    String.Set.of_hash_set out
+  ;;
+
+  let css_identifiers stylesheet =
     let out = String.Hash_set.create () in
     iter_identifiers
       ~rewrite:String.Map.empty
@@ -361,11 +382,11 @@ module Get_all_identifiers = struct
     String.Set.of_hash_set out
   ;;
 
-  let f stylesheet =
+  let ocaml_identifiers stylesheet =
     let identifiers = String.Table.create () in
     let variables = String.Hash_set.create () in
     let fixed_to_original = String.Table.create () in
-    let original_identifiers = get_all_original_identifiers stylesheet in
+    let original_identifiers = css_identifiers stylesheet in
     iter_identifiers
       ~rewrite:String.Map.empty
       ~dont_hash_prefixes:[]

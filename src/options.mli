@@ -20,10 +20,18 @@ type t =
   }
 
 (** Given the AST of an expression like [stylesheet ~rewrite:[] ""] will result in a
-    "parsed" [t]. *)
-val parse : expression -> t
+    "parsed" [t].
 
-val empty : css_string:string -> t
+    [stylesheet] is the [%css stylesheet {|stylesheet...|}] syntax and expands to a module declaration.
+*)
+val parse_stylesheet : expression -> t
+
+(** Given the AST of an expression like ["" ~rewrite:[]] will result in a "parsed" [t]
+
+    [inline] is the syntax [%css {|declarations...|}] and expands to an expression. *)
+val parse_inline_expression : expression -> t
+
+val empty_stylesheet : css_string:string -> t
 
 module Serializable_options : sig
   type options := t
@@ -35,5 +43,5 @@ module Serializable_options : sig
     }
   [@@deriving of_sexp]
 
-  val to_options : t -> css_string:string -> options
+  val to_stylesheet_options : t -> css_string:string -> options
 end

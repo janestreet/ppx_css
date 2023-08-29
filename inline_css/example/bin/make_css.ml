@@ -8,4 +8,4 @@ open! Inline_css
    In a real application, you wouldn't need to do this, because you'd
    be using the components in your app. *)
 let () = Callback.register "keeping this value alive" Inline_css_example_lib.app
-let () = Inline_css.print_for_testing ()
+let () = Inline_css.For_testing.print ()
