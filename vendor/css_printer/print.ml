@@ -26,18 +26,21 @@ open Css_parser.Types
 type ('a, 'b) printer = (Format.formatter -> 'a -> unit) -> 'a -> 'b
 type ('a, 'b) format_printer = (('a, 'b) printer, Format.formatter, unit) format
 
-type style_rule_format = ( Component_value.t with_loc list
-                         ,  (Declaration_list.kind list, unit) printer) format_printer
-type declaration_format= ( Declaration_list.kind list,
-                           unit) format_printer
-type stylesheet_format = ( Rule.t list,
-                           unit) format_printer
-type at_rule_format = (string ->
-                       ( Component_value.t with_loc list
-                       ,  (Brace_block.t, unit) printer) printer, Format.formatter, unit) format
+type style_rule_format =
+  ( Component_value.t with_loc list
+  , (Declaration_list.kind list, unit) printer )
+  format_printer
+
+type declaration_format = (Declaration_list.kind list, unit) format_printer
+type stylesheet_format = (Rule.t list, unit) format_printer
+
+type at_rule_format =
+  ( string -> (Component_value.t with_loc list, (Brace_block.t, unit) printer) printer
+  , Format.formatter
+  , unit )
+  format
 
 type important_format = (unit, Format.formatter, unit) format
-
 
 type template =
   { main_css : stylesheet_format
@@ -58,6 +61,7 @@ let pretty_printer =
   ; at_rule = Stdlib.format_of_string "@%s%a%a@,"
   ; important = Stdlib.format_of_string " !important"
   }
+;;
 
 let minify_printer =
   { main_css = Stdlib.format_of_string "@[<h>%a@]@."
@@ -67,29 +71,32 @@ let minify_printer =
   ; at_rule = Stdlib.format_of_string "@%s%a%a"
   ; important = Stdlib.format_of_string "!important"
   }
+;;
 
-type sep_printer
-  = Format.formatter -> bool -> unit
+type sep_printer = Format.formatter -> bool -> unit
 
-let print_space
-  : sep_printer
-  = fun formatter -> function
-    | true -> Format.fprintf formatter " "
-    | false -> ()
+let print_space : sep_printer =
+  fun formatter -> function
+  | true -> Format.fprintf formatter " "
+  | false -> ()
+;;
 
-let print_coma
-  : sep_printer
-  = fun formatter -> function
-    | true -> Format.fprintf formatter ","
-    | false -> ()
+let print_coma : sep_printer =
+  fun formatter -> function
+  | true -> Format.fprintf formatter ","
+  | false -> ()
+;;
 
 let rec print_block
-  : ?printer:sep_printer -> ?add_space:bool -> bool -> Format.formatter -> Component_value.t with_loc list -> unit
-  = fun ?(printer=print_space) ?(add_space=false) is_selector formatter values ->
-    let _ = List.fold_left values
-        ~init:add_space
-        ~f:(fun v -> print_component printer is_selector v formatter) in
-    ()
+  :  ?printer:sep_printer -> ?add_space:bool -> bool -> Format.formatter
+  -> Component_value.t with_loc list -> unit
+  =
+  fun ?(printer = print_space) ?(add_space = false) is_selector formatter values ->
+  let _ =
+    List.fold_left values ~init:add_space ~f:(fun v ->
+      print_component printer is_selector v formatter)
+  in
+  ()
 
 (** Print a component list.
 
@@ -108,140 +115,151 @@ let rec print_block
 *)
 and print_component
   : sep_printer -> bool -> bool -> Format.formatter -> Component_value.t with_loc -> bool
-  = fun sep_printer is_selector add_space formatter (value, _) ->
-    let _ = sep_printer in
-    match value with
-    | Delim str ->
-      begin match is_selector, str with
-        | true, "*"-> Format.fprintf formatter "%a*" print_space add_space
-        | false, ("*" | "/" | "+" | "-") -> Format.fprintf formatter " %s " str
-        | _ -> Format.fprintf formatter "%s" str
-      end;
-      false
-    | Uri str ->
-      Format.fprintf formatter {|%aurl(%s)|}
-        print_space add_space
-        str;
-      true
-    | Ident str
-    | Operator str
-    | Number str ->
-      Format.fprintf formatter {|%a%s|}
-        print_space add_space
-        str;
-      true
-    | String str
-    | Unicode_range str ->
-      Format.fprintf formatter {|"%a%s"|}
-        print_space add_space
-        str;
-      true
-    | Hash str ->
-      begin match is_selector with
-        | true ->
-          (* We are in a selector, the # Operator is alway attached to an
+  =
+  fun sep_printer is_selector add_space formatter (value, _) ->
+  let _ = sep_printer in
+  match value with
+  | Delim str ->
+    (match is_selector, str with
+     | true, "*" -> Format.fprintf formatter "%a*" print_space add_space
+     | false, ("*" | "/" | "+" | "-") -> Format.fprintf formatter " %s " str
+     | _ -> Format.fprintf formatter "%s" str);
+    false
+  | Uri str ->
+    Format.fprintf formatter {|%aurl(%s)|} print_space add_space str;
+    true
+  | Ident str | Operator str | Number str ->
+    Format.fprintf formatter {|%a%s|} print_space add_space str;
+    true
+  | String str | Unicode_range str ->
+    Format.fprintf formatter {|"%a%s"|} print_space add_space str;
+    true
+  | Hash str ->
+    (match is_selector with
+     | true ->
+       (* We are in a selector, the # Operator is alway attached to an
              element — * are explicited in the parser. We do not need to add
              space before *)
-          Format.fprintf formatter "#%s" str
-        | false ->
-          Format.fprintf formatter "%a#%s"
-            print_space add_space
-            str;
-      end;
-      true
-    | Percentage str ->
-      Format.fprintf formatter "%a%s%%"
-        print_space add_space
-        str;
-      true
-    | Dimension (str, unit') ->
-      Format.fprintf formatter "%a%s %s"
-        print_space add_space
-        str unit';
-      true
-    | Float_dimension (str, unit', _) ->
-      Format.fprintf formatter "%a%s%s"
-        print_space add_space
-        str unit';
-      true
-    | Bracket_block elems ->
-      Format.fprintf formatter "[%a]"
-        (* There is no need to add a space here, as the bracket as attribute
+       Format.fprintf formatter "#%s" str
+     | false -> Format.fprintf formatter "%a#%s" print_space add_space str);
+    true
+  | Percentage str ->
+    Format.fprintf formatter "%a%s%%" print_space add_space str;
+    true
+  | Dimension (str, unit') ->
+    Format.fprintf formatter "%a%s %s" print_space add_space str unit';
+    true
+  | Float_dimension (str, unit', _) ->
+    Format.fprintf formatter "%a%s%s" print_space add_space str unit';
+    true
+  | Bracket_block elems ->
+    Format.fprintf
+      formatter
+      "[%a]"
+      (* There is no need to add a space here, as the bracket as attribute
            cannot appear detachedfrom any selector  *)
-        (print_block is_selector) elems;
-      true
-    | Paren_block elems ->
-      Format.fprintf formatter "%a(%a)"
-        print_space add_space
-        (print_block is_selector) elems;
-      true
-    | Function (name, elems) ->
+      (print_block is_selector)
+      elems;
+    true
+  | Paren_block elems ->
+    Format.fprintf
+      formatter
+      "%a(%a)"
+      print_space
+      add_space
+      (print_block is_selector)
+      elems;
+    true
+  | Function (name, elems) ->
+    let printer = print_coma in
+    Format.fprintf
+      formatter
+      "%a%s(%a)"
+      print_space
+      add_space
+      (fst name)
+      (print_block ~printer is_selector)
+      (fst elems);
+    true
+;;
 
-      let printer = print_coma in
+let print_important : template -> Format.formatter -> bool with_loc -> unit =
+  fun template formatter (is_important, _) ->
+  match is_important with
+  | true -> Format.fprintf formatter template.important
+  | false -> ()
+;;
 
-      Format.fprintf formatter "%a%s(%a)"
-        print_space add_space
-        (fst name)
-        (print_block ~printer is_selector) (fst elems);
-      true
+let rec print_brace_block : template -> Format.formatter -> Brace_block.t -> unit =
+  fun template formatter -> function
+  | Empty -> Format.fprintf formatter ";"
+  | Declaration_list d ->
+    Format.fprintf
+      formatter
+      template.declaration
+      (Format.pp_print_list ~pp_sep:pp_sep_column (print_declaration_list template))
+      (fst d)
+  | Stylesheet css ->
+    Format.fprintf
+      formatter
+      template.stylesheet
+      (Format.pp_print_list (print_rule template))
+      (fst css)
 
-let print_important
-  : template -> Format.formatter -> bool with_loc -> unit
-  = fun template formatter (is_important, _) ->
-    match is_important with
-    | true -> Format.fprintf formatter template.important
-    | false -> ()
-
-let rec print_brace_block
-  : template -> Format.formatter -> Brace_block.t -> unit
-  = fun template formatter -> function
-    | Empty -> Format.fprintf formatter ";"
-    | Declaration_list d ->
-      Format.fprintf formatter template.declaration
-        (Format.pp_print_list ~pp_sep:pp_sep_column (print_declaration_list template)) (fst d)
-    | Stylesheet css ->
-      Format.fprintf formatter template.stylesheet
-        (Format.pp_print_list (print_rule template)) (fst css)
-
-and print_at_rule
-  : template -> Format.formatter -> At_rule.t -> unit
-  = fun template formatter rule ->
-    Format.fprintf formatter template.at_rule
-      (fst rule.name)
-      (print_block true ~add_space:true) (fst rule.prelude)
-      (print_brace_block template) rule.block
+and print_at_rule : template -> Format.formatter -> At_rule.t -> unit =
+  fun template formatter rule ->
+  Format.fprintf
+    formatter
+    template.at_rule
+    (fst rule.name)
+    (print_block true ~add_space:true)
+    (fst rule.prelude)
+    (print_brace_block template)
+    rule.block
 
 and print_declaration
   : template -> Format.formatter -> Css_parser.Types.Declaration.t -> unit
-  = fun template formatter {name; value; important; _ } ->
-    Format.fprintf formatter "%s:%a%a"
-      (fst name)
-      (print_block false) (fst value)
-      (print_important template) important
+  =
+  fun template formatter { name; value; important; _ } ->
+  Format.fprintf
+    formatter
+    "%s:%a%a"
+    (fst name)
+    (print_block false)
+    (fst value)
+    (print_important template)
+    important
 
 and print_declaration_list
   : template -> Format.formatter -> Css_parser.Types.Declaration_list.kind -> unit
-  = fun template formatter -> function
-    | Declaration decl -> print_declaration template formatter decl
-    | At_rule rule -> print_at_rule template formatter rule
+  =
+  fun template formatter -> function
+  | Declaration decl -> print_declaration template formatter decl
+  | At_rule rule -> print_at_rule template formatter rule
 
 and print_style_rule
   : template -> Format.formatter -> Css_parser.Types.Style_rule.t -> unit
-  = fun template formatter rule ->
-    Format.fprintf formatter template.style_rule
-      (print_block true) (fst rule.prelude)
-      (Format.pp_print_list ~pp_sep:pp_sep_column (print_declaration_list template)) (fst rule.block)
+  =
+  fun template formatter rule ->
+  Format.fprintf
+    formatter
+    template.style_rule
+    (print_block true)
+    (fst rule.prelude)
+    (Format.pp_print_list ~pp_sep:pp_sep_column (print_declaration_list template))
+    (fst rule.block)
 
-and print_rule
-  : template -> Format.formatter -> Css_parser.Types.Rule.t -> unit
-  = fun template formatter -> function
-    | Rule.Style_rule style ->
-      print_style_rule template formatter style
-    | Rule.At_rule rule ->
-      print_at_rule template formatter rule
+and print_rule : template -> Format.formatter -> Css_parser.Types.Rule.t -> unit =
+  fun template formatter -> function
+  | Rule.Style_rule style -> print_style_rule template formatter style
+  | Rule.At_rule rule -> print_at_rule template formatter rule
+;;
 
-let css
-  : template -> Format.formatter -> Css_parser.Types.Stylesheet.t -> unit
-  = fun template formatter css ->
-    Format.fprintf formatter template.main_css
-      (Format.pp_print_list (print_rule template)) (fst css)
+let css : template -> Format.formatter -> Css_parser.Types.Stylesheet.t -> unit =
+  fun template formatter css ->
+  Format.fprintf
+    formatter
+    template.main_css
+    (Format.pp_print_list (print_rule template))
+    (fst css)
+;;

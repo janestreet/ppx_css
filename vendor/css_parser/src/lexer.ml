@@ -5,31 +5,37 @@
 
 module Sedlexing = Lex_buffer
 
-exception LexingError of (Lexing.position * string)
 (** Signals a lexing error at the provided source location.  *)
+exception LexingError of (Lexing.position * string)
 
-exception
-  ParseError of (Menhir_parser.token * Lexing.position * Lexing.position)
 (** Signals a parsing error at the provided token and its start and end
  * locations. *)
+exception ParseError of (Menhir_parser.token * Lexing.position * Lexing.position)
 
-exception GrammarError of (string * Location.t)
 (** Signals a grammar error at the provided location. *)
+exception GrammarError of (string * Location.t)
 
 let position_to_string pos =
-  Printf.sprintf "[%d,%d+%d]" pos.Lexing.pos_lnum pos.Lexing.pos_bol
+  Printf.sprintf
+    "[%d,%d+%d]"
+    pos.Lexing.pos_lnum
+    pos.Lexing.pos_bol
     (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
+;;
 
 let location_to_string loc =
-  Printf.sprintf "%s..%s"
+  Printf.sprintf
+    "%s..%s"
     (position_to_string loc.Location.loc_start)
     (position_to_string loc.Location.loc_end)
+;;
 
 let dimension_to_string = function
   | Types.Length -> "length"
   | Angle -> "angle"
   | Time -> "time"
   | Frequency -> "frequency"
+;;
 
 let token_to_string = function
   | Menhir_parser.EOF -> "EOF"
@@ -61,160 +67,119 @@ let token_to_string = function
   | NUMBER s -> "NUMBER(" ^ s ^ ")"
   | UNICODE_RANGE s -> "UNICODE_RANGE(" ^ s ^ ")"
   | FLOAT_DIMENSION (n, s, d) ->
-      "FLOAT_DIMENSION(" ^ n ^ ", " ^ s ^ ", " ^ dimension_to_string d ^ ")"
+    "FLOAT_DIMENSION(" ^ n ^ ", " ^ s ^ ", " ^ dimension_to_string d ^ ")"
   | DIMENSION (n, d) -> "DIMENSION(" ^ n ^ ", " ^ d ^ ")"
+;;
 
 let () =
   Location.register_error_of_exn (function
     | LexingError (pos, msg) ->
-        let loc = Lex_buffer.make_loc_and_fix pos pos in
-        Some (Location.error ~loc msg)
+      let loc = Lex_buffer.make_loc_and_fix pos pos in
+      Some (Location.error ~loc msg)
     | ParseError (token, start_pos, end_pos) ->
-        let loc = Lex_buffer.make_loc_and_fix start_pos end_pos in
-        let msg =
-          Printf.sprintf "Parse error while reading token '%s'"
-            (token_to_string token)
-        in
-        Some (Location.error ~loc msg)
+      let loc = Lex_buffer.make_loc_and_fix start_pos end_pos in
+      let msg =
+        Printf.sprintf "Parse error while reading token '%s'" (token_to_string token)
+      in
+      Some (Location.error ~loc msg)
     | GrammarError (msg, loc) -> Some (Location.error ~loc msg)
     | _ -> None)
+;;
 
 (* Regexes *)
 let newline = [%sedlex.regexp? '\n' | "\r\n" | '\r' | '\012']
-
 let white_space = [%sedlex.regexp? " " | '\t' | newline]
-
 let ws = [%sedlex.regexp? Star white_space]
-
 let hex_digit = [%sedlex.regexp? '0' .. '9' | 'a' .. 'f' | 'A' .. 'F']
-
 let digit = [%sedlex.regexp? '0' .. '9']
-
 let non_ascii = [%sedlex.regexp? '\160' .. '\255']
-
 let up_to_6_hex_digits = [%sedlex.regexp? Rep (hex_digit, 1 .. 6)]
-
 let unicode = [%sedlex.regexp? '\\', up_to_6_hex_digits, Opt white_space]
 
 let unicode_range =
   [%sedlex.regexp?
-    ( Rep ((hex_digit | '?'), 1 .. 6)
-    | up_to_6_hex_digits, '-', up_to_6_hex_digits )]
+    Rep ((hex_digit | '?'), 1 .. 6) | up_to_6_hex_digits, '-', up_to_6_hex_digits]
+;;
 
-let escape =
-  [%sedlex.regexp? unicode | '\\', Compl ('\r' | '\n' | '\012' | hex_digit)]
-
-let ident_start =
-  [%sedlex.regexp? '_' | 'a' .. 'z' | 'A' .. 'Z' | non_ascii | escape]
+let escape = [%sedlex.regexp? unicode | '\\', Compl ('\r' | '\n' | '\012' | hex_digit)]
+let ident_start = [%sedlex.regexp? '_' | 'a' .. 'z' | 'A' .. 'Z' | non_ascii | escape]
 
 let ident_char =
-  [%sedlex.regexp?
-    '_' | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | non_ascii | escape]
+  [%sedlex.regexp? '_' | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | non_ascii | escape]
+;;
 
 let ident = [%sedlex.regexp? (Opt '-', ident_start | '-', '-'), Star ident_char]
 
 let string_quote =
   [%sedlex.regexp?
     '"', Star (Compl ('\n' | '\r' | '\012' | '"') | '\\', newline | escape), '"']
+;;
 
 let string_apos =
   [%sedlex.regexp?
-    ( '\'',
-      Star (Compl ('\n' | '\r' | '\012' | '\'') | '\\', newline | escape),
-      '\'' )]
+    '\'', Star (Compl ('\n' | '\r' | '\012' | '\'') | '\\', newline | escape), '\'']
+;;
 
 let string = [%sedlex.regexp? string_quote | string_apos]
-
 let name = [%sedlex.regexp? Plus ident_char]
 
 let number =
   [%sedlex.regexp?
-    ( ( Opt ('+' | '-'),
-        Plus digit,
-        Opt ('.', Plus digit),
-        Opt (('e' | 'E'), ('+' | '-'), Plus digit) )
-    | ( Opt ('+' | '-'),
-        '.',
-        Plus digit,
-        Opt (('e' | 'E'), ('+' | '-'), Plus digit) ) )]
+    ( ( Opt ('+' | '-')
+      , Plus digit
+      , Opt ('.', Plus digit)
+      , Opt (('e' | 'E'), ('+' | '-'), Plus digit) )
+    | Opt ('+' | '-'), '.', Plus digit, Opt (('e' | 'E'), ('+' | '-'), Plus digit) )]
+;;
 
 let non_printable =
   [%sedlex.regexp? '\x00' .. '\x08' | '\x0B' | '\x0E' .. '\x1F' | '\x7F']
+;;
 
 let url_unquoted =
-  [%sedlex.regexp?
-    Star (Compl ('"' | '\'' | '(' | ')' | '\\' | non_printable) | escape)]
+  [%sedlex.regexp? Star (Compl ('"' | '\'' | '(' | ')' | '\\' | non_printable) | escape)]
+;;
 
 let url = [%sedlex.regexp? url_unquoted | string]
-
 let operator = [%sedlex.regexp? "~=" | "|=" | "^=" | "$=" | "*=" | "||"]
-
 let at_rule = [%sedlex.regexp? "@", ident]
-
-let at_rule_without_body =
-  [%sedlex.regexp? "@", ("charset" | "import" | "namespace")]
-
+let at_rule_without_body = [%sedlex.regexp? "@", ("charset" | "import" | "namespace")]
 let vendor_prefix = [%sedlex.regexp? "-webkit-" | "-moz-" | "-o-" | "-ms-"]
 
 let nested_at_rule =
   [%sedlex.regexp?
-    ( "@",
-      ( "document" | "keyframes"
+    ( "@"
+    , ( "document" | "keyframes"
       | vendor_prefix, "keyframes"
       | "media" | "supports" | "scope" | "layer" ) )]
+;;
 
 let _a = [%sedlex.regexp? 'A' | 'a']
-
 let _b = [%sedlex.regexp? 'B' | 'b']
-
 let _c = [%sedlex.regexp? 'C' | 'c']
-
 let _d = [%sedlex.regexp? 'D' | 'd']
-
 let _e = [%sedlex.regexp? 'e' | 'E']
-
 let _f = [%sedlex.regexp? 'F' | 'f']
-
 let _g = [%sedlex.regexp? 'G' | 'g']
-
 let _h = [%sedlex.regexp? 'H' | 'h']
-
 let _i = [%sedlex.regexp? 'I' | 'i']
-
 let _j = [%sedlex.regexp? 'J' | 'j']
-
 let _k = [%sedlex.regexp? 'K' | 'k']
-
 let _l = [%sedlex.regexp? 'L' | 'l']
-
 let _m = [%sedlex.regexp? 'M' | 'm']
-
 let _n = [%sedlex.regexp? 'N' | 'n']
-
 let _o = [%sedlex.regexp? 'O' | 'o']
-
 let _p = [%sedlex.regexp? 'P' | 'p']
-
 let _q = [%sedlex.regexp? 'Q' | 'q']
-
 let _r = [%sedlex.regexp? 'R' | 'r']
-
 let _s = [%sedlex.regexp? 'S' | 's']
-
 let _t = [%sedlex.regexp? 'T' | 't']
-
 let _u = [%sedlex.regexp? 'U' | 'u']
-
 let _v = [%sedlex.regexp? 'V' | 'v']
-
 let _w = [%sedlex.regexp? 'W' | 'w']
-
 let _x = [%sedlex.regexp? 'X' | 'x']
-
 let _y = [%sedlex.regexp? 'Y' | 'y']
-
 let _z = [%sedlex.regexp? 'Z' | 'z']
-
 let important = [%sedlex.regexp? "!", ws, _i, _m, _p, _o, _r, _t, _a, _n, _t]
 
 let length =
@@ -240,13 +205,11 @@ let length =
     | _p, _c
     | _p, _t
     | _p, _x
-    | _f, _r)]
+    | _f, _r )]
+;;
 
-let angle =
-  [%sedlex.regexp? _d, _e, _g | _g, _r, _a, _d | _r, _a, _d | _t, _u, _r, _n]
-
+let angle = [%sedlex.regexp? _d, _e, _g | _g, _r, _a, _d | _r, _a, _d | _t, _u, _r, _n]
 let time = [%sedlex.regexp? _s | _m, _s]
-
 let frequency = [%sedlex.regexp? _h, _z | _k, _h, _z]
 
 (* Returns true if white spaces were discarded *)
@@ -258,13 +221,13 @@ let discard_comments_and_white_spaces buf =
     | _ -> spaces_detected
   and discard_comments buf spaces_detected =
     match%sedlex buf with
-    | eof ->
-        raise (LexingError (buf.Lex_buffer.pos, "Unterminated comment at EOF"))
+    | eof -> raise (LexingError (buf.Lex_buffer.pos, "Unterminated comment at EOF"))
     | "*/" -> discard_white_spaces buf spaces_detected
     | any -> discard_comments buf spaces_detected
     | _ -> assert false
   in
   discard_white_spaces buf false
+;;
 
 let rec get_next_tokens buf spaces_detected =
   let open Menhir_parser in
@@ -285,8 +248,7 @@ let rec get_next_tokens buf spaces_detected =
   | "url(" -> [ get_url "" buf ]
   | important -> [ IMPORTANT ]
   | nested_at_rule -> [ NESTED_AT_RULE (Lex_buffer.latin1 ~skip:1 buf) ]
-  | at_rule_without_body ->
-      [ AT_RULE_WITHOUT_BODY (Lex_buffer.latin1 ~skip:1 buf) ]
+  | at_rule_without_body -> [ AT_RULE_WITHOUT_BODY (Lex_buffer.latin1 ~skip:1 buf) ]
   | at_rule -> [ AT_RULE (Lex_buffer.latin1 ~skip:1 buf) ]
   (* NOTE: should be placed above ident, otherwise pattern with
    * '-[0-9a-z]{1,6}' cannot be matched *)
@@ -294,9 +256,9 @@ let rec get_next_tokens buf spaces_detected =
   | ident, '(' -> [ FUNCTION (Lex_buffer.latin1 ~drop:1 buf) ]
   | ident -> [ IDENT (Lex_buffer.latin1 buf) ]
   | '#', name ->
-      if spaces_detected then
-        [ WHITESPACE; HASH (Lex_buffer.latin1 ~skip:1 buf) ]
-      else [ HASH (Lex_buffer.latin1 ~skip:1 buf) ]
+    if spaces_detected
+    then [ WHITESPACE; HASH (Lex_buffer.latin1 ~skip:1 buf) ]
+    else [ HASH (Lex_buffer.latin1 ~skip:1 buf) ]
   | number -> [ get_dimension (Lex_buffer.latin1 buf) buf ]
   | any -> [ DELIM (Lex_buffer.latin1 buf) ]
   | _ -> assert false
@@ -317,11 +279,12 @@ and get_url url buf =
   | ")" -> URI url
   | eof -> raise (LexingError (buf.Lex_buffer.pos, "Incomplete URI"))
   | any ->
-      raise
-        (LexingError
-           ( buf.Lex_buffer.pos,
-             "Unexpected token: " ^ Lex_buffer.latin1 buf ^ " parsing an URI" ))
+    raise
+      (LexingError
+         ( buf.Lex_buffer.pos
+         , "Unexpected token: " ^ Lex_buffer.latin1 buf ^ " parsing an URI" ))
   | _ -> assert false
+;;
 
 let token_queue = Queue.create ()
 
@@ -331,11 +294,10 @@ let queue_next_tokens_with_location buf =
   let tokens = get_next_tokens buf spaces_detected in
   let loc_end = Lex_buffer.next_loc buf in
   List.iter (fun t -> Queue.add (t, loc_start, loc_end) token_queue) tokens
+;;
 
 let parse buf p =
-  let last_token =
-    ref (Menhir_parser.EOF, Lexing.dummy_pos, Lexing.dummy_pos)
-  in
+  let last_token = ref (Menhir_parser.EOF, Lexing.dummy_pos, Lexing.dummy_pos) in
   let next_token () =
     if Queue.is_empty token_queue then queue_next_tokens_with_location buf;
     last_token := Queue.take token_queue;
@@ -344,9 +306,11 @@ let parse buf p =
   try MenhirLib.Convert.Simplified.traditional2revised p next_token with
   | LexingError _ as e -> raise e
   | _ -> raise (ParseError !last_token)
+;;
 
 let parse_string ?container_lnum ?pos s p =
   (match container_lnum with
-  | None -> ()
-  | Some lnum -> Lex_buffer.container_lnum_ref := lnum);
+   | None -> ()
+   | Some lnum -> Lex_buffer.container_lnum_ref := lnum);
   parse (Lex_buffer.of_ascii_string ?pos s) p
+;;

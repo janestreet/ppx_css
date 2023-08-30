@@ -8,7 +8,7 @@ module Normal :
 
 module With_variables :
   module type of
-  [%css
+    [%css
     stylesheet
       {|
 :root {
@@ -27,7 +27,7 @@ module Clashing_id_and_class :
 
 module Variable_clashes_called_set :
   module type of
-  [%css
+    [%css
     stylesheet
       {|
 .foo {

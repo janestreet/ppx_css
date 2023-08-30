@@ -232,7 +232,7 @@ module For_stylesheet = struct
       t.anonymous_variables.variables
       ~init:String.Set.empty
       ~f:(fun acc variable ->
-        let name = Anonymous_variable.name variable in
-        Set.add acc ("--" ^ Anonymous_variable.Name.to_string name))
+      let name = Anonymous_variable.name variable in
+      Set.add acc ("--" ^ Anonymous_variable.Name.to_string name))
   ;;
 end

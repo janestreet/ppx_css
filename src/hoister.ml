@@ -16,7 +16,7 @@ let create_hoisted_module ~loc =
   let modules =
     Reversed_list.rev !registry
     |> List.map ~f:(fun ppx_css_string_expression ->
-      [%stri let () = Inline_css.Private.append [%e ppx_css_string_expression]])
+         [%stri let () = Inline_css.Private.append [%e ppx_css_string_expression]])
     |> pmod_structure
   in
   pstr_module (module_binding ~name:(Located.mk None) ~expr:modules)

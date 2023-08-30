@@ -141,13 +141,13 @@ let parse_rewrite ~loc expression =
   let alist =
     parse_expr_list expression ~on_error:raise_due_to_malformed_rewrite
     |> List.map ~f:(fun expression ->
-      match expression with
-      | { pexp_desc =
-            Pexp_tuple
-              [ { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ }; value ]
-        ; _
-        } -> key, loc_ghoster#expression value
-      | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
+         match expression with
+         | { pexp_desc =
+               Pexp_tuple
+                 [ { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ }; value ]
+           ; _
+           } -> key, loc_ghoster#expression value
+         | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
   in
   match String.Map.of_alist alist with
   | `Ok rewrite -> rewrite
@@ -186,9 +186,9 @@ let parse_string_list ~name ~syntax_error_message ~loc expression =
   let out =
     parse_expr_list expression ~on_error:raise_on_error
     |> List.map ~f:(fun expression ->
-      match expression.pexp_desc with
-      | Pexp_constant (Pconst_string (s, _, _)) -> s
-      | _ -> raise_on_error ~loc:expression.pexp_loc)
+         match expression.pexp_desc with
+         | Pexp_constant (Pconst_string (s, _, _)) -> s
+         | _ -> raise_on_error ~loc:expression.pexp_loc)
   in
   let dups = List.find_all_dups out ~compare:String.compare in
   match dups with

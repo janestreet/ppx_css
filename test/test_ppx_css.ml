@@ -919,8 +919,8 @@ let%test_unit "ordering of mapping iteration is the same as the css string." =
       ~dont_hash_prefixes:[]
       style_sheet
       ~f:(fun (`Variable id | `Class id | `Id id) _ ->
-        (traversed_ids := Reversed_list.(id :: !traversed_ids));
-        id)
+      (traversed_ids := Reversed_list.(id :: !traversed_ids));
+      id)
     |> (ignore : Stylesheet.t -> unit);
     let traversed_ids = Reversed_list.rev !traversed_ids in
     match List.equal String.equal traversed_ids ids with
@@ -2200,7 +2200,7 @@ let%expect_test "Unused/possibly redundant/clashing [~dont_hash_prefixes] reuslt
     .a12345 { }
                     |}
         ~rewrite:[ "abcde", "i-take-priority" ]
-        (* "ab" is shadowed by rewrite's "abcde", and both "a12345" and "a123" apply to "a123456" so the longest one of them is rendundant. *)
+          (* "ab" is shadowed by rewrite's "abcde", and both "a12345" and "a123" apply to "a123456" so the longest one of them is rendundant. *)
         ~dont_hash_prefixes:[ "ab"; "a12345"; "a123" ]];
   [%expect {xxx|
     Unused prefixes: (a12345 ab) |xxx}]
@@ -2285,4 +2285,3 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
          color:var(--cm-bg-color)
         }|} |xxx}]
 ;;
-

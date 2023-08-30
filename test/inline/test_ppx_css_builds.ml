@@ -4,9 +4,9 @@ module Normal = [%css stylesheet {|
                       |}]
 
 module With_variables =
-  [%css
-    stylesheet
-      {|
+[%css
+stylesheet
+  {|
 :root {
   --bg-color: red;
 }
@@ -21,8 +21,8 @@ module Clashing_id_and_class = [%css stylesheet {|
                       |}]
 
 module Variable_clashes_called_set =
-  [%css
-    stylesheet {|
+[%css
+stylesheet {|
 .foo {
   color: var(--set);
   width: var(--width);

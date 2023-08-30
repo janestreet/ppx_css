@@ -30,5 +30,5 @@ let add_dont_hash_prefixes new_ =
 
 let add_rewrite ~from ~to_ =
   singleton
-  := { !singleton with rewrite = Map.set !singleton.rewrite ~key:from ~data:to_ }
+    := { !singleton with rewrite = Map.set !singleton.rewrite ~key:from ~data:to_ }
 ;;

@@ -110,9 +110,9 @@ let%test_module "interpolated stylesheet css" =
     let%expect_test "single variable" =
       let color = "tomato" in
       let module Style =
-        [%css
-          stylesheet
-            {|
+      [%css
+      stylesheet
+        {|
           .foo {
             background-color: %{color};
           }
@@ -129,9 +129,9 @@ let%test_module "interpolated stylesheet css" =
       let color = "tomato" in
       let color2 = "hotpink" in
       let module Style =
-        [%css
-          stylesheet
-            {|
+      [%css
+      stylesheet
+        {|
           .foo {
             background-color: %{color};
           }
@@ -154,9 +154,9 @@ let%test_module "interpolated stylesheet css" =
       let color2 = `Hex "#FF00FF" in
       let width = `Px 1 in
       let module Style =
-        [%css
-          stylesheet
-            {|
+      [%css
+      stylesheet
+        {|
           .foo {
             background-color: %{color#Css_gen.Color};
           }
@@ -178,9 +178,9 @@ let%test_module "interpolated stylesheet css" =
     let%expect_test "user variables _and_ anonymous variables" =
       let color = `Name "tomato" in
       let module Style =
-        [%css
-          stylesheet
-            {|
+      [%css
+      stylesheet
+        {|
           .foo {
             background-color: %{color#Css_gen.Color};
           }
@@ -204,9 +204,9 @@ let%test_module "interpolated stylesheet css" =
         `Name "tomato"
       in
       let module Style =
-        [%css
-          stylesheet
-            {|
+      [%css
+      stylesheet
+        {|
           .foo {
             background-color: %{color "first"#Css_gen.Color};
           }

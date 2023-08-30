@@ -6,14 +6,14 @@ open! Ppxlib
 
 type t =
   { rewrite : expression String.Map.t
-  (** For a given (key, value) pair, value will "rewrite" itself wherever "key" is roughly: [s/$key/$value/g]
+      (** For a given (key, value) pair, value will "rewrite" itself wherever "key" is roughly: [s/$key/$value/g]
 
       Equivalent to the [~rewrite] parameter in the call to [stylesheet] on [ppx_css].
   *)
   ; css_string : string
-  (** The contained CSS string. Equivalent to the string parameter given to ppx_css. *)
+      (** The contained CSS string. Equivalent to the string parameter given to ppx_css. *)
   ; stylesheet_location : location
-  (** Equivalent to where the "stylesheet" identifier is located from within the call to
+      (** Equivalent to where the "stylesheet" identifier is located from within the call to
       ppx_css. This is used to potentially give merlin information for MerlinTypeOf to
       know the type of the [stylesheet] function. *)
   ; dont_hash_prefixes : string list

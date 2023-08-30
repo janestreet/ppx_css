@@ -1,6 +1,6 @@
 module Style :
   module type of
-  [%css
+    [%css
     stylesheet {|
    .foo #foo #bar {
        background: 5;

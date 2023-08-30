@@ -4,9 +4,7 @@ let rec dump_component_value ppf (cv, _) =
   let dump_block start_char end_char cs =
     let pp = Fmt.(list ~sep:(const string " ") dump_component_value) in
     let pp =
-      pp
-      |> Fmt.(prefix (const string start_char))
-      |> Fmt.(suffix (const string end_char))
+      pp |> Fmt.(prefix (const string start_char)) |> Fmt.(suffix (const string end_char))
     in
     pp ppf cs
   in
@@ -14,30 +12,28 @@ let rec dump_component_value ppf (cv, _) =
   | Component_value.Paren_block cs -> dump_block "(" ")" cs
   | Bracket_block cs -> dump_block "[" "]" cs
   | Percentage p ->
-      let pp = Fmt.string |> Fmt.(suffix (const string "%")) in
-      pp ppf p
+    let pp = Fmt.string |> Fmt.(suffix (const string "%")) in
+    pp ppf p
   | Ident s | Uri s | Operator s | Delim s | Number s | Unicode_range s ->
-      let pp = Fmt.string in
-      pp ppf s
+    let pp = Fmt.string in
+    pp ppf s
   | Hash s ->
-      let pp = Fmt.(string |> prefix (const string "#")) in
-      pp ppf s
+    let pp = Fmt.(string |> prefix (const string "#")) in
+    pp ppf s
   | String s ->
-      let pp =
-        Fmt.(string |> prefix (const string "\"") |> suffix (const string "\""))
-      in
-      pp ppf s
+    let pp = Fmt.(string |> prefix (const string "\"") |> suffix (const string "\"")) in
+    pp ppf s
   | Function ((name, _), (params, _)) ->
-      let pp_name = Fmt.string |> Fmt.(suffix (const string "(")) in
-      let pp_params =
-        Fmt.(list ~sep:(const string ", ") dump_component_value)
-        |> Fmt.(suffix (const string ")"))
-      in
-      let pp = Fmt.pair ~sep:Fmt.nop pp_name pp_params in
-      pp ppf (name, params)
+    let pp_name = Fmt.string |> Fmt.(suffix (const string "(")) in
+    let pp_params =
+      Fmt.(list ~sep:(const string ", ") dump_component_value)
+      |> Fmt.(suffix (const string ")"))
+    in
+    let pp = Fmt.pair ~sep:Fmt.nop pp_name pp_params in
+    pp ppf (name, params)
   | Float_dimension (number, dimension, _) | Dimension (number, dimension) ->
-      let pp = Fmt.fmt "%s%s" in
-      pp ppf number dimension
+    let pp = Fmt.fmt "%s%s" in
+    pp ppf number dimension
 
 and dump_at_rule ppf (ar : At_rule.t) =
   let pp_name = Fmt.string |> Fmt.(prefix (const string "@")) in
@@ -46,20 +42,23 @@ and dump_at_rule ppf (ar : At_rule.t) =
     match ar.At_rule.block with
     | Brace_block.Empty -> Fmt.nop ppf ()
     | Declaration_list dl ->
-        Fmt.(
-          dump_declaration_list |> prefix cut
-          |> prefix (const string "{")
-          |> suffix cut
-          |> suffix (const string "}"))
-          ppf dl
+      Fmt.(
+        dump_declaration_list
+        |> prefix cut
+        |> prefix (const string "{")
+        |> suffix cut
+        |> suffix (const string "}"))
+        ppf
+        dl
     | Stylesheet s ->
-        Fmt.(
-          vbox ~indent:2 (dump_stylesheet |> prefix cut)
-          |> prefix cut
-          |> prefix (const string "{")
-          |> suffix cut
-          |> suffix (const string "}"))
-          ppf s
+      Fmt.(
+        vbox ~indent:2 (dump_stylesheet |> prefix cut)
+        |> prefix cut
+        |> prefix (const string "{")
+        |> suffix cut
+        |> suffix (const string "}"))
+        ppf
+        s
   in
   let name, _ = ar.At_rule.name in
   let prelude, _ = ar.At_rule.prelude in
@@ -85,16 +84,14 @@ and dump_declaration_list ppf (dl, _) : unit =
   in
   let pp =
     Fmt.(
-      vbox ~indent:2
-        (list ~sep:(const string ";" |> suffix cut) pp_elem |> prefix cut))
+      vbox ~indent:2 (list ~sep:(const string ";" |> suffix cut) pp_elem |> prefix cut))
   in
   pp ppf dl
 
 and dump_style_rule ppf (sr : Style_rule.t) =
   let pp_prelude = Fmt.(list ~sep:(const string " ") dump_component_value) in
   let prelude, _ = sr.Style_rule.prelude in
-  Fmt.fmt "%a {@,%a@,}@," ppf pp_prelude prelude dump_declaration_list
-    sr.Style_rule.block
+  Fmt.fmt "%a {@,%a@,}@," ppf pp_prelude prelude dump_declaration_list sr.Style_rule.block
 
 and dump_rule ppf (r : Rule.t) =
   match r with
@@ -104,3 +101,4 @@ and dump_rule ppf (r : Rule.t) =
 and dump_stylesheet ppf (s, _) =
   let pp = Fmt.(vbox (list dump_rule)) in
   pp ppf s
+;;

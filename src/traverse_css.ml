@@ -130,10 +130,10 @@ let raise_due_to_collision_with_existing_ident ~loc ~original_identifier ~fixed_
 ;;
 
 let raise_due_to_collision_with_newly_minted_identifier
-      ~loc
-      ~previously_computed_ocaml_identifier
-      ~original_identifier
-      ~fixed_identifier
+  ~loc
+  ~previously_computed_ocaml_identifier
+  ~original_identifier
+  ~fixed_identifier
   =
   Location.raise_errorf
     ~loc
@@ -231,13 +231,13 @@ module Transform = struct
     }
 
   let f
-        ~loc
-        ~pos
-        ~rewrite
-        ~css_string:s
-        ~dont_hash_prefixes
-        ~unused_allow_set
-        ~always_hash
+    ~loc
+    ~pos
+    ~rewrite
+    ~css_string:s
+    ~dont_hash_prefixes
+    ~unused_allow_set
+    ~always_hash
     =
     let parsed = Stylesheet.of_string ~pos s in
     let hash =
@@ -260,10 +260,10 @@ module Transform = struct
       ~dont_hash_prefixes
       parsed
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
-        Hash_set.add original_identifiers identifier;
-        match Set.mem always_hash identifier with
-        | true -> ()
-        | false -> Hash_set.remove unused_rewrite_identifiers identifier);
+      Hash_set.add original_identifiers identifier;
+      match Set.mem always_hash identifier with
+      | true -> ()
+      | false -> Hash_set.remove unused_rewrite_identifiers identifier);
     raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers ~unused_allow_set;
     let original_identifiers = Set.of_hash_set (module String) original_identifiers in
     let fixed_to_original = String.Table.create () in
@@ -298,44 +298,44 @@ module Transform = struct
         ~f:
           (fun
             ((`Class identifier | `Id identifier | `Variable identifier) as token) loc ->
-            let ocaml_identifier =
-              get_ocaml_identifier identifier ~loc ~original_identifiers ~fixed_to_original
-            in
-            let hashed =
-              lazy
-                (let ret = sprintf "%s_hash_%s" identifier hash in
-                 ret, string_constant ~loc ret)
-            in
-            let ret, expression =
-              match
-                `Always_hash (Set.mem always_hash identifier), Map.find rewrite identifier
-              with
-              | `Always_hash true, _ -> force hashed
-              | `Always_hash false, None ->
-                (match is_matched_by_a_prefix identifier with
-                 | false -> force hashed
-                 | true -> identifier, string_constant ~loc identifier)
-              | ( `Always_hash false
-                , Some
-                    { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
-                    ; pexp_loc = loc
-                    ; _
-                    } ) -> identifier, string_constant ~loc identifier
-              | `Always_hash false, Some expression_to_use ->
-                (reference_order := Reversed_list.(expression_to_use :: !reference_order));
-                "%s", expression_to_use
-            in
-            let identifier_kind =
-              match token with
-              | `Class _ -> Identifier_kind.Class
-              | `Id _ -> Id
-              | `Variable _ -> Variable
-            in
-            Hashtbl.update identifier_mapping ocaml_identifier ~f:(fun prev ->
-              match prev with
-              | None -> Identifier_kind.Set.singleton identifier_kind, expression
-              | Some (prev, expression) -> Set.add prev identifier_kind, expression);
-            ret)
+        let ocaml_identifier =
+          get_ocaml_identifier identifier ~loc ~original_identifiers ~fixed_to_original
+        in
+        let hashed =
+          lazy
+            (let ret = sprintf "%s_hash_%s" identifier hash in
+             ret, string_constant ~loc ret)
+        in
+        let ret, expression =
+          match
+            `Always_hash (Set.mem always_hash identifier), Map.find rewrite identifier
+          with
+          | `Always_hash true, _ -> force hashed
+          | `Always_hash false, None ->
+            (match is_matched_by_a_prefix identifier with
+             | false -> force hashed
+             | true -> identifier, string_constant ~loc identifier)
+          | ( `Always_hash false
+            , Some
+                { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
+                ; pexp_loc = loc
+                ; _
+                } ) -> identifier, string_constant ~loc identifier
+          | `Always_hash false, Some expression_to_use ->
+            (reference_order := Reversed_list.(expression_to_use :: !reference_order));
+            "%s", expression_to_use
+        in
+        let identifier_kind =
+          match token with
+          | `Class _ -> Identifier_kind.Class
+          | `Id _ -> Id
+          | `Variable _ -> Variable
+        in
+        Hashtbl.update identifier_mapping ocaml_identifier ~f:(fun prev ->
+          match prev with
+          | None -> Identifier_kind.Set.singleton identifier_kind, expression
+          | Some (prev, expression) -> Set.add prev identifier_kind, expression);
+        ret)
     in
     raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes;
     let css_string = Stylesheet.to_string_hum sheet in
@@ -366,8 +366,8 @@ module Get_all_identifiers = struct
       ~dont_hash_prefixes:[]
       stylesheet
       ~f:(function
-        | `Class _ | `Id _ -> ()
-        | `Variable identifier -> Hash_set.add out identifier);
+      | `Class _ | `Id _ -> ()
+      | `Variable identifier -> Hash_set.add out identifier);
     String.Set.of_hash_set out
   ;;
 
@@ -378,7 +378,7 @@ module Get_all_identifiers = struct
       ~dont_hash_prefixes:[]
       stylesheet
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
-        Hash_set.add out identifier);
+      Hash_set.add out identifier);
     String.Set.of_hash_set out
   ;;
 
@@ -392,24 +392,24 @@ module Get_all_identifiers = struct
       ~dont_hash_prefixes:[]
       stylesheet
       ~f:(fun current_item ->
-        let (`Class identifier | `Id identifier | `Variable identifier) = current_item in
-        let fixed_identifier =
-          get_ocaml_identifier
-            identifier
-            ~loc:Location.none
-            ~original_identifiers
-            ~fixed_to_original
-        in
-        match current_item with
-        | `Variable _ -> Hash_set.add variables fixed_identifier
-        | `Class _ ->
-          Hashtbl.update identifiers fixed_identifier ~f:(function
-            | None | Some `Only_class -> `Only_class
-            | Some `Only_id | Some `Both -> `Both)
-        | `Id _ ->
-          Hashtbl.update identifiers fixed_identifier ~f:(function
-            | None | Some `Only_id -> `Only_id
-            | Some `Only_class | Some `Both -> `Both));
+      let (`Class identifier | `Id identifier | `Variable identifier) = current_item in
+      let fixed_identifier =
+        get_ocaml_identifier
+          identifier
+          ~loc:Location.none
+          ~original_identifiers
+          ~fixed_to_original
+      in
+      match current_item with
+      | `Variable _ -> Hash_set.add variables fixed_identifier
+      | `Class _ ->
+        Hashtbl.update identifiers fixed_identifier ~f:(function
+          | None | Some `Only_class -> `Only_class
+          | Some `Only_id | Some `Both -> `Both)
+      | `Id _ ->
+        Hashtbl.update identifiers fixed_identifier ~f:(function
+          | None | Some `Only_id -> `Only_id
+          | Some `Only_class | Some `Both -> `Both));
     { identifiers = Hashtbl.to_alist identifiers; variables = Hash_set.to_list variables }
   ;;
 end
