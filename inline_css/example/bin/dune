@@ -1,4 +1,5 @@
-(executables (names make_css) (libraries inline_css inline_css_example_lib)
+(executables (names make_css)
+ (libraries inline_css re inline_css_example_lib)
  (preprocess (pps ppx_jane)))
 
 (rule (targets style.css) (deps make_css.bc.js)

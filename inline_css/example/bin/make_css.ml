@@ -8,4 +8,10 @@ open! Inline_css
    In a real application, you wouldn't need to do this, because you'd
    be using the components in your app. *)
 let () = Callback.register "keeping this value alive" Inline_css_example_lib.app
-let () = Inline_css.For_testing.print ()
+
+let () =
+  let regex = Re.Str.regexp "_hash_\\([a-z0-9]+\\)*" in
+  Inline_css.For_testing.to_string ()
+  |> Re.Str.global_replace regex "_hash_replaced_in_test"
+  |> print_endline
+;;

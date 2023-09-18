@@ -5,7 +5,7 @@ module Private : sig
 end
 
 module For_testing : sig
-  val print : unit -> unit
+  val to_string : unit -> string
   val strategy_name : unit -> string
   val dump_strategy_state : unit -> unit
 end

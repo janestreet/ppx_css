@@ -19,14 +19,6 @@ module State = struct
       all_css.ordered <- Reversed_list.(a :: all_css.ordered);
       `Newly_appended)
   ;;
-
-  let print_for_testing =
-    let regex = Re.Str.regexp "_hash_\\([a-z0-9]+\\)*" in
-    fun () ->
-      to_string ()
-      |> Re.Str.global_replace regex "_hash_replaced_in_test"
-      |> print_endline
-  ;;
 end
 
 module Strategy = struct
@@ -98,7 +90,7 @@ let append a =
 ;;
 
 module For_testing = struct
-  let print = State.print_for_testing
+  let to_string () = State.to_string ()
 
   let with_strategy ~f =
     match Lazy.force Strategy.selected with

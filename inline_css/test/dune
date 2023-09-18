@@ -1,2 +1,2 @@
-(library (name inline_css_test) (libraries core inline_css)
+(library (name inline_css_test) (libraries core re inline_css)
  (preprocess (pps ppx_jane)))

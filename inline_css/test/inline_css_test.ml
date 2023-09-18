@@ -1,9 +1,17 @@
 open! Core
 
+let print_for_testing =
+  let regex = Re.Str.regexp "_hash_\\([a-z0-9]+\\)*" in
+  fun () ->
+    Inline_css.For_testing.to_string ()
+    |> Re.Str.global_replace regex "_hash_replaced_in_test"
+    |> print_endline
+;;
+
 let%expect_test "appending preserves order and deduplicates" =
   [ "a"; "b"; "a"; "c"; "d"; "e"; "e"; "e"; "f"; "g"; "h" ]
   |> List.iter ~f:Inline_css.Private.append;
-  Inline_css.For_testing.print ();
+  print_for_testing ();
   [%expect {|
     a
     b
