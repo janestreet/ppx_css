@@ -56,6 +56,7 @@ module Sexpers = struct
   and sexp_of_declaration_list_kind : Types.Declaration_list.kind -> Sexp.t = function
     | Declaration d -> [%sexp Declaration (d : declaration)]
     | At_rule a -> [%sexp At_rule (a : at_rule)]
+    | Style_rule a -> [%sexp Style_rule (a : style_rule)]
 
   and sexp_of_declaration_list : Types.Declaration_list.t -> Sexp.t = function
     | d -> [%sexp (d : declaration_list_kind list with_loc)]
@@ -127,6 +128,7 @@ and at_rule = Types.At_rule.t =
 and declaration_list_kind = Types.Declaration_list.kind =
   | Declaration of declaration
   | At_rule of at_rule
+  | Style_rule of style_rule
 
 and declaration_list = declaration_list_kind list with_loc
 
@@ -207,6 +209,7 @@ module Declaration_list = struct
   type kind = Types.Declaration_list.kind =
     | Declaration of Declaration.t
     | At_rule of At_rule.t
+    | Style_rule of Types.Style_rule.t
 
   and t = kind list with_loc
 

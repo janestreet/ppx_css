@@ -28,6 +28,7 @@ type token =
   | COLON
   | AT_RULE_WITHOUT_BODY of string
   | AT_RULE of string
+  | AMPERSAND
 
 (* This exception is raised by the monolithic API functions. *)
 

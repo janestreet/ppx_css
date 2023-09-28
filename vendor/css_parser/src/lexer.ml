@@ -47,6 +47,7 @@ let token_to_string = function
   | RIGHT_BRACKET -> "]"
   | COLON -> ":"
   | DOT -> "."
+  | AMPERSAND -> "&"
   (* Whitespaces are detected only in selectors, before ":", ".", and "#", to
    * disambiguate between "p :first-child" and "p:first-child", these
    * whitespaces are replaced with "*" *)
@@ -238,6 +239,7 @@ let rec get_next_tokens buf spaces_detected =
   | '{' -> [ LEFT_BRACE ]
   | ':' -> if spaces_detected then [ WHITESPACE; COLON ] else [ COLON ]
   | '.' -> if spaces_detected then [ WHITESPACE; DOT ] else [ DOT ]
+  | '&' -> if spaces_detected then [ WHITESPACE; AMPERSAND ] else [ AMPERSAND ]
   | '(' -> [ LEFT_PAREN ]
   | ')' -> [ RIGHT_PAREN ]
   | '[' -> [ LEFT_BRACKET ]

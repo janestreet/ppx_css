@@ -236,6 +236,7 @@ and print_declaration_list
   fun template formatter -> function
   | Declaration decl -> print_declaration template formatter decl
   | At_rule rule -> print_at_rule template formatter rule
+  | Style_rule style_rule -> print_style_rule template formatter style_rule
 
 and print_style_rule
   : template -> Format.formatter -> Css_parser.Types.Style_rule.t -> unit

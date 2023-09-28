@@ -62,6 +62,7 @@ and Declaration_list : sig
   type kind =
     | Declaration of Declaration.t
     | At_rule of At_rule.t
+    | Style_rule of Style_rule.t
   [@@deriving sexp_of]
 
   type t = kind list with_loc [@@deriving sexp_of]
