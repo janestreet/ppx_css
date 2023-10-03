@@ -3,22 +3,21 @@
   (pps ppx_css -dont-hash=class1 -dont-hash-prefixes=--
    -rewrite=class2:class3)))
 
-(rule (targets ppx_css_test_preprocess_arguments.pp-output) (mode fallback)
+(rule (targets ppx_css_test_preprocess_arguments.pp-output)
  (deps (:first_dep ppx_css_test_preprocess_arguments.ml.pp))
  (action (bash "cp %{first_dep} %{targets}")))
 
 (alias (name DEFAULT) (deps ppx_css_test_preprocess_arguments.pp-output))
 
-(rule (targets other_module.ml) (mode fallback)
+(rule (targets other_module.ml)
  (deps (:first_dep ppx_css_test_preprocess_arguments.ml))
  (action (bash "cp %{first_dep} %{targets}")))
 
-(rule (targets other_module.mli) (mode fallback)
+(rule (targets other_module.mli)
  (deps (:first_dep ppx_css_test_preprocess_arguments.mli))
  (action (bash "cp %{first_dep} %{targets}")))
 
-(rule (targets other_module.pp-output) (mode fallback)
- (deps (:first_dep other_module.ml.pp))
+(rule (targets other_module.pp-output) (deps (:first_dep other_module.ml.pp))
  (action (bash "cp %{first_dep} %{targets}")))
 
 (alias (name DEFAULT) (deps other_module.pp-output))
