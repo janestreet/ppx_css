@@ -2,6 +2,7 @@ open! Core
 
 module Private : sig
   val append : string -> unit
+  val prepend : string -> unit
 end
 
 module For_testing : sig

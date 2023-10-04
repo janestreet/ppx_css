@@ -23,6 +23,25 @@ let%expect_test "appending preserves order and deduplicates" =
     h |}]
 ;;
 
+let%expect_test "prepending inserts at the front of the list" =
+  (* NOTE: prepend-b is _not_ de-duplicated. This is expected. *)
+  [ "prepend-a"; "prepend-b"; "prepend-b" ] |> List.iter ~f:Inline_css.Private.prepend;
+  print_for_testing ();
+  [%expect
+    {|
+    prepend-b
+    prepend-b
+    prepend-a
+    a
+    b
+    c
+    d
+    e
+    f
+    g
+    h |}]
+;;
+
 let%expect_test "Which strategy is being used during tests?" =
   print_endline (Inline_css.For_testing.strategy_name ());
   [%expect {| testing-strategy |}]
@@ -40,6 +59,9 @@ let%expect_test "[Strategy.update] is called many times" =
   Inline_css.For_testing.dump_strategy_state ();
   [%expect
     {|
+    prepend-b
+    prepend-b
+    prepend-a
     a
     b
     c

@@ -1,24 +1,66 @@
 open! Core
 open Js_of_ocaml
 
-module State = struct
-  type t =
-    { memo : String.Hash_set.t
-    ; mutable ordered : string Reversed_list.t
+module Prepend_and_append_list : sig
+  (** A list builder that allows inserting both at the front and end of the list *)
+
+  type 'a t
+
+  val empty : 'a t
+  val append : 'a t -> 'a -> 'a t
+  val prepend : 'a t -> 'a -> 'a t
+
+  (* Converts the lists into a list. It returns a new [t] which can be used to ensure
+     future [to_list] calls after new things are appended are more efficient while
+     returning the same result. *)
+
+  val to_list : 'a t -> 'a list * 'a t
+end = struct
+  type 'a t =
+    { prepended : 'a list
+    ; appended : 'a Reversed_list.t
     }
 
-  let all_css = { memo = String.Hash_set.create (); ordered = Reversed_list.[] }
-  let to_string () = all_css.ordered |> Reversed_list.rev |> String.concat ~sep:"\n"
+  let empty = { prepended = []; appended = [] }
+  let append t item = { t with appended = item :: t.appended }
+  let prepend t item = { t with prepended = item :: t.prepended }
+
+  let to_list t =
+    if Reversed_list.is_empty t.appended
+    then t.prepended, t
+    else (
+      let joined = t.prepended @ Reversed_list.rev t.appended in
+      joined, { prepended = joined; appended = [] })
+  ;;
+end
+
+module State = struct
+  type t =
+    { appended_items : String.Hash_set.t
+    ; mutable items : string Prepend_and_append_list.t
+    }
+
+  let all_css =
+    { appended_items = String.Hash_set.create (); items = Prepend_and_append_list.empty }
+  ;;
+
+  let to_string () =
+    let joined, items' = Prepend_and_append_list.to_list all_css.items in
+    all_css.items <- items';
+    String.concat joined ~sep:"\n"
+  ;;
 
   let append a =
-    let already_appended = Hash_set.mem all_css.memo a in
+    let already_appended = Hash_set.mem all_css.appended_items a in
     if already_appended
     then `Already_appended
     else (
-      Hash_set.add all_css.memo a;
-      all_css.ordered <- Reversed_list.(a :: all_css.ordered);
+      Hash_set.add all_css.appended_items a;
+      all_css.items <- Prepend_and_append_list.append all_css.items a;
       `Newly_appended)
   ;;
+
+  let prepend a = all_css.items <- Prepend_and_append_list.prepend all_css.items a
 end
 
 module Strategy = struct
@@ -72,21 +114,28 @@ let () =
   | None -> ()
 ;;
 
+let update_strategy_from_state () =
+  match Lazy.peek Strategy.selected with
+  | None ->
+    (* If the lazy isn't forced, then we don't need to do anything because all the
+       contents will be loaded when [install_in_dom] is called. *)
+    ()
+  | Some (Ok (T { state; strategy = (module M) })) -> M.update state (State.to_string ())
+  | Some (Error _) ->
+    (* don't print the error because it already got printed inside [install_in_dom] *)
+    ()
+;;
+
 let append a =
   let already_appended = State.append a in
   match already_appended with
   | `Already_appended -> ()
-  | `Newly_appended ->
-    (match Lazy.peek Strategy.selected with
-     | None ->
-       (* If the lazy isn't forced, then we don't need to do anything because all the
-          contents will be loaded when [install_in_dom] is called. *)
-       ()
-     | Some (Ok (T { state; strategy = (module M) })) ->
-       M.update state (State.to_string ())
-     | Some (Error _) ->
-       (* don't print the error because it already got printed inside [install_in_dom] *)
-       ())
+  | `Newly_appended -> update_strategy_from_state ()
+;;
+
+let prepend a =
+  State.prepend a;
+  update_strategy_from_state ()
 ;;
 
 module For_testing = struct
@@ -110,4 +159,5 @@ end
 
 module Private = struct
   let append = append
+  let prepend = prepend
 end
