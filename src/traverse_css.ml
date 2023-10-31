@@ -1,6 +1,7 @@
 open! Core
 open! Ppxlib
 open Css_jane
+module Preprocess_arguments = Ppx_css_syntax.Preprocess_arguments
 
 let map_loc (v, loc) ~f = f v, loc
 

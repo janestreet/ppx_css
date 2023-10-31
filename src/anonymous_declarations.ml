@@ -54,8 +54,14 @@ module Find_anonymous_variables = struct
           | Literal { txt = literal; loc = _ } ->
             Buffer.add_string buffer literal;
             acc
-          | Interpreted { loc_start = _; value; module_path; pad_length = _; loc_end = _ }
-            ->
+          | Interpreted
+              { loc_start = _
+              ; value
+              ; module_path
+              ; pad_length = _
+              ; loc_end = _
+              ; interpreted_string = _
+              } ->
             let expression =
               match module_path with
               | None -> value

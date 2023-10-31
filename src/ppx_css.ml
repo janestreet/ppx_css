@@ -1,7 +1,7 @@
 open! Core
 open! Ppxlib
 open Css_jane
-module Options = Options
+module Preprocess_arguments = Ppx_css_syntax.Preprocess_arguments
 
 module With_hoisted_expression = struct
   type 'a t =
@@ -638,8 +638,8 @@ let generate_struct_from_css_string_and_options
 let generate_struct ~loc (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let { Options.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
-    Options.parse_stylesheet expr
+  let { Ppx_css_syntax.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
+    Ppx_css_syntax.parse_stylesheet expr
   in
   let anonymous_declarations =
     Anonymous_declarations.For_stylesheet.create
@@ -713,8 +713,8 @@ let generate_inline_expression ~loc (expr : expression)
   let open (val Ast_builder.make loc) in
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let { Options.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
-    Options.parse_inline_expression expr
+  let { Ppx_css_syntax.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
+    Ppx_css_syntax.parse_inline_expression expr
   in
   let anonymous_declarations =
     Anonymous_declarations.create ~string_loc:stylesheet_location css_string

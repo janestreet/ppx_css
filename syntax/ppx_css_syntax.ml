@@ -400,3 +400,5 @@ let parse_inline_expression (expression : expression) =
     ~loc
     { css_string; rewrite; stylesheet_location; dont_hash_prefixes }
 ;;
+
+module Preprocess_arguments = Preprocess_arguments

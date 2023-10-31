@@ -45,3 +45,5 @@ module Serializable_options : sig
 
   val to_stylesheet_options : t -> css_string:string -> options
 end
+
+module Preprocess_arguments = Preprocess_arguments

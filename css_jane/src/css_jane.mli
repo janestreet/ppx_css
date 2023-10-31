@@ -21,6 +21,7 @@ and Component_value : sig
     | Uri of string
     | Operator of string
     | Delim of string
+    | Ampersand
     | Function of string with_loc * t with_loc list with_loc
     | Hash of string
     | Number of string

@@ -1,7 +1,6 @@
 open! Core
 open! Ppxlib
 open Css_jane
-module Options = Options
 
 module With_hoisted_expression : sig
   (** ['a t]'s [ppx_css_string_expression] contains the css string that should be appended

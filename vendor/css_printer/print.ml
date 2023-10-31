@@ -128,6 +128,10 @@ and print_component
   | Uri str ->
     Format.fprintf formatter {|%aurl(%s)|} print_space add_space str;
     true
+  | Ampersand ->
+    (* We want the "&" to be treated as an identifier. *)
+    Format.fprintf formatter {|%a%s|} print_space add_space "&";
+    true
   | Ident str | Operator str | Number str ->
     Format.fprintf formatter {|%a%s|} print_space add_space str;
     true

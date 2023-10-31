@@ -22,6 +22,7 @@ module Sexpers = struct
     | Uri s -> [%sexp Uri (s : string)]
     | Operator s -> [%sexp Operator (s : string)]
     | Delim s -> [%sexp Delim (s : string)]
+    | Ampersand -> [%sexp Ampersand]
     | Function (s, t_list) ->
       [%sexp
         Function ((s, t_list) : string with_loc * component_value with_loc list with_loc)]
@@ -97,6 +98,7 @@ and component_value = Types.Component_value.t =
   | Uri of string
   | Operator of string
   | Delim of string
+  | Ampersand
   | Function of string with_loc * component_value with_loc list with_loc
   | Hash of string
   | Number of string
@@ -164,6 +166,7 @@ module Component_value = struct
     | Uri of string
     | Operator of string
     | Delim of string
+    | Ampersand
     | Function of string with_loc * t with_loc list with_loc
     | Hash of string
     | Number of string

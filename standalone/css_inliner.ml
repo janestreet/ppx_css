@@ -5,7 +5,9 @@ open Async
 let standalone ~serializable_options ~src =
   let css_string = Core.In_channel.read_all src in
   let options =
-    Options.Serializable_options.to_stylesheet_options ~css_string serializable_options
+    Ppx_css_syntax.Serializable_options.to_stylesheet_options
+      ~css_string
+      serializable_options
   in
   let name = Filename.chop_extension src in
   let generated_name = name ^ "__generated" in
@@ -58,7 +60,7 @@ for said classes.
        anon
          (Command.Anons.map_anons
             ("OPTIONS" %: sexp)
-            ~f:Options.Serializable_options.t_of_sexp)
+            ~f:Ppx_css_syntax.Serializable_options.t_of_sexp)
      in
      fun () -> standalone ~serializable_options ~src)
     ~behave_nicely_in_pipeline:false
