@@ -1,5 +1,6 @@
 open! Core
 open! Ppxlib
+module String_constant = String_constant
 
 (** This module parses a call to [ppx_css] into nicer parts to make the implementation of
     [ppx_css] cleaner. *)
@@ -10,12 +11,8 @@ type t =
 
       Equivalent to the [~rewrite] parameter in the call to [stylesheet] on [ppx_css].
   *)
-  ; css_string : string
+  ; css_string : String_constant.t
       (** The contained CSS string. Equivalent to the string parameter given to ppx_css. *)
-  ; stylesheet_location : location
-      (** Equivalent to where the "stylesheet" identifier is located from within the call to
-      ppx_css. This is used to potentially give merlin information for MerlinTypeOf to
-      know the type of the [stylesheet] function. *)
   ; dont_hash_prefixes : string list
   }
 
@@ -31,7 +28,7 @@ val parse_stylesheet : expression -> t
     [inline] is the syntax [%css {|declarations...|}] and expands to an expression. *)
 val parse_inline_expression : expression -> t
 
-val empty_stylesheet : css_string:string -> t
+val empty_stylesheet : css_string:String_constant.t -> t
 
 module Serializable_options : sig
   type options := t
@@ -43,7 +40,7 @@ module Serializable_options : sig
     }
   [@@deriving of_sexp]
 
-  val to_stylesheet_options : t -> css_string:string -> options
+  val to_stylesheet_options : t -> css_string:String_constant.t -> options
 end
 
 module Preprocess_arguments = Preprocess_arguments

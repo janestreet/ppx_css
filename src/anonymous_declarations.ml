@@ -55,24 +55,29 @@ module Find_anonymous_variables = struct
             Buffer.add_string buffer literal;
             acc
           | Interpreted
-              { loc_start = _
+              { loc_start
               ; value
               ; module_path
               ; pad_length = _
-              ; loc_end = _
+              ; loc_end
               ; interpreted_string = _
               } ->
             let expression =
-              match module_path with
-              | None -> value
-              | Some { txt = lident; loc } ->
-                let open (val Ast_builder.make loc) in
-                let to_string_css =
-                  pexp_ident
-                    (let lident = Ldot (lident, "to_string_css") in
-                     { txt = lident; loc })
-                in
-                [%expr [%e to_string_css] [%e value]]
+              let loc = { loc_start; loc_end; loc_ghost = true } in
+              let expression =
+                Merlin_helpers.focus_expression
+                  (match module_path with
+                   | None -> value
+                   | Some { txt = lident; loc } ->
+                     let open (val Ast_builder.make loc) in
+                     let to_string_css =
+                       pexp_ident
+                         (let lident = Ldot (lident, "to_string_css") in
+                          { txt = lident; loc })
+                     in
+                     [%expr [%e to_string_css] [%e value]])
+              in
+              [%expr ([%e expression] : string)]
             in
             let anonymous_variable = Anonymous_variable.of_expression expression in
             let acc = Reversed_list.(anonymous_variable :: acc) in
@@ -88,9 +93,14 @@ end
 
 let anonymous_class_name = "ppx_css_anonymous_class"
 
-let create ~string_loc original_declaration_string =
+let create
+  { Ppx_css_syntax.String_constant.css_string = original_declaration_string
+  ; delimiter
+  ; string_loc
+  }
+  =
   let parsed_parts =
-    Ppx_string.parse_parts ~string_loc ~delimiter:None original_declaration_string
+    Ppx_string.parse_parts ~string_loc ~delimiter original_declaration_string
   in
   let inferred_do_not_hash = inferred_do_not_hash ~string_loc ~parsed_parts in
   let%tydi { anonymous_variables; substituted_declarations } =
@@ -115,7 +125,13 @@ let always_hash t =
 
 let%expect_test "[always_hash]" =
   let test s =
-    let result = create ~string_loc:Location.none s in
+    let string_constant =
+      { Ppx_css_syntax.String_constant.css_string = s
+      ; delimiter = None
+      ; string_loc = Location.none
+      }
+    in
+    let result = create string_constant in
     print_s [%sexp (always_hash result : String.Set.t)]
   in
   test {|background-color: red|};
@@ -129,7 +145,13 @@ let%expect_test "[always_hash]" =
 
 let%expect_test "[inferred_do_not_hash]" =
   let test s =
-    let result = create ~string_loc:Location.none s in
+    let string_constant =
+      { Ppx_css_syntax.String_constant.css_string = s
+      ; delimiter = None
+      ; string_loc = Location.none
+      }
+    in
+    let result = create string_constant in
     print_s [%sexp (result.inferred_do_not_hash : string list)]
   in
   test {|background-color: red|};
@@ -170,7 +192,13 @@ let to_stylesheet_string t =
 let%expect_test _ =
   let test s =
     Anonymous_variable.For_testing.restart_identifiers ();
-    create ~string_loc:Location.none s |> to_stylesheet_string |> print_endline
+    let string_constant =
+      { Ppx_css_syntax.String_constant.css_string = s
+      ; delimiter = None
+      ; string_loc = Location.none
+      }
+    in
+    create string_constant |> to_stylesheet_string |> print_endline
   in
   test {|background-color: blue|};
   [%expect {|
@@ -215,11 +243,14 @@ module For_stylesheet = struct
     ; anonymous_variables : Anonymous_variable.Collection.t
     }
 
-  let create ~string_loc stylesheet_string =
+  let create
+    { Ppx_css_syntax.String_constant.css_string = stylesheet_string
+    ; delimiter
+    ; string_loc
+    }
+    =
     let original_stylesheet_string = { txt = stylesheet_string; loc = string_loc } in
-    let parsed_parts =
-      Ppx_string.parse_parts ~string_loc ~delimiter:None stylesheet_string
-    in
+    let parsed_parts = Ppx_string.parse_parts ~string_loc ~delimiter stylesheet_string in
     let%tydi { anonymous_variables; substituted_declarations } =
       Find_anonymous_variables.f ~parsed_parts
     in

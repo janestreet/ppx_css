@@ -1,10 +1,10 @@
 open! Core
 open! Ppxlib
+module String_constant = String_constant
 
 type t =
   { rewrite : expression String.Map.t
-  ; css_string : string
-  ; stylesheet_location : location
+  ; css_string : String_constant.t
   ; dont_hash_prefixes : string list
   }
 
@@ -73,18 +73,13 @@ module Serializable_options = struct
         (let rewrite = Map.map rewrite ~f:(fun s -> parse_string_to_expression s) in
          combine_rewrite_and_dont_hash ~loc:Location.none ~rewrite ~dont_hash)
     ; css_string
-    ; stylesheet_location = Location.none
     ; dont_hash_prefixes
     }
   ;;
 end
 
 let empty_stylesheet ~css_string =
-  { rewrite = String.Map.empty
-  ; css_string
-  ; stylesheet_location = Location.none
-  ; dont_hash_prefixes = []
-  }
+  { rewrite = String.Map.empty; css_string; dont_hash_prefixes = [] }
 ;;
 
 (* Parses the AST of a list of expressions into an actual [expression list]. *)
@@ -258,7 +253,8 @@ let validate_args ~loc args =
     let%map css_string, remaining_args =
       List.take_map args ~f:(fun (_, (arg : expression)) ->
         match arg.pexp_desc with
-        | Pexp_constant (Pconst_string (l, _, _)) -> Some l
+        | Pexp_constant (Pconst_string (css_string, _, delimiter)) ->
+          Some { String_constant.css_string; string_loc = arg.pexp_loc; delimiter }
         | _ -> None)
     in
     let rewrite, remaining_args =
@@ -350,11 +346,7 @@ let add_identifiers_from_jbuild_parameters ~loc (options : t) =
   let dont_hash_prefixes =
     options.dont_hash_prefixes @ Set.to_list jbuild_dont_hash_prefixes
   in
-  { rewrite
-  ; dont_hash_prefixes
-  ; css_string = options.css_string
-  ; stylesheet_location = options.stylesheet_location
-  }
+  { rewrite; dont_hash_prefixes; css_string = options.css_string }
 ;;
 
 let parse_stylesheet (expression : expression) =
@@ -365,11 +357,7 @@ let parse_stylesheet (expression : expression) =
     let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
     add_identifiers_from_jbuild_parameters
       ~loc
-      { css_string
-      ; rewrite
-      ; stylesheet_location = { loc with loc_ghost = true }
-      ; dont_hash_prefixes
-      }
+      { css_string; rewrite; dont_hash_prefixes }
   | _ -> raise_misparse_with_syntax_instructions ~extra_message:"" ~loc
 ;;
 
@@ -395,10 +383,7 @@ let parse_inline_expression (expression : expression) =
          list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> \
          unit]"
   in
-  let stylesheet_location = { loc with loc_ghost = true } in
-  add_identifiers_from_jbuild_parameters
-    ~loc
-    { css_string; rewrite; stylesheet_location; dont_hash_prefixes }
+  add_identifiers_from_jbuild_parameters ~loc { css_string; rewrite; dont_hash_prefixes }
 ;;
 
 module Preprocess_arguments = Preprocess_arguments

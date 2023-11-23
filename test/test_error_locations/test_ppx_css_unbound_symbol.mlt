@@ -1,0 +1,16 @@
+open! Core
+module Virtual_dom = Fake_ppx_css_runtime_for_native_tests
+open Virtual_dom;;
+
+#print_line_numbers true
+
+let x : Virtual_dom.Vdom.Attr.t = [%css {|
+  width: %{Capybara.to_float "hi"};
+|}]
+
+[%%expect {|
+Line 8, characters 11-28:
+Error: Unbound module Capybara
+ |}]
+
+(* The above error location is correct. *)

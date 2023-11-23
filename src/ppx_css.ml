@@ -504,10 +504,11 @@ let create_default_module_struct
         let preconstructed_attr_expression =
           pexp_ident (Located.mk (Lident anonymous_variables.unique_name))
         in
-        [%expr
-          Virtual_dom.Vdom.Attr.combine
-            [%e expression]
-            [%e preconstructed_attr_expression]]
+        Merlin_helpers.focus_expression
+          [%expr
+            Virtual_dom.Vdom.Attr.combine
+              [%e expression]
+              [%e preconstructed_attr_expression]]
     in
     identifiers
     |> List.concat_map ~f:(fun (original_name, (case, e)) ->
@@ -638,14 +639,10 @@ let generate_struct_from_css_string_and_options
 let generate_struct ~loc (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let { Ppx_css_syntax.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
+  let { Ppx_css_syntax.rewrite; css_string; dont_hash_prefixes } =
     Ppx_css_syntax.parse_stylesheet expr
   in
-  let anonymous_declarations =
-    Anonymous_declarations.For_stylesheet.create
-      ~string_loc:stylesheet_location
-      css_string
-  in
+  let anonymous_declarations = Anonymous_declarations.For_stylesheet.create css_string in
   generate_struct_from_css_string_and_options
     ~expansion_kind:Stylesheet
     ~loc
@@ -653,7 +650,7 @@ let generate_struct ~loc (expr : expression) =
     ~css_string:
       (Anonymous_declarations.For_stylesheet.to_stylesheet_string anonymous_declarations)
     ~dont_hash_prefixes
-    ~stylesheet_location
+    ~stylesheet_location:css_string.string_loc
     ~unused_allow_set:String.Set.empty
     ~always_hash:
       (Anonymous_declarations.For_stylesheet.always_hash anonymous_declarations)
@@ -701,8 +698,12 @@ let generate_expression_from_css_declarations_and_options
       (Located.mk
          (Ldot (Lident style_module_name, Anonymous_declarations.anonymous_class_name)))
   in
+  let structure = pmod_structure module_ in
   { With_hoisted_expression.txt =
-      pexp_letmodule (Located.mk (Some style_module_name)) (pmod_structure module_) body
+      pexp_letmodule
+        (Located.mk (Some style_module_name))
+        { structure with pmod_attributes = structure.pmod_attributes }
+        body
   ; ppx_css_string_expression
   }
 ;;
@@ -713,18 +714,16 @@ let generate_inline_expression ~loc (expr : expression)
   let open (val Ast_builder.make loc) in
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let { Ppx_css_syntax.rewrite; css_string; stylesheet_location; dont_hash_prefixes } =
+  let { Ppx_css_syntax.rewrite; css_string; dont_hash_prefixes } =
     Ppx_css_syntax.parse_inline_expression expr
   in
-  let anonymous_declarations =
-    Anonymous_declarations.create ~string_loc:stylesheet_location css_string
-  in
+  let anonymous_declarations = Anonymous_declarations.create css_string in
   generate_expression_from_css_declarations_and_options
     ~loc
     ~rewrite
     ~anonymous_declarations
     ~dont_hash_prefixes
-    ~stylesheet_location
+    ~stylesheet_location:css_string.string_loc
 ;;
 
 let create_sig_from_idents

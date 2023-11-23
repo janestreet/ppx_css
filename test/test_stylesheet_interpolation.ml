@@ -31,10 +31,10 @@ let%expect_test "basic" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -45,15 +45,16 @@ let%expect_test "basic" =
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__001_ =
-            let ppx_css_temp_variable__002_ = color in
+            let ppx_css_temp_variable__002_ = (((color)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_1_hash_91f1d840ce|},
                  ppx_css_temp_variable__002_)]
           module For_referencing = struct let hello = {|hello_hash_91f1d840ce|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_91f1d840ce|})
-              ppx_css__internal_anonymous_variables__001_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_91f1d840ce|})
+                ppx_css__internal_anonymous_variables__001_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -78,10 +79,10 @@ let%expect_test "basic with many variables" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -92,8 +93,8 @@ let%expect_test "basic with many variables" =
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__003_ =
-            let ppx_css_temp_variable__004_ = color in
-            let ppx_css_temp_variable__005_ = color2 in
+            let ppx_css_temp_variable__004_ = (((color)[@merlin.focus ]) : string) in
+            let ppx_css_temp_variable__005_ = (((color2)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_2_hash_968a0c3f9c|},
                  ppx_css_temp_variable__004_);
@@ -101,9 +102,10 @@ let%expect_test "basic with many variables" =
                 ppx_css_temp_variable__005_)]
           module For_referencing = struct let hello = {|hello_hash_968a0c3f9c|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_968a0c3f9c|})
-              ppx_css__internal_anonymous_variables__003_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_968a0c3f9c|})
+                ppx_css__internal_anonymous_variables__003_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -129,10 +131,10 @@ let%expect_test "basic with modules" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -143,8 +145,10 @@ let%expect_test "basic with modules" =
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__006_ =
-            let ppx_css_temp_variable__007_ = Css_gen.Color.to_string_css color in
-            let ppx_css_temp_variable__008_ = Css_gen.Length.to_string_css width in
+            let ppx_css_temp_variable__007_ = (((Css_gen.Color.to_string_css color)
+              [@merlin.focus ]) : string) in
+            let ppx_css_temp_variable__008_ =
+              (((Css_gen.Length.to_string_css width)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_4_hash_56beab377a|},
                  ppx_css_temp_variable__007_);
@@ -152,9 +156,10 @@ let%expect_test "basic with modules" =
                 ppx_css_temp_variable__008_)]
           module For_referencing = struct let hello = {|hello_hash_56beab377a|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_56beab377a|})
-              ppx_css__internal_anonymous_variables__006_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_56beab377a|})
+                ppx_css__internal_anonymous_variables__006_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -182,10 +187,10 @@ let%expect_test "Evaluation order matters" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -197,11 +202,15 @@ let%expect_test "Evaluation order matters" =
         struct
           let ppx_css__internal_anonymous_variables__009_ =
             let ppx_css_temp_variable__010_ =
-              Css_gen.Color.to_string_css (first ()) in
-            let ppx_css_temp_variable__011_ = Beep.to_string_css (second ()) in
-            let ppx_css_temp_variable__012_ = third () in
+              (((Css_gen.Color.to_string_css (first ()))[@merlin.focus ]) :
+              string) in
+            let ppx_css_temp_variable__011_ = (((Beep.to_string_css (second ()))
+              [@merlin.focus ]) : string) in
+            let ppx_css_temp_variable__012_ = (((third ())
+              [@merlin.focus ]) : string) in
             let ppx_css_temp_variable__013_ =
-              Css_gen.Color.to_string_css (fourth ()) in
+              (((Css_gen.Color.to_string_css (fourth ()))
+              [@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_6_hash_4428b6d16a|},
                  ppx_css_temp_variable__010_);
@@ -213,9 +222,10 @@ let%expect_test "Evaluation order matters" =
                 ppx_css_temp_variable__013_)]
           module For_referencing = struct let hello = {|hello_hash_4428b6d16a|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_4428b6d16a|})
-              ppx_css__internal_anonymous_variables__009_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_4428b6d16a|})
+                ppx_css__internal_anonymous_variables__009_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -245,10 +255,10 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -264,7 +274,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__014_ =
-            let ppx_css_temp_variable__015_ = color in
+            let ppx_css_temp_variable__015_ = (((color)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_10_hash_24118383ee|},
                  ppx_css_temp_variable__015_)]
@@ -290,9 +300,10 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
               let bar = {|--bar_hash_24118383ee|}
             end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_24118383ee|})
-              ppx_css__internal_anonymous_variables__014_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_24118383ee|})
+                ppx_css__internal_anonymous_variables__014_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -321,10 +332,10 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -340,7 +351,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__019_ =
-            let ppx_css_temp_variable__020_ = color in
+            let ppx_css_temp_variable__020_ = (((color)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_11_hash_178431e471|},
                  ppx_css_temp_variable__020_)]
@@ -363,9 +374,10 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
             struct let hello = {|hello_hash_178431e471|}
                    let bar = {|--foo|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_178431e471|})
-              ppx_css__internal_anonymous_variables__019_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_178431e471|})
+                ppx_css__internal_anonymous_variables__019_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -392,10 +404,10 @@ let%expect_test "dont hash" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -411,7 +423,7 @@ let%expect_test "dont hash" =
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__024_ =
-            let ppx_css_temp_variable__025_ = color in
+            let ppx_css_temp_variable__025_ = (((color)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_12_hash_16f4d23f2b|},
                  ppx_css_temp_variable__025_)]
@@ -434,9 +446,10 @@ let%expect_test "dont hash" =
             struct let hello = {|hello_hash_16f4d23f2b|}
                    let bar = {|--bar|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_16f4d23f2b|})
-              ppx_css__internal_anonymous_variables__024_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_16f4d23f2b|})
+                ppx_css__internal_anonymous_variables__024_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -463,10 +476,10 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -482,7 +495,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__029_ =
-            let ppx_css_temp_variable__030_ = color in
+            let ppx_css_temp_variable__030_ = (((color)[@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_13_hash_c7c909c86a|},
                  ppx_css_temp_variable__030_)]
@@ -505,9 +518,10 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
             struct let hello = {|hello_hash_c7c909c86a|}
                    let bar = {|--bar|} end
           let hello =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|hello_hash_c7c909c86a|})
-              ppx_css__internal_anonymous_variables__029_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|hello_hash_c7c909c86a|})
+                ppx_css__internal_anonymous_variables__029_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)
@@ -547,10 +561,10 @@ let%expect_test "duplicate classes, many classes" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -565,8 +579,9 @@ let%expect_test "duplicate classes, many classes" =
       module Default : S =
         struct
           let ppx_css__internal_anonymous_variables__035_ =
-            let ppx_css_temp_variable__036_ = f () in
-            let ppx_css_temp_variable__037_ = Color.to_string_css (g ()) in
+            let ppx_css_temp_variable__036_ = (((f ())[@merlin.focus ]) : string) in
+            let ppx_css_temp_variable__037_ = (((Color.to_string_css (g ()))
+              [@merlin.focus ]) : string) in
             Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
               [({|--ppx_css_anonymous_var_15_hash_60b0ee503a|},
                  ppx_css_temp_variable__036_);
@@ -580,21 +595,25 @@ let%expect_test "duplicate classes, many classes" =
               let a = {|a_hash_60b0ee503a|}
             end
           let c =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|c_hash_60b0ee503a|})
-              ppx_css__internal_anonymous_variables__035_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|c_hash_60b0ee503a|})
+                ppx_css__internal_anonymous_variables__035_)
+            [@merlin.focus ])
           let b =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|b_hash_60b0ee503a|})
-              ppx_css__internal_anonymous_variables__035_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|b_hash_60b0ee503a|})
+                ppx_css__internal_anonymous_variables__035_)
+            [@merlin.focus ])
           let d =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|d_hash_60b0ee503a|})
-              ppx_css__internal_anonymous_variables__035_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|d_hash_60b0ee503a|})
+                ppx_css__internal_anonymous_variables__035_)
+            [@merlin.focus ])
           let a =
-            Virtual_dom.Vdom.Attr.combine
-              (Virtual_dom.Vdom.Attr.class_ {|a_hash_60b0ee503a|})
-              ppx_css__internal_anonymous_variables__035_
+            ((Virtual_dom.Vdom.Attr.combine
+                (Virtual_dom.Vdom.Attr.class_ {|a_hash_60b0ee503a|})
+                ppx_css__internal_anonymous_variables__035_)
+            [@merlin.focus ])
         end
       include Default
       let default : t = (module Default)

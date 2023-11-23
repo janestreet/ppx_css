@@ -221,10 +221,10 @@ let%test_module "stylesheet components tests" =
       [%expect
         {xxx|
         [@@@ocaml.warning "-32"]
-        let (__type_info_for_ppx_css :
+        let __type_info_for_ppx_css :
           ?rewrite:(string * string) list ->
             ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit)
+              ?dont_hash_prefixes:string list -> string -> unit
           = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
         module type S  =
           sig
@@ -276,10 +276,10 @@ let%test_module "stylesheet components tests" =
       [%expect
         {xxx|
      [@@@ocaml.warning "-32"]
-     let (__type_info_for_ppx_css :
+     let __type_info_for_ppx_css :
        ?rewrite:(string * string) list ->
          ?dont_hash:string list ->
-           ?dont_hash_prefixes:string list -> string -> unit)
+           ?dont_hash_prefixes:string list -> string -> unit
        = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
      module type S  =
        sig
@@ -329,10 +329,10 @@ let%test_module "stylesheet components tests" =
       [%expect
         {xxx|
      [@@@ocaml.warning "-32"]
-     let (__type_info_for_ppx_css :
+     let __type_info_for_ppx_css :
        ?rewrite:(string * string) list ->
          ?dont_hash:string list ->
-           ?dont_hash_prefixes:string list -> string -> unit)
+           ?dont_hash_prefixes:string list -> string -> unit
        = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
      module type S  =
        sig
@@ -382,10 +382,10 @@ let%test_module "stylesheet components tests" =
       [%expect
         {xxx|
      [@@@ocaml.warning "-32"]
-     let (__type_info_for_ppx_css :
+     let __type_info_for_ppx_css :
        ?rewrite:(string * string) list ->
          ?dont_hash:string list ->
-           ?dont_hash_prefixes:string list -> string -> unit)
+           ?dont_hash_prefixes:string list -> string -> unit
        = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
      module type S  =
        sig

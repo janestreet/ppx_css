@@ -49,15 +49,17 @@ let%test_module "basic" =
             include
               struct
                 let ppx_css__internal_anonymous_variables__002_ =
-                  let ppx_css_temp_variable__003_ = color in
+                  let ppx_css_temp_variable__003_ = (((color)
+                    [@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
                     [({|--ppx_css_anonymous_var_1_hash_d23d9cf21b|},
                        ppx_css_temp_variable__003_)]
                 let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.combine
-                    (Virtual_dom.Vdom.Attr.class_
-                       {|ppx_css_anonymous_class_hash_d23d9cf21b|})
-                    ppx_css__internal_anonymous_variables__002_
+                  ((Virtual_dom.Vdom.Attr.combine
+                      (Virtual_dom.Vdom.Attr.class_
+                         {|ppx_css_anonymous_class_hash_d23d9cf21b|})
+                      ppx_css__internal_anonymous_variables__002_)
+                  [@merlin.focus ])
               end
           end in Ppx_css_anonymous_style__004_.ppx_css_anonymous_class
         Hoisted context:
@@ -85,15 +87,17 @@ let%test_module "basic" =
             include
               struct
                 let ppx_css__internal_anonymous_variables__005_ =
-                  let ppx_css_temp_variable__006_ = Mod.Foo.to_string_css color in
+                  let ppx_css_temp_variable__006_ = (((Mod.Foo.to_string_css color)
+                    [@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
                     [({|--ppx_css_anonymous_var_2_hash_ec5cbeb5af|},
                        ppx_css_temp_variable__006_)]
                 let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.combine
-                    (Virtual_dom.Vdom.Attr.class_
-                       {|ppx_css_anonymous_class_hash_ec5cbeb5af|})
-                    ppx_css__internal_anonymous_variables__005_
+                  ((Virtual_dom.Vdom.Attr.combine
+                      (Virtual_dom.Vdom.Attr.class_
+                         {|ppx_css_anonymous_class_hash_ec5cbeb5af|})
+                      ppx_css__internal_anonymous_variables__005_)
+                  [@merlin.focus ])
               end
           end in Ppx_css_anonymous_style__007_.ppx_css_anonymous_class
         Hoisted context:
@@ -125,9 +129,12 @@ let%test_module "basic" =
             include
               struct
                 let ppx_css__internal_anonymous_variables__008_ =
-                  let ppx_css_temp_variable__009_ = color1 in
-                  let ppx_css_temp_variable__010_ = color2 in
-                  let ppx_css_temp_variable__011_ = color3 in
+                  let ppx_css_temp_variable__009_ = (((color1)
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__010_ = (((color2)
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__011_ = (((color3)
+                    [@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
                     [({|--ppx_css_anonymous_var_3_hash_96babba252|},
                        ppx_css_temp_variable__009_);
@@ -136,10 +143,11 @@ let%test_module "basic" =
                     ({|--ppx_css_anonymous_var_5_hash_96babba252|},
                       ppx_css_temp_variable__011_)]
                 let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.combine
-                    (Virtual_dom.Vdom.Attr.class_
-                       {|ppx_css_anonymous_class_hash_96babba252|})
-                    ppx_css__internal_anonymous_variables__008_
+                  ((Virtual_dom.Vdom.Attr.combine
+                      (Virtual_dom.Vdom.Attr.class_
+                         {|ppx_css_anonymous_class_hash_96babba252|})
+                      ppx_css__internal_anonymous_variables__008_)
+                  [@merlin.focus ])
               end
           end in Ppx_css_anonymous_style__012_.ppx_css_anonymous_class
         Hoisted context:
@@ -173,9 +181,12 @@ let%test_module "basic" =
             include
               struct
                 let ppx_css__internal_anonymous_variables__013_ =
-                  let ppx_css_temp_variable__014_ = f () in
-                  let ppx_css_temp_variable__015_ = g () in
-                  let ppx_css_temp_variable__016_ = f () in
+                  let ppx_css_temp_variable__014_ = (((f ())
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__015_ = (((g ())
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__016_ = (((f ())
+                    [@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
                     [({|--ppx_css_anonymous_var_6_hash_98978d452f|},
                        ppx_css_temp_variable__014_);
@@ -184,10 +195,11 @@ let%test_module "basic" =
                     ({|--ppx_css_anonymous_var_8_hash_98978d452f|},
                       ppx_css_temp_variable__016_)]
                 let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.combine
-                    (Virtual_dom.Vdom.Attr.class_
-                       {|ppx_css_anonymous_class_hash_98978d452f|})
-                    ppx_css__internal_anonymous_variables__013_
+                  ((Virtual_dom.Vdom.Attr.combine
+                      (Virtual_dom.Vdom.Attr.class_
+                         {|ppx_css_anonymous_class_hash_98978d452f|})
+                      ppx_css__internal_anonymous_variables__013_)
+                  [@merlin.focus ])
               end
           end in Ppx_css_anonymous_style__017_.ppx_css_anonymous_class
         Hoisted context:
@@ -224,10 +236,14 @@ let%test_module "basic" =
             include
               struct
                 let ppx_css__internal_anonymous_variables__018_ =
-                  let ppx_css_temp_variable__019_ = first () in
-                  let ppx_css_temp_variable__020_ = second () in
-                  let ppx_css_temp_variable__021_ = third () in
-                  let ppx_css_temp_variable__022_ = fourth () in
+                  let ppx_css_temp_variable__019_ = (((first ())
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__020_ = (((second ())
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__021_ = (((third ())
+                    [@merlin.focus ]) : string) in
+                  let ppx_css_temp_variable__022_ = (((fourth ())
+                    [@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
                     [({|--ppx_css_anonymous_var_9_hash_db3af5ea56|},
                        ppx_css_temp_variable__019_);
@@ -238,10 +254,11 @@ let%test_module "basic" =
                     ({|--ppx_css_anonymous_var_12_hash_db3af5ea56|},
                       ppx_css_temp_variable__022_)]
                 let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.combine
-                    (Virtual_dom.Vdom.Attr.class_
-                       {|ppx_css_anonymous_class_hash_db3af5ea56|})
-                    ppx_css__internal_anonymous_variables__018_
+                  ((Virtual_dom.Vdom.Attr.combine
+                      (Virtual_dom.Vdom.Attr.class_
+                         {|ppx_css_anonymous_class_hash_db3af5ea56|})
+                      ppx_css__internal_anonymous_variables__018_)
+                  [@merlin.focus ])
               end
           end in Ppx_css_anonymous_style__023_.ppx_css_anonymous_class
         Hoisted context:
@@ -357,7 +374,7 @@ let%test_module "basic" =
 
     let%expect_test "no op prefix hashing is ignored" =
       (* NOTE: This is a bit subtle, but here we do decide to raise for variables.
-         The reason why is that the anonymous variables are _always_ hashed and 
+         The reason why is that the anonymous variables are _always_ hashed and
          can't be disabled. This results in awkwardness for attempting to not hash
          [--foo]. *)
       test
@@ -452,15 +469,17 @@ let%test_module "basic" =
             include
               struct
                 let ppx_css__internal_anonymous_variables__032_ =
-                  let ppx_css_temp_variable__033_ = Css_gen.Color.to_string_css foo in
+                  let ppx_css_temp_variable__033_ =
+                    (((Css_gen.Color.to_string_css foo)[@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
                     [({|--ppx_css_anonymous_var_22_hash_ee1d5e8a6c|},
                        ppx_css_temp_variable__033_)]
                 let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.combine
-                    (Virtual_dom.Vdom.Attr.class_
-                       {|ppx_css_anonymous_class_hash_ee1d5e8a6c|})
-                    ppx_css__internal_anonymous_variables__032_
+                  ((Virtual_dom.Vdom.Attr.combine
+                      (Virtual_dom.Vdom.Attr.class_
+                         {|ppx_css_anonymous_class_hash_ee1d5e8a6c|})
+                      ppx_css__internal_anonymous_variables__032_)
+                  [@merlin.focus ])
               end
           end in Ppx_css_anonymous_style__034_.ppx_css_anonymous_class
         Hoisted context:

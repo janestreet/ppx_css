@@ -6,7 +6,7 @@ let standalone ~serializable_options ~src =
   let css_string = Core.In_channel.read_all src in
   let options =
     Ppx_css_syntax.Serializable_options.to_stylesheet_options
-      ~css_string
+      ~css_string:{ css_string; string_loc = Ppxlib.Location.none; delimiter = None }
       serializable_options
   in
   let name = Filename.chop_extension src in
@@ -22,9 +22,9 @@ let standalone ~serializable_options ~src =
         w
         (For_css_inliner.gen_struct
            ~rewrite:options.rewrite
-           ~css_string:options.css_string
+           ~css_string:options.css_string.css_string
            ~dont_hash_prefixes:options.dont_hash_prefixes
-           ~stylesheet_location:options.stylesheet_location);
+           ~stylesheet_location:options.css_string.string_loc);
       Writer.write w " end";
       Writer.close w)
   and () =

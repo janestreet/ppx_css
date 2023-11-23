@@ -23,7 +23,7 @@ type t
 (** Take in a string of anonymous declarations. For example:
 
     {[ create ~string_loc:loc {|background-color: tomato|} ]} *)
-val create : string_loc:location -> string -> t
+val create : Ppx_css_syntax.String_constant.t -> t
 
 (** Gives an anonymous declarations an "anonymous classname" that's just something like:
 
@@ -78,7 +78,7 @@ val always_hash : t -> String.Set.t
 module For_stylesheet : sig
   type t
 
-  val create : string_loc:location -> string -> t
+  val create : Ppx_css_syntax.String_constant.t -> t
   val anonymous_variables : t -> Anonymous_variable.Collection.t
   val to_stylesheet_string : t -> string
   val always_hash : t -> String.Set.t

@@ -16,10 +16,10 @@ let%expect_test "basic class" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -49,10 +49,10 @@ let%expect_test "charset" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
@@ -86,10 +86,10 @@ let%expect_test "nested at rule" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -145,10 +145,10 @@ let%expect_test "at rule" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -201,10 +201,10 @@ let%expect_test "basic id" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -374,10 +374,10 @@ let%expect_test "animation" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -442,10 +442,10 @@ let%expect_test "dont hash flag" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -555,10 +555,10 @@ let%expect_test "empty rewrite" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
@@ -651,10 +651,10 @@ let%expect_test "simple use of [~rewrite]." =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -686,10 +686,10 @@ let%expect_test "simple use of [~rewrite] through a string constant." =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -729,10 +729,10 @@ let%expect_test "weirder ordering of [~rewrite]." =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -818,10 +818,10 @@ let%expect_test "both use of string constants and arbitrary expressions in use."
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -957,10 +957,10 @@ let%test_module "css_inliner_tests" =
          color:white
         }|}
           [@@@ocaml.warning "-32"]
-          let (__type_info_for_ppx_css :
+          let __type_info_for_ppx_css :
             ?rewrite:(string * string) list ->
               ?dont_hash:string list ->
-                ?dont_hash_prefixes:string list -> string -> unit)
+                ?dont_hash_prefixes:string list -> string -> unit
             = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
           module type S  =
             sig
@@ -1022,10 +1022,10 @@ let%test_module "css_inliner_tests" =
          color:white
         }|}
           [@@@ocaml.warning "-32"]
-          let (__type_info_for_ppx_css :
+          let __type_info_for_ppx_css :
             ?rewrite:(string * string) list ->
               ?dont_hash:string list ->
-                ?dont_hash_prefixes:string list -> string -> unit)
+                ?dont_hash_prefixes:string list -> string -> unit
             = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
           module type S  =
             sig
@@ -1103,10 +1103,10 @@ let%expect_test "rewrite on identifier which would eventually get unkebab'ed" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1151,10 +1151,10 @@ let%expect_test "apostrophe syntax" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -1228,10 +1228,10 @@ let%expect_test "ppx_css hashes variables" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1300,10 +1300,10 @@ let%expect_test "nested variables" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1393,10 +1393,10 @@ let%expect_test "css variables still respect [~rewrite]" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1476,10 +1476,10 @@ let%expect_test "css variables still hashed under pseudo-selectors" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1518,10 +1518,10 @@ let%expect_test "enumeration of supported selector functions" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1569,10 +1569,10 @@ let%expect_test "demonstrate support of hashing for :is" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1607,10 +1607,10 @@ let%expect_test "more complicated nested identifiers within selector functions" 
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1658,10 +1658,10 @@ let%expect_test "Does not hash invalid places for selectors." =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
@@ -1687,10 +1687,10 @@ let%expect_test "collision of names between ids and classes results in an alert.
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1747,10 +1747,10 @@ let%expect_test "behavior on sharing of id and class names" =
   [%expect
     {xxx|
       [@@@ocaml.warning "-32"]
-      let (__type_info_for_ppx_css :
+      let __type_info_for_ppx_css :
         ?rewrite:(string * string) list ->
           ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit)
+            ?dont_hash_prefixes:string list -> string -> unit
         = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
       module type S  =
         sig
@@ -1824,10 +1824,10 @@ let%expect_test "dont_hash" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -1942,10 +1942,10 @@ let%expect_test "dont_hash_prefixes" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -2048,10 +2048,10 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -2125,10 +2125,10 @@ let%expect_test "[~rewrite] takes priority over [~dont_hash_prefixes]." =
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
-    let (__type_info_for_ppx_css :
+    let __type_info_for_ppx_css :
       ?rewrite:(string * string) list ->
         ?dont_hash:string list ->
-          ?dont_hash_prefixes:string list -> string -> unit)
+          ?dont_hash_prefixes:string list -> string -> unit
       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
     module type S  =
       sig
@@ -2214,10 +2214,10 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
   [%expect
     {xxx|
         [@@@ocaml.warning "-32"]
-        let (__type_info_for_ppx_css :
+        let __type_info_for_ppx_css :
           ?rewrite:(string * string) list ->
             ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit)
+              ?dont_hash_prefixes:string list -> string -> unit
           = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
         module type S  =
           sig
