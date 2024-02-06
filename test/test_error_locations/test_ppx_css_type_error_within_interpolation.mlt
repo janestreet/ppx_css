@@ -4,13 +4,16 @@ open Virtual_dom;;
 
 #print_line_numbers true
 
-let x : Virtual_dom.Vdom.Attr.t = [%css {|
+let x : Virtual_dom.Vdom.Attr.t =
+  [%css
+    {|
   width: %{Int.to_float "hi"};
 |}]
+;;
 
 [%%expect
   {|
-Line 8, characters 24-28:
+Line 10, characters 24-28:
 Error: This expression has type string but an expression was expected of type
          int
  |}]

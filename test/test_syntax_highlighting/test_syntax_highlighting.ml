@@ -1,4 +1,8 @@
 open! Core
+open Virtual_dom
+
+(* NOTE: This file is used for testing syntax highlighting behaviors on all supported
+   text editors vim, emacs, and vscode. *)
 
 [@@@warning "-60-32"]
 
@@ -78,6 +82,57 @@ flex: flex-end
 content: %{message#Foo};
 |}
   ]
+;;
+
+let make_icon ~primary_color ~background_color =
+  (* This is a regression test for a syntax bug in VScode. *)
+  let module Style =
+  [%css
+  stylesheet
+    {|
+    .icon-wrapper {
+       border-radius: 50%;
+       padding: 6px;
+       border: 1px solid %{primary_color#Css_gen.Color};
+       background-color: %{background_color#Css_gen.Color};
+       width: 2.5rem;
+       height: 2.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+  |}]
+  in
+  Vdom.Node.div ~attrs:[ Style.icon_wrapper ] []
+;;
+
+module Style =
+(* This test case is a regression test for a highlighting bug where the interpolated
+     OCaml broke the syntax highlighting for the rest of the file in vim's syntax
+     highlighting. *)
+[%css
+stylesheet
+  {|
+    .settings_icon {
+      background-color: none;
+      position: absolute;
+      top:  2px;
+      right: %{`Px 1#Css_gen.Length};
+      /* i am a comment */
+      width:  20px;
+      height: 20px;
+      text-align: center;
+      cursor: pointer;
+    }|}]
+
+let interpolated_ocaml =
+  [%css
+    {|
+  background-color: %{
+    match `Red, `Green with
+    | `Red, `Green -> Int.to_string 100
+  }
+|}]
 ;;
 
 module I_am_a_module_at_the_end = struct

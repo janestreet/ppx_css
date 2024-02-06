@@ -65,7 +65,7 @@ module Serializable_options = struct
       List.fold ~init:(Lident first) tl ~f:(fun acc item -> Ldot (acc, item))
       |> Located.mk
       |> pexp_ident
-    | _ -> raise_s (Sexp.Atom "Expected a valid Ocaml identifier expression")
+    | _ -> raise_s (Sexp.Atom "Expected a valid OCaml identifier expression")
   ;;
 
   let to_stylesheet_options { rewrite; dont_hash; dont_hash_prefixes } ~css_string =

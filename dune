@@ -1,0 +1,10 @@
+(alias
+ (name DEFAULT)
+ (deps readme-diff.diff))
+
+(rule
+ (targets readme-diff.diff)
+ (mode promote)
+ (deps README.mdx README-public.md)
+ (action
+  (bash "%{bin:patdiff-for-review} %{bin:patdiff} %{deps} > %{targets}")))

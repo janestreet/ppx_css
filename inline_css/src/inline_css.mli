@@ -3,6 +3,8 @@ open! Core
 module Private : sig
   val append : string -> unit
   val prepend : string -> unit
+
+  module Dynamic = Inline_css_dynamic
 end
 
 module For_testing : sig

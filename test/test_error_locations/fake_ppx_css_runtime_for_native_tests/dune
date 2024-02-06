@@ -1,2 +1,5 @@
-(library (name fake_ppx_css_runtime_for_native_tests) (libraries core)
- (preprocess (pps ppx_jane)))
+(library
+ (name fake_ppx_css_runtime_for_native_tests)
+ (libraries core)
+ (preprocess
+  (pps ppx_jane)))

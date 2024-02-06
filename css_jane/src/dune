@@ -1,3 +1,6 @@
-(library (name css_jane) (public_name ppx_css.css_jane)
+(library
+ (name css_jane)
+ (public_name ppx_css.css_jane)
  (libraries css_parser css_printer compiler-libs.common core)
- (preprocess (pps ppx_jane ppxlib.traverse)))
+ (preprocess
+  (pps ppx_jane ppxlib.traverse)))

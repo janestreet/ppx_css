@@ -1,3 +1,6 @@
-(library (name ppx_css_syntax) (public_name ppx_css.syntax)
+(library
+ (name ppx_css_syntax)
+ (public_name ppx_css.syntax)
  (libraries core ppxlib core_kernel.reversed_list)
- (preprocess (pps ppx_jane)))
+ (preprocess
+  (pps ppx_jane)))

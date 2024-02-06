@@ -1,3 +1,10 @@
-(library (name css_parser) (public_name ppx_css.css_parser)
+(library
+ (name css_parser)
+ (public_name ppx_css.css_parser)
  (libraries menhirLib compiler-libs.common sedlex)
- (flags (:standard -w -27-34) -w -60) (preprocess (pps sedlex.ppx)))
+ (flags
+  (:standard -w -27-34)
+  -w
+  -60)
+ (preprocess
+  (pps sedlex.ppx)))

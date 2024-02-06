@@ -1,2 +1,5 @@
-(library (name test_ppx_css_syntax_highlighting) (libraries virtual_dom)
- (preprocess (pps ppx_css)))
+(library
+ (name test_ppx_css_syntax_highlighting)
+ (libraries virtual_dom)
+ (preprocess
+  (pps ppx_css)))

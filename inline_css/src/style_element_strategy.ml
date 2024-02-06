@@ -20,7 +20,7 @@ struct
     | Some parent ->
       (try
          let style_element = make_style_element () in
-         ignore (parent##appendChild (style_element :> Dom.node Js.t));
+         ignore (parent##appendChild (style_element :> Dom.node Js.t) : Dom.node Js.t);
          Ok style_element
        with
        | exn -> Or_error.of_exn exn)

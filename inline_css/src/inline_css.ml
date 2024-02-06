@@ -160,4 +160,6 @@ end
 module Private = struct
   let append = append
   let prepend = prepend
+
+  module Dynamic = Inline_css_dynamic
 end

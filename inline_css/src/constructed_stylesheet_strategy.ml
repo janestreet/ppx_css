@@ -18,10 +18,20 @@ module Style_sheet = struct
   })
 |js}
   ;;
+
+  let delete : t Js.t -> unit =
+    Js.Unsafe.pure_js_expr
+      {js|
+  (function (style_sheet) {
+    document.adoptedStyleSheets = document.adoptedStyleSheets.filter(x => !(x === style_sheet))
+  })
+|js}
+  ;;
 end
 
 type t = Style_sheet.t Js.t
 
+let delete_stylesheet = Style_sheet.delete
 let name = "constructed stylesheet"
 
 let initialize () =
