@@ -408,6 +408,7 @@ let create_default_module_struct
   ~variables
   ~(expansion_kind : Expansion_kind.t)
   ~(anonymous_variables : Anonymous_variable.Collection.t)
+  ~inferred_do_not_hash
   : module_expr
   =
   validate_no_collisions_after_warnings_and_rewrites
@@ -510,7 +511,14 @@ let create_default_module_struct
               [%e expression]
               [%e preconstructed_attr_expression]]
     in
+    let inferred_do_not_hash_original =
+      Set.to_list inferred_do_not_hash
+      |> List.map ~f:Traverse_css.css_identifier_to_ocaml_identifier
+      |> String.Set.of_list
+    in
     identifiers
+    |> List.filter ~f:(fun (original_name, _) ->
+         not (Set.mem inferred_do_not_hash_original original_name))
     |> List.concat_map ~f:(fun (original_name, (case, e)) ->
          match case with
          | `Both ->
@@ -569,7 +577,7 @@ let generate_struct_from_css_string_and_options
   ~dont_hash_prefixes
   ~stylesheet_location
   ~(expansion_kind : Expansion_kind.t)
-  ~unused_allow_set
+  ~inferred_do_not_hash
   ~always_hash
   ~anonymous_variables
   : structure With_hoisted_expression.t
@@ -582,7 +590,7 @@ let generate_struct_from_css_string_and_options
       ~rewrite
       ~css_string
       ~dont_hash_prefixes
-      ~unused_allow_set
+      ~unused_allow_set:inferred_do_not_hash
       ~always_hash
   in
   let identifier_mapping = Hashtbl.to_alist identifier_mapping in
@@ -608,6 +616,7 @@ let generate_struct_from_css_string_and_options
       ~variables
       ~expansion_kind
       ~anonymous_variables
+      ~inferred_do_not_hash
   in
   let structure =
     match expansion_kind with
@@ -651,7 +660,7 @@ let generate_struct ~loc (expr : expression) =
       (Anonymous_declarations.For_stylesheet.to_stylesheet_string anonymous_declarations)
     ~dont_hash_prefixes
     ~stylesheet_location:css_string.string_loc
-    ~unused_allow_set:String.Set.empty
+    ~inferred_do_not_hash:String.Set.empty
     ~always_hash:
       (Anonymous_declarations.For_stylesheet.always_hash anonymous_declarations)
     ~anonymous_variables:
@@ -679,7 +688,7 @@ let generate_expression_from_css_declarations_and_options
         rewrite)
   in
   let { With_hoisted_expression.txt = module_; ppx_css_string_expression } =
-    let unused_allow_set = String.Set.of_list inferred_do_not_hash in
+    let inferred_do_not_hash = String.Set.of_list inferred_do_not_hash in
     generate_struct_from_css_string_and_options
       ~expansion_kind:(Styled_component anonymous_declarations)
       ~loc
@@ -687,7 +696,7 @@ let generate_expression_from_css_declarations_and_options
       ~rewrite
       ~dont_hash_prefixes
       ~stylesheet_location
-      ~unused_allow_set
+      ~inferred_do_not_hash
       ~always_hash:(Anonymous_declarations.always_hash anonymous_declarations)
       ~anonymous_variables:
         (Anonymous_declarations.anonymous_variables anonymous_declarations)
@@ -754,7 +763,7 @@ module For_css_inliner = struct
         ~css_string
         ~dont_hash_prefixes
         ~stylesheet_location
-        ~unused_allow_set:String.Set.empty
+        ~inferred_do_not_hash:String.Set.empty
         ~always_hash:String.Set.empty
         ~anonymous_variables:Anonymous_variable.Collection.empty
     in

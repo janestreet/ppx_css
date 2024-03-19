@@ -15,6 +15,6 @@ let x : Virtual_dom.Vdom.Attr.t =
   {|
 Line 10, characters 11-28:
 Error: Unbound module Capybara
- |}]
+|}]
 
 (* The above error location is correct. *)

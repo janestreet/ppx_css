@@ -29,7 +29,6 @@ let%test_module "styled components tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_f3e8329429|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_f3e8329429|}
               end
           end in Ppx_css_anonymous_style__001_.ppx_css_anonymous_class
         Hoisted context:
@@ -41,11 +40,12 @@ let%test_module "styled components tests" =
 
         *.ppx_css_anonymous_class_hash_f3e8329429 {
          background-color:tomato;
-         *.foo_hash_f3e8329429 {
+         *.foo {
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "single class - renamed" =
@@ -70,7 +70,6 @@ let%test_module "styled components tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_f3e8329429|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|i-am-renamed|}
               end
           end in Ppx_css_anonymous_style__002_.ppx_css_anonymous_class
         Hoisted context:
@@ -86,7 +85,8 @@ let%test_module "styled components tests" =
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "single class - not hashed" =
@@ -101,36 +101,13 @@ let%test_module "styled components tests" =
       |}
             ~dont_hash:[ "foo" ]];
       [%expect
-        {xxx|
-        Expression context:
-        -------------------
-        let module Ppx_css_anonymous_style__003_ =
-          struct
-            include
-              struct
-                let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_f3e8329429|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
-              end
-          end in Ppx_css_anonymous_style__003_.ppx_css_anonymous_class
-        Hoisted context:
-        ----------------
-        let () =
-          Inline_css.Private.append
-            {|
-        /* _none_ */
-
-        *.ppx_css_anonymous_class_hash_f3e8329429 {
-         background-color:tomato;
-         *.foo {
-
-         }
-
-        }|} |xxx}]
+        {xxx| ~dont_hash is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
 
     let%expect_test "single class - not hashed prefixes" =
+      (* NOTE: This test demonstrates that hashing is turned off in the css for
+         classnames as they are otherwise not accessible from the styled component syntax.
+      *)
       test
         [%expr
           {|
@@ -142,33 +119,7 @@ let%test_module "styled components tests" =
       |}
             ~dont_hash_prefixes:[ "f" ]];
       [%expect
-        {xxx|
-        Expression context:
-        -------------------
-        let module Ppx_css_anonymous_style__004_ =
-          struct
-            include
-              struct
-                let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_f3e8329429|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
-              end
-          end in Ppx_css_anonymous_style__004_.ppx_css_anonymous_class
-        Hoisted context:
-        ----------------
-        let () =
-          Inline_css.Private.append
-            {|
-        /* _none_ */
-
-        *.ppx_css_anonymous_class_hash_f3e8329429 {
-         background-color:tomato;
-         *.foo {
-
-         }
-
-        }|} |xxx}]
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
 
     let%expect_test "single class - unused warning" =
@@ -182,8 +133,8 @@ let%test_module "styled components tests" =
         }
       |}
             ~dont_hash:[ "bar" ]];
-      [%expect {xxx|
-        Unused keys: (bar) |xxx}];
+      [%expect
+        {xxx| ~dont_hash is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}];
       test
         [%expr
           {|
@@ -194,8 +145,8 @@ let%test_module "styled components tests" =
         }
       |}
             ~dont_hash_prefixes:[ "bar" ]];
-      [%expect {xxx|
-        Unused prefixes: (bar) |xxx}]
+      [%expect
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
   end)
 ;;
@@ -256,7 +207,8 @@ let%test_module "stylesheet components tests" =
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "single class - renamed" =
@@ -275,41 +227,42 @@ let%test_module "stylesheet components tests" =
             ~rewrite:[ "foo", "i-am-renamed" ]];
       [%expect
         {xxx|
-     [@@@ocaml.warning "-32"]
-     let __type_info_for_ppx_css :
-       ?rewrite:(string * string) list ->
-         ?dont_hash:string list ->
-           ?dont_hash_prefixes:string list -> string -> unit
-       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-     module type S  =
-       sig
-         module For_referencing : sig val a : string val foo : string end
-         val a : Virtual_dom.Vdom.Attr.t
-         val foo : Virtual_dom.Vdom.Attr.t
-       end
-     type t = (module S)
-     module Default : S =
-       struct
-         module For_referencing =
-           struct let foo = {|i-am-renamed|}
-                  let a = {|a_hash_651658cdfe|} end
-         let foo = Virtual_dom.Vdom.Attr.class_ {|i-am-renamed|}
-         let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_651658cdfe|}
-       end
-     include Default
-     let default : t = (module Default)
-     let () =
-       Inline_css.Private.append
-         {|
-     /* _none_ */
+        [@@@ocaml.warning "-32"]
+        let __type_info_for_ppx_css :
+          ?rewrite:(string * string) list ->
+            ?dont_hash:string list ->
+              ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        module type S  =
+          sig
+            module For_referencing : sig val a : string val foo : string end
+            val a : Virtual_dom.Vdom.Attr.t
+            val foo : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        module Default : S =
+          struct
+            module For_referencing =
+              struct let foo = {|i-am-renamed|}
+                     let a = {|a_hash_651658cdfe|} end
+            let foo = Virtual_dom.Vdom.Attr.class_ {|i-am-renamed|}
+            let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_651658cdfe|}
+          end
+        include Default
+        let default : t = (module Default)
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-     *.a_hash_651658cdfe {
-      background-color:tomato;
-      *.i-am-renamed {
+        *.a_hash_651658cdfe {
+         background-color:tomato;
+         *.i-am-renamed {
 
-      }
+         }
 
-     }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "single class - not hashed" =
@@ -328,41 +281,42 @@ let%test_module "stylesheet components tests" =
             ~dont_hash:[ "foo" ]];
       [%expect
         {xxx|
-     [@@@ocaml.warning "-32"]
-     let __type_info_for_ppx_css :
-       ?rewrite:(string * string) list ->
-         ?dont_hash:string list ->
-           ?dont_hash_prefixes:string list -> string -> unit
-       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-     module type S  =
-       sig
-         module For_referencing : sig val a : string val foo : string end
-         val a : Virtual_dom.Vdom.Attr.t
-         val foo : Virtual_dom.Vdom.Attr.t
-       end
-     type t = (module S)
-     module Default : S =
-       struct
-         module For_referencing =
-           struct let foo = {|foo|}
-                  let a = {|a_hash_651658cdfe|} end
-         let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
-         let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_651658cdfe|}
-       end
-     include Default
-     let default : t = (module Default)
-     let () =
-       Inline_css.Private.append
-         {|
-     /* _none_ */
+        [@@@ocaml.warning "-32"]
+        let __type_info_for_ppx_css :
+          ?rewrite:(string * string) list ->
+            ?dont_hash:string list ->
+              ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        module type S  =
+          sig
+            module For_referencing : sig val a : string val foo : string end
+            val a : Virtual_dom.Vdom.Attr.t
+            val foo : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        module Default : S =
+          struct
+            module For_referencing =
+              struct let foo = {|foo|}
+                     let a = {|a_hash_651658cdfe|} end
+            let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
+            let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_651658cdfe|}
+          end
+        include Default
+        let default : t = (module Default)
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-     *.a_hash_651658cdfe {
-      background-color:tomato;
-      *.foo {
+        *.a_hash_651658cdfe {
+         background-color:tomato;
+         *.foo {
 
-      }
+         }
 
-     }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "single class - not hashed prefixes" =
@@ -381,41 +335,42 @@ let%test_module "stylesheet components tests" =
             ~dont_hash_prefixes:[ "f" ]];
       [%expect
         {xxx|
-     [@@@ocaml.warning "-32"]
-     let __type_info_for_ppx_css :
-       ?rewrite:(string * string) list ->
-         ?dont_hash:string list ->
-           ?dont_hash_prefixes:string list -> string -> unit
-       = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-     module type S  =
-       sig
-         module For_referencing : sig val a : string val foo : string end
-         val a : Virtual_dom.Vdom.Attr.t
-         val foo : Virtual_dom.Vdom.Attr.t
-       end
-     type t = (module S)
-     module Default : S =
-       struct
-         module For_referencing =
-           struct let foo = {|foo|}
-                  let a = {|a_hash_651658cdfe|} end
-         let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
-         let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_651658cdfe|}
-       end
-     include Default
-     let default : t = (module Default)
-     let () =
-       Inline_css.Private.append
-         {|
-     /* _none_ */
+        [@@@ocaml.warning "-32"]
+        let __type_info_for_ppx_css :
+          ?rewrite:(string * string) list ->
+            ?dont_hash:string list ->
+              ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        module type S  =
+          sig
+            module For_referencing : sig val a : string val foo : string end
+            val a : Virtual_dom.Vdom.Attr.t
+            val foo : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        module Default : S =
+          struct
+            module For_referencing =
+              struct let foo = {|foo|}
+                     let a = {|a_hash_651658cdfe|} end
+            let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
+            let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_651658cdfe|}
+          end
+        include Default
+        let default : t = (module Default)
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-     *.a_hash_651658cdfe {
-      background-color:tomato;
-      *.foo {
+        *.a_hash_651658cdfe {
+         background-color:tomato;
+         *.foo {
 
-      }
+         }
 
-     }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "single class - unused warning" =
@@ -432,8 +387,7 @@ let%test_module "stylesheet components tests" =
      }
        |}
             ~dont_hash:[ "bar" ]];
-      [%expect {xxx|
-       Unused keys: (bar) |xxx}];
+      [%expect {xxx| Unused keys: (bar) |xxx}];
       test
         [%expr
           stylesheet
@@ -447,8 +401,7 @@ let%test_module "stylesheet components tests" =
      }
        |}
             ~dont_hash_prefixes:[ "bar" ]];
-      [%expect {xxx|
-       Unused prefixes: (bar) |xxx}]
+      [%expect {xxx| Unused prefixes: (bar) |xxx}]
     ;;
   end)
 ;;

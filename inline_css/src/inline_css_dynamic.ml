@@ -32,7 +32,7 @@ module S = struct
     state
   ;;
 
-  let on_mount _input _state _element = ()
+  let on_mount = `Do_nothing
 
   let update ~old_input ~new_input state _element =
     if phys_equal old_input new_input || Input.equal old_input new_input

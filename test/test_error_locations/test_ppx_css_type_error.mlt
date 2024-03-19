@@ -18,6 +18,6 @@ let x : Virtual_dom.Vdom.Attr.t =
 Line 12, characters 11-25:
 Error: This expression has type float but an expression was expected of type
          string
- |}]
+|}]
 
 (* The above error location is correct. *)

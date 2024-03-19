@@ -111,7 +111,7 @@ let iter_identifiers ~rewrite ~dont_hash_prefixes stylesheet ~f =
     (map_stylesheet stylesheet ~rewrite ~f ~dont_hash_prefixes)
 ;;
 
-let fix_identifier =
+let css_identifier_to_ocaml_identifier =
   let swap_kebab_case =
     String.map ~f:(function
       | '-' -> '_'
@@ -150,7 +150,7 @@ let get_ocaml_identifier original_identifier ~loc ~original_identifiers ~fixed_t
   match String.exists original_identifier ~f:(Char.equal '-') with
   | false -> original_identifier
   | true ->
-    let fixed_identifier = fix_identifier original_identifier in
+    let fixed_identifier = css_identifier_to_ocaml_identifier original_identifier in
     (match Set.mem original_identifiers fixed_identifier with
      | true ->
        raise_due_to_collision_with_existing_ident
@@ -359,18 +359,6 @@ module Get_all_identifiers = struct
     ; identifiers : (string * [ `Both | `Only_class | `Only_id ]) list
     }
   [@@deriving sexp_of]
-
-  let css_variables stylesheet =
-    let out = String.Hash_set.create () in
-    iter_identifiers
-      ~rewrite:String.Map.empty
-      ~dont_hash_prefixes:[]
-      stylesheet
-      ~f:(function
-      | `Class _ | `Id _ -> ()
-      | `Variable identifier -> Hash_set.add out identifier);
-    String.Set.of_hash_set out
-  ;;
 
   let css_identifiers stylesheet =
     let out = String.Hash_set.create () in

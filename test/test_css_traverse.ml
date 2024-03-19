@@ -32,7 +32,8 @@ let%test_module "Get_all_identifiers" =
         ((variables ())
          (identifiers
           ((an_id Only_id) (both Both) (a_b_c Only_class) (class Only_class)
-           (with_kebab_case Only_class)))) |}]
+           (with_kebab_case Only_class))))
+        |}]
     ;;
 
     let%expect_test "Testing variables" =

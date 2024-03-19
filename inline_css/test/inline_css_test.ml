@@ -20,7 +20,8 @@ let%expect_test "appending preserves order and deduplicates" =
     e
     f
     g
-    h |}]
+    h
+    |}]
 ;;
 
 let%expect_test "prepending inserts at the front of the list" =
@@ -39,7 +40,8 @@ let%expect_test "prepending inserts at the front of the list" =
     e
     f
     g
-    h |}]
+    h
+    |}]
 ;;
 
 let%expect_test "Which strategy is being used during tests?" =
@@ -73,5 +75,6 @@ let%expect_test "[Strategy.update] is called many times" =
 
     .foo {
       background-color : blue;
-    } |}]
+    }
+    |}]
 ;;

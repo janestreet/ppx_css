@@ -48,31 +48,32 @@ let%test_module "styled component parsing tests" =
       |}];
       [%expect
         {xxx|
-    Expression context:
-    -------------------
-    let module Ppx_css_anonymous_style__001_ =
-      struct
-        include
+        Expression context:
+        -------------------
+        let module Ppx_css_anonymous_style__001_ =
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_06c0c801b4|}
-          end
-      end in Ppx_css_anonymous_style__001_.ppx_css_anonymous_class
-    Hoisted context:
-    ----------------
-    let () =
-      Inline_css.Private.append
-        {|
-    /* _none_ */
+            include
+              struct
+                let ppx_css_anonymous_class =
+                  Virtual_dom.Vdom.Attr.class_
+                    {|ppx_css_anonymous_class_hash_06c0c801b4|}
+              end
+          end in Ppx_css_anonymous_style__001_.ppx_css_anonymous_class
+        Hoisted context:
+        ----------------
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_06c0c801b4 {
-     background-color:tomato;
-     *&:hover {
-      background-color:black
-     }
+        *.ppx_css_anonymous_class_hash_06c0c801b4 {
+         background-color:tomato;
+         *&:hover {
+          background-color:black
+         }
 
-    }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "multiple" =
@@ -87,35 +88,36 @@ let%test_module "styled component parsing tests" =
       |}];
       [%expect
         {xxx|
-    Expression context:
-    -------------------
-    let module Ppx_css_anonymous_style__002_ =
-      struct
-        include
+        Expression context:
+        -------------------
+        let module Ppx_css_anonymous_style__002_ =
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_1f33a9ce80|}
-          end
-      end in Ppx_css_anonymous_style__002_.ppx_css_anonymous_class
-    Hoisted context:
-    ----------------
-    let () =
-      Inline_css.Private.append
-        {|
-    /* _none_ */
+            include
+              struct
+                let ppx_css_anonymous_class =
+                  Virtual_dom.Vdom.Attr.class_
+                    {|ppx_css_anonymous_class_hash_1f33a9ce80|}
+              end
+          end in Ppx_css_anonymous_style__002_.ppx_css_anonymous_class
+        Hoisted context:
+        ----------------
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_1f33a9ce80 {
-     background-color:tomato;
-     *&:foo {
+        *.ppx_css_anonymous_class_hash_1f33a9ce80 {
+         background-color:tomato;
+         *&:foo {
 
-     }
-     ;
-     *&:bar {
+         }
+         ;
+         *&:bar {
 
-     }
+         }
 
-    }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "multiple without a separating semicolon" =
@@ -130,35 +132,36 @@ let%test_module "styled component parsing tests" =
       |}];
       [%expect
         {xxx|
-    Expression context:
-    -------------------
-    let module Ppx_css_anonymous_style__003_ =
-      struct
-        include
+        Expression context:
+        -------------------
+        let module Ppx_css_anonymous_style__003_ =
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_1f33a9ce80|}
-          end
-      end in Ppx_css_anonymous_style__003_.ppx_css_anonymous_class
-    Hoisted context:
-    ----------------
-    let () =
-      Inline_css.Private.append
-        {|
-    /* _none_ */
+            include
+              struct
+                let ppx_css_anonymous_class =
+                  Virtual_dom.Vdom.Attr.class_
+                    {|ppx_css_anonymous_class_hash_1f33a9ce80|}
+              end
+          end in Ppx_css_anonymous_style__003_.ppx_css_anonymous_class
+        Hoisted context:
+        ----------------
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_1f33a9ce80 {
-     background-color:tomato;
-     *&:foo {
+        *.ppx_css_anonymous_class_hash_1f33a9ce80 {
+         background-color:tomato;
+         *&:foo {
 
-     }
-     ;
-     *&:bar {
+         }
+         ;
+         *&:bar {
 
-     }
+         }
 
-    }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "multiple without a separating semicolon, but mixed with ones that \
@@ -176,36 +179,37 @@ let%test_module "styled component parsing tests" =
       |}];
       [%expect
         {xxx|
-    Expression context:
-    -------------------
-    let module Ppx_css_anonymous_style__004_ =
-      struct
-        include
+        Expression context:
+        -------------------
+        let module Ppx_css_anonymous_style__004_ =
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_4526837167|}
-          end
-      end in Ppx_css_anonymous_style__004_.ppx_css_anonymous_class
-    Hoisted context:
-    ----------------
-    let () =
-      Inline_css.Private.append
-        {|
-    /* _none_ */
+            include
+              struct
+                let ppx_css_anonymous_class =
+                  Virtual_dom.Vdom.Attr.class_
+                    {|ppx_css_anonymous_class_hash_4526837167|}
+              end
+          end in Ppx_css_anonymous_style__004_.ppx_css_anonymous_class
+        Hoisted context:
+        ----------------
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_4526837167 {
-     background-color:tomato;
-     *&:foo {
+        *.ppx_css_anonymous_class_hash_4526837167 {
+         background-color:tomato;
+         *&:foo {
 
-     }
-     ;
-     background-color:hotpink;
-     *&:bar {
+         }
+         ;
+         background-color:hotpink;
+         *&:bar {
 
-     }
+         }
 
-    }|} |xxx}];
+        }|}
+        |xxx}];
       test
         [%expr
           {|
@@ -250,7 +254,8 @@ let%test_module "styled component parsing tests" =
 
          }
 
-        }|} |xxx}];
+        }|}
+        |xxx}];
       test [%expr {|
     & & { }
       |}];
@@ -279,7 +284,8 @@ let%test_module "styled component parsing tests" =
 
          }
 
-        }|} |xxx}];
+        }|}
+        |xxx}];
       test [%expr {|
     & .foo .foo { }
       |}];
@@ -294,7 +300,6 @@ let%test_module "styled component parsing tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_37b9d59af4|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_37b9d59af4|}
               end
           end in Ppx_css_anonymous_style__007_.ppx_css_anonymous_class
         Hoisted context:
@@ -305,11 +310,12 @@ let%test_module "styled component parsing tests" =
         /* _none_ */
 
         *.ppx_css_anonymous_class_hash_37b9d59af4 {
-         *& *.foo_hash_37b9d59af4 *.foo_hash_37b9d59af4 {
+         *& *.foo *.foo {
 
          }
 
-        }|} |xxx}];
+        }|}
+        |xxx}];
       (* This shows that the behavior for '+' is currently identical to the behavior for
          '&', which while the behavior for + is correct, the behavior for & is incorrect.
 
@@ -330,7 +336,6 @@ let%test_module "styled component parsing tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_c4d4e6073e|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_c4d4e6073e|}
               end
           end in Ppx_css_anonymous_style__008_.ppx_css_anonymous_class
         Hoisted context:
@@ -341,11 +346,12 @@ let%test_module "styled component parsing tests" =
         /* _none_ */
 
         *.ppx_css_anonymous_class_hash_c4d4e6073e {
-         +*.foo_hash_c4d4e6073e *.foo_hash_c4d4e6073e {
+         +*.foo *.foo {
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "& :hover is distinct from &:hover" =
@@ -379,7 +385,8 @@ let%test_module "styled component parsing tests" =
 
          }
 
-        }|} |xxx}];
+        }|}
+        |xxx}];
       test [%expr {|
         &:hover {
 
@@ -410,7 +417,8 @@ let%test_module "styled component parsing tests" =
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "nested & within functions work" =
@@ -444,7 +452,8 @@ let%test_module "styled component parsing tests" =
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "Nested functions allow for ident starting identifier" =
@@ -478,7 +487,8 @@ let%test_module "styled component parsing tests" =
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "Complex nested functions" =
@@ -500,9 +510,6 @@ let%test_module "styled component parsing tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_1deb4e5862|}
-                let foo = Virtual_dom.Vdom.Attr.empty
-                let foo_class = Virtual_dom.Vdom.Attr.class_ {|foo_hash_1deb4e5862|}
-                let foo_id = Virtual_dom.Vdom.Attr.id {|foo_hash_1deb4e5862|}
               end
           end in Ppx_css_anonymous_style__013_.ppx_css_anonymous_class
         Hoisted context:
@@ -513,11 +520,12 @@ let%test_module "styled component parsing tests" =
         /* _none_ */
 
         *.ppx_css_anonymous_class_hash_1deb4e5862 {
-         *& *:has(& *:has-*&+*&>*& *#foo_hash_1deb4e5862>*& *.foo_hash_1deb4e5862 &:has(& *:has(& *.foo_hash_1deb4e5862 *&))) {
+         *& *:has(& *:has-*&+*&>*& *#foo>*& *.foo &:has(& *:has(& *.foo *&))) {
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "different kinds of delimiters" =
@@ -542,8 +550,6 @@ let%test_module "styled component parsing tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_7f6fcf5e26|}
-                let foo = Virtual_dom.Vdom.Attr.id {|foo_hash_7f6fcf5e26|}
-                let bar = Virtual_dom.Vdom.Attr.class_ {|bar_hash_7f6fcf5e26|}
               end
           end in Ppx_css_anonymous_style__014_.ppx_css_anonymous_class
         Hoisted context:
@@ -554,11 +560,12 @@ let%test_module "styled component parsing tests" =
         /* _none_ */
 
         *.ppx_css_anonymous_class_hash_7f6fcf5e26 {
-         *& *:has(foo)+*.bar_hash_7f6fcf5e26+*&~*&>*&-*& *#foo_hash_7f6fcf5e26 {
+         *& *:has(foo)+*.bar+*&~*&>*&-*& *#foo {
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "more complex & interactions" =
@@ -578,7 +585,6 @@ let%test_module "styled component parsing tests" =
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
                     {|ppx_css_anonymous_class_hash_8a70b922be|}
-                let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_8a70b922be|}
               end
           end in Ppx_css_anonymous_style__015_.ppx_css_anonymous_class
         Hoisted context:
@@ -589,11 +595,12 @@ let%test_module "styled component parsing tests" =
         /* _none_ */
 
         *.ppx_css_anonymous_class_hash_8a70b922be {
-         *& *:has(.foo_hash_8a70b922be),*&:hover {
+         *& *:has(.foo),*&:hover {
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
   end)
 ;;
@@ -617,8 +624,7 @@ let%test_module "stylesheet parsing tests" =
 
     let%expect_test "top-level ampersand is disallowed" =
       test [%expr stylesheet {| & {} |}];
-      [%expect {xxx|
-        Parse error while reading token '&' |xxx}]
+      [%expect {xxx| Parse error while reading token '&' |xxx}]
     ;;
 
     let%expect_test "nested ampersand is allowed" =
@@ -654,59 +660,61 @@ let%test_module "stylesheet parsing tests" =
 
          }
 
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "nested ampersand is allowed (all the way down)" =
       test [%expr stylesheet {|.foo { & { &.bar { &.baz { } } } } |}];
       [%expect
         {xxx|
-      [@@@ocaml.warning "-32"]
-      let __type_info_for_ppx_css :
-        ?rewrite:(string * string) list ->
-          ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-      module type S  =
-        sig
-          module For_referencing :
-          sig val bar : string val baz : string val foo : string end
-          val bar : Virtual_dom.Vdom.Attr.t
-          val baz : Virtual_dom.Vdom.Attr.t
-          val foo : Virtual_dom.Vdom.Attr.t
-        end
-      type t = (module S)
-      module Default : S =
-        struct
-          module For_referencing =
-            struct
-              let foo = {|foo_hash_66de0ac9e5|}
-              let baz = {|baz_hash_66de0ac9e5|}
-              let bar = {|bar_hash_66de0ac9e5|}
-            end
-          let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_66de0ac9e5|}
-          let baz = Virtual_dom.Vdom.Attr.class_ {|baz_hash_66de0ac9e5|}
-          let bar = Virtual_dom.Vdom.Attr.class_ {|bar_hash_66de0ac9e5|}
-        end
-      include Default
-      let default : t = (module Default)
-      let () =
-        Inline_css.Private.append
-          {|
-      /* _none_ */
+        [@@@ocaml.warning "-32"]
+        let __type_info_for_ppx_css :
+          ?rewrite:(string * string) list ->
+            ?dont_hash:string list ->
+              ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        module type S  =
+          sig
+            module For_referencing :
+            sig val bar : string val baz : string val foo : string end
+            val bar : Virtual_dom.Vdom.Attr.t
+            val baz : Virtual_dom.Vdom.Attr.t
+            val foo : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        module Default : S =
+          struct
+            module For_referencing =
+              struct
+                let foo = {|foo_hash_66de0ac9e5|}
+                let baz = {|baz_hash_66de0ac9e5|}
+                let bar = {|bar_hash_66de0ac9e5|}
+              end
+            let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_66de0ac9e5|}
+            let baz = Virtual_dom.Vdom.Attr.class_ {|baz_hash_66de0ac9e5|}
+            let bar = Virtual_dom.Vdom.Attr.class_ {|bar_hash_66de0ac9e5|}
+          end
+        include Default
+        let default : t = (module Default)
+        let () =
+          Inline_css.Private.append
+            {|
+        /* _none_ */
 
-      *.foo_hash_66de0ac9e5 {
-       *& {
-        *&.bar_hash_66de0ac9e5 {
-         *&.baz_hash_66de0ac9e5 {
+        *.foo_hash_66de0ac9e5 {
+         *& {
+          *&.bar_hash_66de0ac9e5 {
+           *&.baz_hash_66de0ac9e5 {
+
+           }
+
+          }
 
          }
 
-        }
-
-       }
-
-      }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
   end)
 ;;

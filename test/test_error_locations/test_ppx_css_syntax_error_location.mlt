@@ -15,6 +15,6 @@ let x : Virtual_dom.Vdom.Attr.t =
   {|
 Line 10, characters 11-19:
 Error: invalid %{...} expression: "let x = "
- |}]
+|}]
 
 (* The above error location is correct. *)

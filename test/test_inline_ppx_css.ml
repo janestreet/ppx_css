@@ -33,7 +33,8 @@ let%test_module "basic" =
 
         *.ppx_css_anonymous_class_hash_07727475b6 {
          background-color:tomato
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "basic with interpolation" =
@@ -71,7 +72,8 @@ let%test_module "basic" =
 
         *.ppx_css_anonymous_class_hash_d23d9cf21b {
          background-color:var(--ppx_css_anonymous_var_1_hash_d23d9cf21b)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "basic with modul-based interpolation" =
@@ -109,7 +111,8 @@ let%test_module "basic" =
 
         *.ppx_css_anonymous_class_hash_ec5cbeb5af {
          background-color:var(--ppx_css_anonymous_var_2_hash_ec5cbeb5af)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "many with interpolation" =
@@ -161,7 +164,8 @@ let%test_module "basic" =
          background-color:var(--ppx_css_anonymous_var_3_hash_96babba252);
          background:var(--ppx_css_anonymous_var_4_hash_96babba252);
          background-color:var(--ppx_css_anonymous_var_5_hash_96babba252)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "duplicate functions" =
@@ -213,7 +217,8 @@ let%test_module "basic" =
          background-color:var(--ppx_css_anonymous_var_6_hash_98978d452f);
          background:var(--ppx_css_anonymous_var_7_hash_98978d452f);
          background-color:var(--ppx_css_anonymous_var_8_hash_98978d452f)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "interpolation order" =
@@ -273,7 +278,8 @@ let%test_module "basic" =
          background:var(--ppx_css_anonymous_var_10_hash_db3af5ea56);
          background-color:var(--ppx_css_anonymous_var_11_hash_db3af5ea56);
          background-color:var(--ppx_css_anonymous_var_12_hash_db3af5ea56)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "user-variables are not hashed." =
@@ -303,7 +309,8 @@ let%test_module "basic" =
 
         *.ppx_css_anonymous_class_hash_f71781611b {
          background-color:var(--foo)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "rewrite works for user variables" =
@@ -334,7 +341,8 @@ let%test_module "basic" =
 
         *.ppx_css_anonymous_class_hash_f71781611b {
          background-color:var(--bar)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "no-op dont-hash hashing" =
@@ -348,28 +356,7 @@ let%test_module "basic" =
         background-color: var(--foo);
       |} ~dont_hash:[ "--foo" ]];
       [%expect
-        {xxx|
-        Expression context:
-        -------------------
-        let module Ppx_css_anonymous_style__026_ =
-          struct
-            include
-              struct
-                let ppx_css_anonymous_class =
-                  Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_f71781611b|}
-              end
-          end in Ppx_css_anonymous_style__026_.ppx_css_anonymous_class
-        Hoisted context:
-        ----------------
-        let () =
-          Inline_css.Private.append
-            {|
-        /* _none_ */
-
-        *.ppx_css_anonymous_class_hash_f71781611b {
-         background-color:var(--foo)
-        }|} |xxx}]
+        {xxx| ~dont_hash is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
 
     let%expect_test "no op prefix hashing is ignored" =
@@ -382,8 +369,8 @@ let%test_module "basic" =
           {|
         background-color: var(--foo);
       |} ~dont_hash_prefixes:[ "--" ]];
-      [%expect {xxx|
-        Unused prefixes: (--) |xxx}]
+      [%expect
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
 
     let%expect_test "no op prefix hashing is ignored, attempting to not hash the \
@@ -398,15 +385,15 @@ let%test_module "basic" =
         background-color: %{color};
       |}
             ~dont_hash_prefixes:[ "--" ]];
-      [%expect {xxx|
-        Unused prefixes: (--) |xxx}];
+      [%expect
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}];
       test
         [%expr
           {|
         background-color: var(--foo);
       |} ~dont_hash_prefixes:[ "" ]];
-      [%expect {xxx|
-        Unused prefixes: ("") |xxx}];
+      [%expect
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}];
       test
         [%expr
           {|
@@ -414,8 +401,8 @@ let%test_module "basic" =
         color: %{foo};
       |}
             ~dont_hash_prefixes:[ "" ]];
-      [%expect {xxx|
-        Unused prefixes: ("") |xxx}]
+      [%expect
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
 
     let%expect_test "attempting to stop the anonymous class from hashing results in \
@@ -428,8 +415,8 @@ let%test_module "basic" =
         color: %{foo};
       |}
             ~dont_hash_prefixes:[ "ppx_css_anonymous_class" ]];
-      [%expect {xxx|
-        Unused prefixes: (ppx_css_anonymous_class) |xxx}];
+      [%expect
+        {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}];
       test
         [%expr
           {|
@@ -437,8 +424,8 @@ let%test_module "basic" =
         color: %{foo};
       |}
             ~dont_hash:[ "ppx_css_anonymous_class" ]];
-      [%expect {xxx|
-        Unused keys: (ppx_css_anonymous_class) |xxx}];
+      [%expect
+        {xxx| ~dont_hash is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}];
       test
         [%expr
           {|
@@ -446,8 +433,7 @@ let%test_module "basic" =
         color: %{foo};
       |}
             ~rewrite:[ "ppx_css_anonymous_class", "foo" ]];
-      [%expect {xxx|
-        Unused keys: (ppx_css_anonymous_class) |xxx}]
+      [%expect {xxx| Unused keys: (ppx_css_anonymous_class) |xxx}]
     ;;
 
     let%expect_test "user variables are _not_ hashed, while anonymous variable _are_ \
@@ -464,24 +450,24 @@ let%test_module "basic" =
         {xxx|
         Expression context:
         -------------------
-        let module Ppx_css_anonymous_style__034_ =
+        let module Ppx_css_anonymous_style__029_ =
           struct
             include
               struct
-                let ppx_css__internal_anonymous_variables__032_ =
-                  let ppx_css_temp_variable__033_ =
+                let ppx_css__internal_anonymous_variables__027_ =
+                  let ppx_css_temp_variable__028_ =
                     (((Css_gen.Color.to_string_css foo)[@merlin.focus ]) : string) in
                   Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                    [({|--ppx_css_anonymous_var_22_hash_ee1d5e8a6c|},
-                       ppx_css_temp_variable__033_)]
+                    [({|--ppx_css_anonymous_var_15_hash_939271e1be|},
+                       ppx_css_temp_variable__028_)]
                 let ppx_css_anonymous_class =
                   ((Virtual_dom.Vdom.Attr.combine
                       (Virtual_dom.Vdom.Attr.class_
-                         {|ppx_css_anonymous_class_hash_ee1d5e8a6c|})
-                      ppx_css__internal_anonymous_variables__032_)
+                         {|ppx_css_anonymous_class_hash_939271e1be|})
+                      ppx_css__internal_anonymous_variables__027_)
                   [@merlin.focus ])
               end
-          end in Ppx_css_anonymous_style__034_.ppx_css_anonymous_class
+          end in Ppx_css_anonymous_style__029_.ppx_css_anonymous_class
         Hoisted context:
         ----------------
         let () =
@@ -489,10 +475,11 @@ let%test_module "basic" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_ee1d5e8a6c {
-         background-color:var(--ppx_css_anonymous_var_22_hash_ee1d5e8a6c);
+        *.ppx_css_anonymous_class_hash_939271e1be {
+         background-color:var(--ppx_css_anonymous_var_15_hash_939271e1be);
          color:var(--background-color1)
-        }|} |xxx}]
+        }|}
+        |xxx}]
     ;;
 
     let%expect_test "parse errors" =

@@ -41,7 +41,8 @@ let%expect_test "basic class" =
 
     *.foo_hash_33d98f18fa {
      background-color:red
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "charset" =
@@ -62,7 +63,8 @@ let%expect_test "charset" =
     let () = Inline_css.Private.append {|
     /* _none_ */
 
-    @charset" UTF-8";|} |xxx}]
+    @charset" UTF-8";|}
+    |xxx}]
 ;;
 
 let%expect_test "nested at rule" =
@@ -128,7 +130,8 @@ let%expect_test "nested at rule" =
      }
 
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "at rule" =
@@ -174,21 +177,20 @@ let%expect_test "at rule" =
       padding:1rem 3rem
      }
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "no mention of stylesheet function" =
   test_struct [%expr {| .a { }|}];
   [%expect
-    {xxx|
-    %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |xxx}]
+    {xxx| %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |xxx}]
 ;;
 
 let%expect_test "not a string" =
   test_struct [%expr stylesheet 5];
   [%expect
-    {xxx|
-    ppx_css found unexpected arguments. %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |xxx}]
+    {xxx| ppx_css found unexpected arguments. %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |xxx}]
 ;;
 
 let%expect_test "basic id" =
@@ -226,7 +228,8 @@ let%expect_test "basic id" =
 
     *#foo_hash_734bfa5411 {
      background-color:red
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "missing closing brace" =
@@ -245,22 +248,23 @@ let%expect_test "listed identifiers" =
 |};
   [%expect
     {|
-      sig
-        module type S  =
-          sig
-            module For_referencing :
-            sig val a : string val b : string val c : string end
-            val a : Virtual_dom.Vdom.Attr.t
-            val b : Virtual_dom.Vdom.Attr.t
-            val c : Virtual_dom.Vdom.Attr.t
-          end
-        type t = (module S)
-        val default : t
-        module For_referencing :
-        sig val a : string val b : string val c : string end
-        val a : Virtual_dom.Vdom.Attr.t
-        val b : Virtual_dom.Vdom.Attr.t
-        val c : Virtual_dom.Vdom.Attr.t |}]
+    sig
+      module type S  =
+        sig
+          module For_referencing :
+          sig val a : string val b : string val c : string end
+          val a : Virtual_dom.Vdom.Attr.t
+          val b : Virtual_dom.Vdom.Attr.t
+          val c : Virtual_dom.Vdom.Attr.t
+        end
+      type t = (module S)
+      val default : t
+      module For_referencing :
+      sig val a : string val b : string val c : string end
+      val a : Virtual_dom.Vdom.Attr.t
+      val b : Virtual_dom.Vdom.Attr.t
+      val c : Virtual_dom.Vdom.Attr.t
+    |}]
 ;;
 
 let%expect_test "duplicates sig" =
@@ -271,42 +275,44 @@ let%expect_test "duplicates sig" =
   |};
   [%expect
     {|
-      sig
-        module type S  =
-          sig
-            module For_referencing : sig val a : string val b : string end
-            val a : Virtual_dom.Vdom.Attr.t[@@alert
-                                             unsafe
-                                               "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
-            val a_id : Virtual_dom.Vdom.Attr.t
-            val a_class : Virtual_dom.Vdom.Attr.t
-            val b : Virtual_dom.Vdom.Attr.t
-          end
-        type t = (module S)
-        val default : t
-        module For_referencing : sig val a : string val b : string end
-        val a : Virtual_dom.Vdom.Attr.t[@@alert
-                                         unsafe
-                                           "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
-        val a_id : Virtual_dom.Vdom.Attr.t
-        val a_class : Virtual_dom.Vdom.Attr.t
-        val b : Virtual_dom.Vdom.Attr.t |}]
+    sig
+      module type S  =
+        sig
+          module For_referencing : sig val a : string val b : string end
+          val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                           unsafe
+                                             "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+          val a_id : Virtual_dom.Vdom.Attr.t
+          val a_class : Virtual_dom.Vdom.Attr.t
+          val b : Virtual_dom.Vdom.Attr.t
+        end
+      type t = (module S)
+      val default : t
+      module For_referencing : sig val a : string val b : string end
+      val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                       unsafe
+                                         "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+      val a_id : Virtual_dom.Vdom.Attr.t
+      val a_class : Virtual_dom.Vdom.Attr.t
+      val b : Virtual_dom.Vdom.Attr.t
+    |}]
 ;;
 
 let%expect_test "politicians example" =
   test_sig {|.politicians {}|};
   [%expect
     {|
-      sig
-        module type S  =
-          sig
-            module For_referencing : sig val politicians : string end
-            val politicians : Virtual_dom.Vdom.Attr.t
-          end
-        type t = (module S)
-        val default : t
-        module For_referencing : sig val politicians : string end
-        val politicians : Virtual_dom.Vdom.Attr.t |}]
+    sig
+      module type S  =
+        sig
+          module For_referencing : sig val politicians : string end
+          val politicians : Virtual_dom.Vdom.Attr.t
+        end
+      type t = (module S)
+      val default : t
+      module For_referencing : sig val politicians : string end
+      val politicians : Virtual_dom.Vdom.Attr.t
+    |}]
 ;;
 
 let%expect_test "variables on signature generation" =
@@ -347,7 +353,8 @@ let%expect_test "variables on signature generation" =
       end
       module For_referencing :
       sig val bg_color : string val card : string val fg_color : string end
-      val card : Virtual_dom.Vdom.Attr.t |}]
+      val card : Virtual_dom.Vdom.Attr.t
+    |}]
 ;;
 
 let%expect_test "animation" =
@@ -414,7 +421,8 @@ let%expect_test "animation" =
       transform:rotate(360deg)
      }
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "dont hash flag" =
@@ -497,7 +505,8 @@ let%expect_test "dont hash flag" =
 
     *#dont-hash-me-id {
      color:white
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "rewrite malformed syntax" =
@@ -511,40 +520,44 @@ let%expect_test "rewrite malformed syntax" =
     examples:
       stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
       stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
-      stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *) |xxx}];
+      stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *)
+    |xxx}];
   test_struct [%expr stylesheet {||} ~rewrite];
   [%expect
     {xxx|
-      The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
-      where the first element of the tuple must be a string literal (the second element in the tuple can be
-      any expression which evaluates to a string.)
+    The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
+    where the first element of the tuple must be a string literal (the second element in the tuple can be
+    any expression which evaluates to a string.)
 
-      examples:
-        stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
-        stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
-        stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *) |xxx}];
+    examples:
+      stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
+      stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
+      stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *)
+    |xxx}];
   test_struct [%expr stylesheet {||} ~rewrite:foo];
   [%expect
     {|
-      The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
-      where the first element of the tuple must be a string literal (the second element in the tuple can be
-      any expression which evaluates to a string.)
+    The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
+    where the first element of the tuple must be a string literal (the second element in the tuple can be
+    any expression which evaluates to a string.)
 
-      examples:
-        stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
-        stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
-        stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *) |}];
+    examples:
+      stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
+      stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
+      stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *)
+    |}];
   test_struct [%expr stylesheet {||} ~rewrite:[ function_call "hi" ]];
   [%expect
     {|
-      The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
-      where the first element of the tuple must be a string literal (the second element in the tuple can be
-      any expression which evaluates to a string.)
+    The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
+    where the first element of the tuple must be a string literal (the second element in the tuple can be
+    any expression which evaluates to a string.)
 
-      examples:
-        stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
-        stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
-        stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *) |}];
+    examples:
+      stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
+      stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
+      stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *)
+    |}];
   test_struct [%expr stylesheet {||} ?rewrite:None];
   [%expect
     {| ppx_css found unexpected arguments. %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |}]
@@ -568,14 +581,14 @@ let%expect_test "empty rewrite" =
     let () = Inline_css.Private.append {|
     /* _none_ */
 
-    |} |xxx}]
+    |}
+    |xxx}]
 ;;
 
 let%expect_test "extra args" =
   test_struct [%expr stylesheet {||} ~rewrite:[] extra];
   [%expect
-    {xxx|
-    ppx_css found unexpected arguments. %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |xxx}]
+    {xxx| ppx_css found unexpected arguments. %css must contain a call to [?rewrite:(string * string) list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit] |xxx}]
 ;;
 
 let%expect_test "Unsafe identifier collision through already existing identifier" =
@@ -633,8 +646,7 @@ let%expect_test "Unsafe identifier collision through newly minted identifiers" =
   }
   |};
   [%expect
-    {xxx|
-      Unsafe collisions of names. Two different unsafe names map to the same fixed name which might lead to unintended results. Both '--hello-world-1' and 'hello-world_1' map to 'hello_world_1' |xxx}]
+    {xxx| Unsafe collisions of names. Two different unsafe names map to the same fixed name which might lead to unintended results. Both '--hello-world-1' and 'hello-world_1' map to 'hello_world_1' |xxx}]
 ;;
 
 let%expect_test "collisions between [~rewrite] keys." =
@@ -676,7 +688,8 @@ let%expect_test "simple use of [~rewrite]." =
 
     *.%s {
 
-    }|} M.a) |xxx}]
+    }|} M.a)
+    |xxx}]
 ;;
 
 let%expect_test "simple use of [~rewrite] through a string constant." =
@@ -709,7 +722,8 @@ let%expect_test "simple use of [~rewrite] through a string constant." =
 
     *.a {
      color:green
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "weirder ordering of [~rewrite]." =
@@ -802,7 +816,8 @@ let%expect_test "weirder ordering of [~rewrite]." =
     *.%s {
 
     }|}
-           M.a c c M.b M.a) |xxx}]
+           M.a c c M.b M.a)
+    |xxx}]
 ;;
 
 let%expect_test "both use of string constants and arbitrary expressions in use." =
@@ -863,7 +878,8 @@ let%expect_test "both use of string constants and arbitrary expressions in use."
     *.c_hash_0c073e40ac {
 
     }|}
-           (f M.a)) |xxx}]
+           (f M.a))
+    |xxx}]
 ;;
 
 (* NOTE: This test case checks an internal function of ppx_css which is weird, but the
@@ -909,8 +925,7 @@ let%expect_test "unused [~rewrite] target warning" =
   test_struct [%expr stylesheet {|
   .a { }
   |} ~rewrite:[ "b", "b" ]];
-  [%expect {xxx|
-    Unused keys: (b) |xxx}]
+  [%expect {xxx| Unused keys: (b) |xxx}]
 ;;
 
 let%test_module "css_inliner_tests" =
@@ -991,7 +1006,8 @@ let%test_module "css_inliner_tests" =
           val default : t
           module For_referencing : sig val a : string val b : string end
           val a : Virtual_dom.Vdom.Attr.t
-          val b : Virtual_dom.Vdom.Attr.t |xxx}]
+          val b : Virtual_dom.Vdom.Attr.t
+        |xxx}]
     ;;
 
     let%expect_test "generation with duplicate names." =
@@ -1050,7 +1066,8 @@ let%test_module "css_inliner_tests" =
           type t = (module S)
           val default : t
           module For_referencing : sig val a : string end
-          val a : Virtual_dom.Vdom.Attr.t |xxx}]
+          val a : Virtual_dom.Vdom.Attr.t
+        |xxx}]
     ;;
   end)
 ;;
@@ -1066,34 +1083,35 @@ let%test_module "Variable setter creation" =
         |};
       [%expect
         {|
-          sig
-            module type S  =
-              sig
-                module Variables :
-                sig
-                  val set :
-                    ?bg_color:string ->
-                      ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
-                  val set_all :
-                    bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
-                end
-                module For_referencing :
-                sig val a_class : string val bg_color : string val fg_color : string
-                end
-                val a_class : Virtual_dom.Vdom.Attr.t
-              end
-            type t = (module S)
-            val default : t
-            module Variables :
+        sig
+          module type S  =
             sig
-              val set :
-                ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
-              val set_all :
-                bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
+              module Variables :
+              sig
+                val set :
+                  ?bg_color:string ->
+                    ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+                val set_all :
+                  bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
+              end
+              module For_referencing :
+              sig val a_class : string val bg_color : string val fg_color : string
+              end
+              val a_class : Virtual_dom.Vdom.Attr.t
             end
-            module For_referencing :
-            sig val a_class : string val bg_color : string val fg_color : string end
-            val a_class : Virtual_dom.Vdom.Attr.t |}]
+          type t = (module S)
+          val default : t
+          module Variables :
+          sig
+            val set :
+              ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+            val set_all :
+              bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
+          end
+          module For_referencing :
+          sig val a_class : string val bg_color : string val fg_color : string end
+          val a_class : Virtual_dom.Vdom.Attr.t
+        |}]
     ;;
   end)
 ;;
@@ -1126,7 +1144,8 @@ let%expect_test "rewrite on identifier which would eventually get unkebab'ed" =
 
     *.a_b {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "unused [~rewrite] target warning" =
@@ -1150,58 +1169,59 @@ let%expect_test "apostrophe syntax" =
   |}];
   [%expect
     {xxx|
-      [@@@ocaml.warning "-32"]
-      let __type_info_for_ppx_css :
-        ?rewrite:(string * string) list ->
-          ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-      module type S  =
-        sig
-          module For_referencing :
-          sig val a : string val aa : string val b : string val bb : string end
-          val a : Virtual_dom.Vdom.Attr.t
-          val aa : Virtual_dom.Vdom.Attr.t
-          val b : Virtual_dom.Vdom.Attr.t
-          val bb : Virtual_dom.Vdom.Attr.t
-        end
-      type t = (module S)
-      module Default : S =
-        struct
-          module For_referencing =
-            struct
-              let bb = {|bb_hash_267f25fb39|}
-              let b = {|b|}
-              let a = {|a|}
-              let aa = {|aa|}
-            end
-          let bb = Virtual_dom.Vdom.Attr.class_ {|bb_hash_267f25fb39|}
-          let b = Virtual_dom.Vdom.Attr.class_ {|b|}
-          let a = Virtual_dom.Vdom.Attr.class_ {|a|}
-          let aa = Virtual_dom.Vdom.Attr.class_ {|aa|}
-        end
-      include Default
-      let default : t = (module Default)
-      let () =
-        Inline_css.Private.append
-          {|
-      /* _none_ */
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?rewrite:(string * string) list ->
+        ?dont_hash:string list ->
+          ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  =
+      sig
+        module For_referencing :
+        sig val a : string val aa : string val b : string val bb : string end
+        val a : Virtual_dom.Vdom.Attr.t
+        val aa : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+        val bb : Virtual_dom.Vdom.Attr.t
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module For_referencing =
+          struct
+            let bb = {|bb_hash_267f25fb39|}
+            let b = {|b|}
+            let a = {|a|}
+            let aa = {|aa|}
+          end
+        let bb = Virtual_dom.Vdom.Attr.class_ {|bb_hash_267f25fb39|}
+        let b = Virtual_dom.Vdom.Attr.class_ {|b|}
+        let a = Virtual_dom.Vdom.Attr.class_ {|a|}
+        let aa = Virtual_dom.Vdom.Attr.class_ {|aa|}
+      end
+    include Default
+    let default : t = (module Default)
+    let () =
+      Inline_css.Private.append
+        {|
+    /* _none_ */
 
-      *.b {
+    *.b {
 
-      }
+    }
 
-      *.bb_hash_267f25fb39 {
+    *.bb_hash_267f25fb39 {
 
-      }
+    }
 
-      *.a {
+    *.a {
 
-      }
+    }
 
-      *.aa {
+    *.aa {
 
-      }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "Both don't_hash and dont_hash are used" =
@@ -1280,7 +1300,8 @@ let%expect_test "ppx_css hashes variables" =
 
     *.a_hash_b519a9dc79 {
      background-color:var(--my-variable_hash_b519a9dc79,default)
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "nested variables" =
@@ -1372,7 +1393,8 @@ let%expect_test "nested variables" =
 
     *.navbar_hash_0ac8471275 {
      background-color:var(--a_hash_0ac8471275,var(--b_hash_0ac8471275,(var(--c_hash_0ac8471275))))
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "css variables still respect [~rewrite]" =
@@ -1465,7 +1487,8 @@ let%expect_test "css variables still respect [~rewrite]" =
     *.navbar_hash_0ac8471275 {
      background-color:var(--a,var(%s,(var(--c_hash_0ac8471275))))
     }|}
-           Other_library.b Other_library.b) |xxx}]
+           Other_library.b Other_library.b)
+    |xxx}]
 ;;
 
 let%expect_test "css variables still hashed under pseudo-selectors" =
@@ -1500,7 +1523,8 @@ let%expect_test "css variables still hashed under pseudo-selectors" =
 
     *:not(.navbar_hash) {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "enumeration of supported selector functions" =
@@ -1561,7 +1585,8 @@ let%expect_test "enumeration of supported selector functions" =
 
     *:where(.where_hash) {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "demonstrate support of hashing for :is" =
@@ -1592,7 +1617,8 @@ let%expect_test "demonstrate support of hashing for :is" =
 
     *:is(.is_hash) {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "more complicated nested identifiers within selector functions" =
@@ -1642,7 +1668,8 @@ let%expect_test "more complicated nested identifiers within selector functions" 
 
     *:not(.a_hash>:dir(.d)>.c_hash:has(.navbar_hash)) {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "Does not hash invalid places for selectors." =
@@ -1676,7 +1703,8 @@ let%expect_test "Does not hash invalid places for selectors." =
     has(.a) {
      background-color::has(.a);
      background-color:has(.a)
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "collision of names between ids and classes results in an alert." =
@@ -1722,7 +1750,8 @@ let%expect_test "collision of names between ids and classes results in an alert.
 
     *.foo_hash_ba79671496 {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "collision of names between ids and classes colliding with a third party \
@@ -1735,8 +1764,7 @@ let%expect_test "collision of names between ids and classes colliding with a thi
 .foo_id {}
   |}];
   [%expect
-    {xxx|
-    Collision between identifiers! This occurs when a disambiguated identifier matches an existing identifier. To resolve this, rename the following identifiers: (foo_class foo_id). |xxx}]
+    {xxx| Collision between identifiers! This occurs when a disambiguated identifier matches an existing identifier. To resolve this, rename the following identifiers: (foo_class foo_id). |xxx}]
 ;;
 
 let%expect_test "behavior on sharing of id and class names" =
@@ -1746,43 +1774,44 @@ let%expect_test "behavior on sharing of id and class names" =
                     |}];
   [%expect
     {xxx|
-      [@@@ocaml.warning "-32"]
-      let __type_info_for_ppx_css :
-        ?rewrite:(string * string) list ->
-          ?dont_hash:string list ->
-            ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-      module type S  =
-        sig
-          module For_referencing : sig val a : string end
-          val a : Virtual_dom.Vdom.Attr.t[@@alert
-                                           unsafe
-                                             "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
-          val a_id : Virtual_dom.Vdom.Attr.t
-          val a_class : Virtual_dom.Vdom.Attr.t
-        end
-      type t = (module S)
-      module Default : S =
-        struct
-          module For_referencing = struct let a = {|a_hash_b7f7689df5|} end
-          let a = Virtual_dom.Vdom.Attr.empty
-          let a_class = Virtual_dom.Vdom.Attr.class_ {|a_hash_b7f7689df5|}
-          let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_b7f7689df5|}
-        end
-      include Default
-      let default : t = (module Default)
-      let () =
-        Inline_css.Private.append
-          {|
-      /* _none_ */
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?rewrite:(string * string) list ->
+        ?dont_hash:string list ->
+          ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  =
+      sig
+        module For_referencing : sig val a : string end
+        val a : Virtual_dom.Vdom.Attr.t[@@alert
+                                         unsafe
+                                           "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
+        val a_id : Virtual_dom.Vdom.Attr.t
+        val a_class : Virtual_dom.Vdom.Attr.t
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module For_referencing = struct let a = {|a_hash_b7f7689df5|} end
+        let a = Virtual_dom.Vdom.Attr.empty
+        let a_class = Virtual_dom.Vdom.Attr.class_ {|a_hash_b7f7689df5|}
+        let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_b7f7689df5|}
+      end
+    include Default
+    let default : t = (module Default)
+    let () =
+      Inline_css.Private.append
+        {|
+    /* _none_ */
 
-      *.a_hash_b7f7689df5 {
+    *.a_hash_b7f7689df5 {
 
-      }
+    }
 
-      *#a_hash_b7f7689df5 {
+    *#a_hash_b7f7689df5 {
 
-      }|} |xxx}];
+    }|}
+    |xxx}];
   test_sig {|
     .a {}
     #a {}
@@ -1806,7 +1835,8 @@ let%expect_test "behavior on sharing of id and class names" =
                                        unsafe
                                          "An id and a class both share the name \"a\" which is ambiguous. Please use \"a_id\" or \"a_class\" instead."]
       val a_id : Virtual_dom.Vdom.Attr.t
-      val a_class : Virtual_dom.Vdom.Attr.t |}]
+      val a_class : Virtual_dom.Vdom.Attr.t
+    |}]
 ;;
 
 let%expect_test "dont_hash" =
@@ -1879,7 +1909,8 @@ let%expect_test "dont_hash" =
 
     *#an_id {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "Clashes caused by the rename to snake case from kebab case trigger a \
@@ -1887,8 +1918,7 @@ let%expect_test "Clashes caused by the rename to snake case from kebab case trig
   =
   test_struct [%expr stylesheet {| .a-a {}  .a_a {} |}];
   [%expect
-    {xxx|
-    Unsafe collision of names. Cannot rename 'a-a' to 'a_a' because 'a_a' already exists |xxx}]
+    {xxx| Unsafe collision of names. Cannot rename 'a-a' to 'a_a' because 'a_a' already exists |xxx}]
 ;;
 
 let%expect_test "Unused warnings also apply to [dont_hash]" =
@@ -1914,7 +1944,8 @@ let%expect_test "[dont_hash] syntax error" =
 
     example:
       stylesheet ~dont_hash:[ "foo_bar" ] (* Does not hash instances of "foo_bar". *)
-      stylesheet ~dont_hash:[ "--bg-color" ] (* Does not hash instances of "--bg-color". *) |}]
+      stylesheet ~dont_hash:[ "--bg-color" ] (* Does not hash instances of "--bg-color". *)
+    |}]
 ;;
 
 let%expect_test "[dont_hash] syntax error" =
@@ -1925,7 +1956,8 @@ let%expect_test "[dont_hash] syntax error" =
 
     example:
       stylesheet ~dont_hash:[ "foo_bar" ] (* Does not hash instances of "foo_bar". *)
-      stylesheet ~dont_hash:[ "--bg-color" ] (* Does not hash instances of "--bg-color". *) |}]
+      stylesheet ~dont_hash:[ "--bg-color" ] (* Does not hash instances of "--bg-color". *)
+    |}]
 ;;
 
 let%expect_test "dont_hash_prefixes" =
@@ -2002,7 +2034,8 @@ let%expect_test "dont_hash_prefixes" =
     *.a_hash_785a41f00f {
      --bg-color:red;
      --fg-color_hash_785a41f00f:blue
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "dont_hash_prefixes accidental shadowing" =
@@ -2016,8 +2049,7 @@ let%expect_test "dont_hash_prefixes accidental shadowing" =
     }
                     |}
         ~dont_hash_prefixes:[ "--bg"; "--" ]];
-  [%expect {xxx|
-    Unused prefixes: (--bg) |xxx}]
+  [%expect {xxx| Unused prefixes: (--bg) |xxx}]
 ;;
 
 let%expect_test "dont_hash_prefixes no mention of prefixes" =
@@ -2025,8 +2057,7 @@ let%expect_test "dont_hash_prefixes no mention of prefixes" =
     [%expr stylesheet {|
     .a { }
                     |} ~dont_hash_prefixes:[ "--" ]];
-  [%expect {xxx|
-    Unused prefixes: (--) |xxx}]
+  [%expect {xxx| Unused prefixes: (--) |xxx}]
 ;;
 
 let%expect_test "dont_hash_prefixes two different prefixes" =
@@ -2109,7 +2140,8 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
 
     *.b_hash_db3c8256c8 {
      --bb:blue
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "[~rewrite] takes priority over [~dont_hash_prefixes]." =
@@ -2158,7 +2190,8 @@ let%expect_test "[~rewrite] takes priority over [~dont_hash_prefixes]." =
 
     *.abc {
 
-    }|} |xxx}]
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "Unused/possibly redundant/clashing [~dont_hash_prefixes] reuslts in a \
@@ -2174,8 +2207,7 @@ let%expect_test "Unused/possibly redundant/clashing [~dont_hash_prefixes] reuslt
         ~rewrite:[ "abcde", "i-take-priority" ]
           (* "ab" is shadowed by rewrite's "abcde", and both "a12345" and "a123" apply to "a123456" so the longest one of them is rendundant. *)
         ~dont_hash_prefixes:[ "ab"; "a12345"; "a123" ]];
-  [%expect {xxx|
-    Unused prefixes: (a12345 ab) |xxx}]
+  [%expect {xxx| Unused prefixes: (a12345 ab) |xxx}]
 ;;
 
 let%expect_test "[dont_hash_prefixes] syntax error" =
@@ -2187,7 +2219,8 @@ let%expect_test "[dont_hash_prefixes] syntax error" =
 
     example:
       stylesheet ~dont_hash_prefixes:[ "--bg" ] (* Does not hashes identifiers that start with "--bg" (e.g. "--bg-color"). *)
-      stylesheet ~dont_hash_prefixes:[ "--" ] (* Does not hash css variables. *) |}]
+      stylesheet ~dont_hash_prefixes:[ "--" ] (* Does not hash css variables. *)
+    |}]
 ;;
 
 let%expect_test "[dont_hash_prefixes] syntax error" =
@@ -2198,7 +2231,8 @@ let%expect_test "[dont_hash_prefixes] syntax error" =
 
     example:
       stylesheet ~dont_hash_prefixes:[ "--bg" ] (* Does not hashes identifiers that start with "--bg" (e.g. "--bg-color"). *)
-      stylesheet ~dont_hash_prefixes:[ "--" ] (* Does not hash css variables. *) |}]
+      stylesheet ~dont_hash_prefixes:[ "--" ] (* Does not hash css variables. *)
+    |}]
 ;;
 
 let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]" =
@@ -2213,47 +2247,48 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
         ~dont_hash_prefixes:[ "--cm" ]];
   [%expect
     {xxx|
-        [@@@ocaml.warning "-32"]
-        let __type_info_for_ppx_css :
-          ?rewrite:(string * string) list ->
-            ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit
-          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-        module type S  =
-          sig
-            module Variables :
-            sig
-              val set : ?cm_bg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
-              val set_all : cm_bg_color:string -> Virtual_dom.Vdom.Attr.t
-            end
-            module For_referencing : sig val cm_bg_color : string end
-          end
-        type t = (module S)
-        module Default : S =
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?rewrite:(string * string) list ->
+        ?dont_hash:string list ->
+          ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  =
+      sig
+        module Variables :
+        sig
+          val set : ?cm_bg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all : cm_bg_color:string -> Virtual_dom.Vdom.Attr.t
+        end
+        module For_referencing : sig val cm_bg_color : string end
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module Variables =
           struct
-            module Variables =
-              struct
-                let ppx_css_variable_set__021_ ?cm_bg_color () =
-                  let ppx_css_acc__019_ = [] in
-                  let ppx_css_acc__019_ =
-                    match cm_bg_color with
-                    | None -> ppx_css_acc__019_
-                    | Some ppx_css_value__020_ ->
-                        ({|--cm-bg-color|}, ppx_css_value__020_) :: ppx_css_acc__019_ in
-                  Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__019_
-                let set = ppx_css_variable_set__021_
-                let set_all ~cm_bg_color = ppx_css_variable_set__021_ () ~cm_bg_color
-              end
-            module For_referencing = struct let cm_bg_color = {|--cm-bg-color|} end
+            let ppx_css_variable_set__021_ ?cm_bg_color () =
+              let ppx_css_acc__019_ = [] in
+              let ppx_css_acc__019_ =
+                match cm_bg_color with
+                | None -> ppx_css_acc__019_
+                | Some ppx_css_value__020_ ->
+                    ({|--cm-bg-color|}, ppx_css_value__020_) :: ppx_css_acc__019_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__019_
+            let set = ppx_css_variable_set__021_
+            let set_all ~cm_bg_color = ppx_css_variable_set__021_ () ~cm_bg_color
           end
-        include Default
-        let default : t = (module Default)
-        let () =
-          Inline_css.Private.append
-            {|
-        /* _none_ */
+        module For_referencing = struct let cm_bg_color = {|--cm-bg-color|} end
+      end
+    include Default
+    let default : t = (module Default)
+    let () =
+      Inline_css.Private.append
+        {|
+    /* _none_ */
 
-        *:root {
-         color:var(--cm-bg-color)
-        }|} |xxx}]
+    *:root {
+     color:var(--cm-bg-color)
+    }|}
+    |xxx}]
 ;;

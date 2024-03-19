@@ -31,7 +31,7 @@ let inferred_do_not_hash ~string_loc ~parsed_parts =
     |> Stylesheet.of_string ~pos:string_loc.loc_start
   in
   let ( - ) = Set.remove in
-  Traverse_css.Get_all_identifiers.css_variables style_sheet
+  Traverse_css.Get_all_identifiers.css_identifiers style_sheet
   - placeholder_class
   - placeholder_variable
   |> Set.to_list
@@ -100,7 +100,11 @@ let create
   }
   =
   let parsed_parts =
-    Ppx_string.parse_parts ~string_loc ~delimiter original_declaration_string
+    Ppx_string.parse
+      ~config:Ppx_string.config_for_string
+      ~string_loc
+      ~delimiter
+      original_declaration_string
   in
   let inferred_do_not_hash = inferred_do_not_hash ~string_loc ~parsed_parts in
   let%tydi { anonymous_variables; substituted_declarations } =
@@ -201,16 +205,13 @@ let%expect_test _ =
     create string_constant |> to_stylesheet_string |> print_endline
   in
   test {|background-color: blue|};
-  [%expect {|
-    .ppx_css_anonymous_class { background-color: blue } |}];
+  [%expect {| .ppx_css_anonymous_class { background-color: blue } |}];
   test {|background-color: %{color};|};
   [%expect
-    {|
-    .ppx_css_anonymous_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
+    {| .ppx_css_anonymous_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
   test {|background-color: %{color#Module.Foo};|};
   [%expect
-    {|
-    .ppx_css_anonymous_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
+    {| .ppx_css_anonymous_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
   test
     {|
     background-color: red;
@@ -231,7 +232,8 @@ let%expect_test _ =
         background-color: var(--ppx_css_anonymous_var_2);
         background-color: var(--ppx_css_anonymous_var_3);
 
-       } |}]
+       }
+    |}]
 ;;
 
 let inferred_do_not_hash t = t.inferred_do_not_hash
@@ -250,7 +252,13 @@ module For_stylesheet = struct
     }
     =
     let original_stylesheet_string = { txt = stylesheet_string; loc = string_loc } in
-    let parsed_parts = Ppx_string.parse_parts ~string_loc ~delimiter stylesheet_string in
+    let parsed_parts =
+      Ppx_string.parse
+        ~config:Ppx_string.config_for_string
+        ~string_loc
+        ~delimiter
+        stylesheet_string
+    in
     let%tydi { anonymous_variables; substituted_declarations } =
       Find_anonymous_variables.f ~parsed_parts
     in

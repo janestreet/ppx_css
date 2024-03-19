@@ -246,9 +246,18 @@ let raise_if_alternate_syntaxes ~loc args =
     raise_if_both_of_these_are_present_at_the_same_time_and_explain ~loc a b args)
 ;;
 
-let validate_args ~loc args =
+let validate_args ~loc ~(kind : [ `Stylesheet | `Styled_component ]) args =
   let open Option.Let_syntax in
   raise_if_alternate_syntaxes ~loc args;
+  let raise_if_styled_component_because_it_is_disallowed ~loc ~argument_name =
+    match kind with
+    | `Stylesheet -> ()
+    | `Styled_component ->
+      Location.raise_errorf
+        ~loc
+        "~%s is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed."
+        argument_name
+  in
   let args =
     let%map css_string, remaining_args =
       List.take_map args ~f:(fun (_, (arg : expression)) ->
@@ -265,10 +274,13 @@ let validate_args ~loc args =
     in
     let dont_hash, remaining_args =
       List.take_map remaining_args ~f:(function
-        | Labelled ("dont_hash" | "don't_hash"), expression ->
+        | Labelled (("dont_hash" | "don't_hash") as name), expression ->
+          raise_if_styled_component_because_it_is_disallowed
+            ~loc:expression.pexp_loc
+            ~argument_name:name;
           Some
             (parse_string_list
-               ~name:"dont_hash"
+               ~name
                ~syntax_error_message:malformed_dont_hash_error_message
                ~loc:expression.pexp_loc
                expression)
@@ -277,10 +289,13 @@ let validate_args ~loc args =
     in
     let dont_hash_prefixes, remaining_args =
       List.take_map remaining_args ~f:(function
-        | Labelled ("dont_hash_prefixes" | "don't_hash_prefixes"), expression ->
+        | Labelled (("dont_hash_prefixes" | "don't_hash_prefixes") as name), expression ->
+          raise_if_styled_component_because_it_is_disallowed
+            ~loc:expression.pexp_loc
+            ~argument_name:name;
           Some
             (parse_string_list
-               ~name:"dont_hash_prefixes"
+               ~name
                ~syntax_error_message:malformed_dont_hash_prefixes_error_message
                ~loc:expression.pexp_loc
                expression)
@@ -354,7 +369,9 @@ let parse_stylesheet (expression : expression) =
   let loc = { loc with loc_ghost = true } in
   match expression.pexp_desc with
   | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident "stylesheet"; loc }; _ }, args) ->
-    let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
+    let css_string, rewrite, dont_hash_prefixes =
+      validate_args ~loc ~kind:`Stylesheet args
+    in
     add_identifiers_from_jbuild_parameters
       ~loc
       { css_string; rewrite; dont_hash_prefixes }
@@ -370,11 +387,15 @@ let parse_inline_expression (expression : expression) =
         (({ pexp_desc = Pexp_constant (Pconst_string (_, loc, _)); _ } as string), args)
       ->
       let args = (Nolabel, string) :: args in
-      let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
+      let css_string, rewrite, dont_hash_prefixes =
+        validate_args ~loc ~kind:`Styled_component args
+      in
       css_string, rewrite, dont_hash_prefixes
     | Pexp_constant (Pconst_string (_, loc, _)) ->
       let args = [ Nolabel, expression ] in
-      let css_string, rewrite, dont_hash_prefixes = validate_args ~loc args in
+      let css_string, rewrite, dont_hash_prefixes =
+        validate_args ~loc ~kind:`Styled_component args
+      in
       css_string, rewrite, dont_hash_prefixes
     | _ ->
       Location.raise_errorf

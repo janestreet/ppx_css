@@ -36,6 +36,8 @@ module Transform : sig
     -> result
 end
 
+val css_identifier_to_ocaml_identifier : string -> string
+
 module Get_all_identifiers : sig
   type result =
     { variables : string list
@@ -43,7 +45,7 @@ module Get_all_identifiers : sig
     }
   [@@deriving sexp_of]
 
-  val css_variables : Stylesheet.t -> String.Set.t
+  val css_identifiers : Stylesheet.t -> String.Set.t
   val ocaml_identifiers : Stylesheet.t -> result
 end
 
