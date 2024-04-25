@@ -9,7 +9,7 @@
  (targets style.css)
  (deps make_css.bc.js)
  (action
-  (bash "%{NODE} %{deps} > %{targets}")))
+  (bash "node %{deps} > %{targets}")))
 
 (alias
  (name DEFAULT)
