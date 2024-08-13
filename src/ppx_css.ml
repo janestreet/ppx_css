@@ -112,9 +112,9 @@ let module_type_of_identifiers
       identifier_keys @ user_variables
       |> List.dedup_and_sort ~compare:String.compare
       |> List.map ~f:(fun ident ->
-           let type_ = [%type: string] in
-           let name = Located.mk ident in
-           psig_value (value_description ~name ~type_ ~prim:[]))
+        let type_ = [%type: string] in
+        let name = Located.mk ident in
+        psig_value (value_description ~name ~type_ ~prim:[]))
     in
     let type_ = pmty_signature signature_items in
     psig_module (module_declaration ~name:(Located.mk (Some "For_referencing")) ~type_)
@@ -126,37 +126,36 @@ let module_type_of_identifiers
        signature. The sorting is a nice bonus for output stability. *)
     |> List.dedup_and_sort ~compare:(fun (a, _) (b, _) -> String.compare a b)
     |> List.concat_map ~f:(fun (ident, case) ->
-         let type_ = [%type: Virtual_dom.Vdom.Attr.t] in
-         let name = Located.mk ident in
-         match case with
-         | `Only_class | `Only_id ->
-           [ psig_value (value_description ~name ~type_ ~prim:[]) ]
-         | `Both ->
-           let id_name = Located.mk [%string "%{ident}_id"] in
-           let class_name = Located.mk [%string "%{ident}_class"] in
-           let error_attribute =
-             let error_message =
-               pexp_constant
-                 (Pconst_string
-                    ( sprintf
-                        "An id and a class both share the name \"%s\" which is \
-                         ambiguous. Please use \"%s_id\" or \"%s_class\" instead."
-                        ident
-                        ident
-                        ident
-                    , loc
-                    , None ))
-             in
-             let payload = PStr [ pstr_eval [%expr unsafe [%e error_message]] [] ] in
-             attribute ~name:(Located.mk "alert") ~payload
-           in
-           [ psig_value
-               { (value_description ~name ~type_ ~prim:[]) with
-                 pval_attributes = [ error_attribute ]
-               }
-           ; psig_value (value_description ~name:id_name ~type_ ~prim:[])
-           ; psig_value (value_description ~name:class_name ~type_ ~prim:[])
-           ])
+      let type_ = [%type: Virtual_dom.Vdom.Attr.t] in
+      let name = Located.mk ident in
+      match case with
+      | `Only_class | `Only_id -> [ psig_value (value_description ~name ~type_ ~prim:[]) ]
+      | `Both ->
+        let id_name = Located.mk [%string "%{ident}_id"] in
+        let class_name = Located.mk [%string "%{ident}_class"] in
+        let error_attribute =
+          let error_message =
+            pexp_constant
+              (Pconst_string
+                 ( sprintf
+                     "An id and a class both share the name \"%s\" which is ambiguous. \
+                      Please use \"%s_id\" or \"%s_class\" instead."
+                     ident
+                     ident
+                     ident
+                 , loc
+                 , None ))
+          in
+          let payload = PStr [ pstr_eval [%expr unsafe [%e error_message]] [] ] in
+          attribute ~name:(Located.mk "alert") ~payload
+        in
+        [ psig_value
+            { (value_description ~name ~type_ ~prim:[]) with
+              pval_attributes = [ error_attribute ]
+            }
+        ; psig_value (value_description ~name:id_name ~type_ ~prim:[])
+        ; psig_value (value_description ~name:class_name ~type_ ~prim:[])
+        ])
   in
   let base = string_module :: identifier_signature_items in
   Option.value_map var_builder ~f:(fun var_builder -> var_builder :: base) ~default:base
@@ -270,17 +269,17 @@ let var_builder_structure ~loc ~variables ~maybe_combine_with_anonymous_variable
         variables
         ~init:in_
         ~f:(fun (ocaml_identifier, variable_expression) acc ->
-        let ocaml_identifier_expression =
-          pexp_ident (Located.mk (Lident ocaml_identifier))
-        in
-        let expr =
-          [%expr
-            match [%e ocaml_identifier_expression] with
-            | None -> [%e acc_expression]
-            | Some [%p value_pattern] ->
-              ([%e variable_expression], [%e value_expression]) :: [%e acc_expression]]
-        in
-        pexp_let Nonrecursive [ value_binding ~pat:acc_pattern ~expr ] acc)
+          let ocaml_identifier_expression =
+            pexp_ident (Located.mk (Lident ocaml_identifier))
+          in
+          let expr =
+            [%expr
+              match [%e ocaml_identifier_expression] with
+              | None -> [%e acc_expression]
+              | Some [%p value_pattern] ->
+                ([%e variable_expression], [%e value_expression]) :: [%e acc_expression]]
+          in
+          pexp_let Nonrecursive [ value_binding ~pat:acc_pattern ~expr ] acc)
     in
     let call_to_vdom_attr_acc =
       let actual_call =
@@ -327,7 +326,7 @@ let var_builder_structure ~loc ~variables ~maybe_combine_with_anonymous_variable
           (pexp_ident (Located.mk (Lident unique_set_name)))
           ((Nolabel, [%expr ()])
            :: List.map variables ~f:(fun (identifier, _) ->
-                Labelled identifier, pexp_ident (Located.mk (Lident identifier))))
+             Labelled identifier, pexp_ident (Located.mk (Lident identifier))))
       in
       let set_all_function_expression =
         List.fold_right variables ~init:set_all_body ~f:(fun (identifier, _) acc ->
@@ -347,7 +346,7 @@ let calculate_user_variables ~variables ~anonymous_variables =
     List.map
       anonymous_variables.Anonymous_variable.Collection.variables
       ~f:(fun anonymous_variable ->
-      Anonymous_variable.name anonymous_variable |> Anonymous_variable.Name.to_string)
+        Anonymous_variable.name anonymous_variable |> Anonymous_variable.Name.to_string)
     |> String.Set.of_list
   in
   List.filter variables ~f:(fun (name, _) -> not (Set.mem anonymous_variable_names name))
@@ -450,12 +449,12 @@ let create_default_module_struct
                 ; temporary_name
                 }
                 acc
-                ->
-            let temporary_name = pexp_ident (Located.mk (Lident temporary_name)) in
-            [%expr
-              (::)
-                ( ([%e css_variable_name_after_name_resolution], [%e temporary_name])
-                , [%e acc] )])
+              ->
+              let temporary_name = pexp_ident (Located.mk (Lident temporary_name)) in
+              [%expr
+                ( :: )
+                  ( ([%e css_variable_name_after_name_resolution], [%e temporary_name])
+                  , [%e acc] )])
         in
         [%expr Virtual_dom.Vdom.Attr.__css_vars_no_kebabs [%e kebabs]]
       in
@@ -469,13 +468,15 @@ let create_default_module_struct
               ; temporary_name
               }
               acc
-              ->
-          pexp_let
-            Nonrecursive
-            [ (let pat = ppat_var (Located.mk temporary_name) in
-               value_binding ~pat ~expr:(Anonymous_variable.expression anonymous_variable))
-            ]
-            acc)
+            ->
+            pexp_let
+              Nonrecursive
+              [ (let pat = ppat_var (Located.mk temporary_name) in
+                 value_binding
+                   ~pat
+                   ~expr:(Anonymous_variable.expression anonymous_variable))
+              ]
+              acc)
       in
       let setter_structure_item =
         pstr_value
@@ -518,34 +519,34 @@ let create_default_module_struct
     in
     identifiers
     |> List.filter ~f:(fun (original_name, _) ->
-         not (Set.mem inferred_do_not_hash_original original_name))
+      not (Set.mem inferred_do_not_hash_original original_name))
     |> List.concat_map ~f:(fun (original_name, (case, e)) ->
-         match case with
-         | `Both ->
-           let id_string = original_name ^ "_id" in
-           let class_string = original_name ^ "_class" in
-           let id_pattern = ppat_var (Located.mk id_string) in
-           let original_pattern = ppat_var (Located.mk original_name) in
-           let class_pattern = ppat_var (Located.mk class_string) in
-           [ [%stri let [%p original_pattern] = Virtual_dom.Vdom.Attr.empty]
-           ; [%stri
-               let [%p class_pattern] =
-                 [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.class_ [%e e]]]
-               ;;]
-           ; [%stri let [%p id_pattern] = Virtual_dom.Vdom.Attr.id [%e e]]
-           ]
-         | `Only_class ->
-           [ [%stri
-               let [%p ppat_var (Located.mk original_name)] =
-                 [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.class_ [%e e]]]
-               ;;]
-           ]
-         | `Only_id ->
-           [ [%stri
-               let [%p ppat_var (Located.mk original_name)] =
-                 [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.id [%e e]]]
-               ;;]
-           ])
+      match case with
+      | `Both ->
+        let id_string = original_name ^ "_id" in
+        let class_string = original_name ^ "_class" in
+        let id_pattern = ppat_var (Located.mk id_string) in
+        let original_pattern = ppat_var (Located.mk original_name) in
+        let class_pattern = ppat_var (Located.mk class_string) in
+        [ [%stri let [%p original_pattern] = Virtual_dom.Vdom.Attr.empty]
+        ; [%stri
+            let [%p class_pattern] =
+              [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.class_ [%e e]]]
+            ;;]
+        ; [%stri let [%p id_pattern] = Virtual_dom.Vdom.Attr.id [%e e]]
+        ]
+      | `Only_class ->
+        [ [%stri
+            let [%p ppat_var (Located.mk original_name)] =
+              [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.class_ [%e e]]]
+            ;;]
+        ]
+      | `Only_id ->
+        [ [%stri
+            let [%p ppat_var (Located.mk original_name)] =
+              [%e maybe_set_anon_variables [%expr Virtual_dom.Vdom.Attr.id [%e e]]]
+            ;;]
+        ])
   in
   let identifiers_and_variables_as_string =
     List.map identifiers ~f:(fun (label, (_, expression)) -> label, expression)
@@ -586,7 +587,7 @@ let generate_struct_from_css_string_and_options
   let { Traverse_css.Transform.css_string; identifier_mapping; reference_order } =
     Traverse_css.Transform.f
       ~loc
-      ~pos:loc.loc_start
+      ~pos:stylesheet_location.loc_start
       ~rewrite
       ~css_string
       ~dont_hash_prefixes
@@ -649,7 +650,7 @@ let generate_struct ~loc (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
   let { Ppx_css_syntax.rewrite; css_string; dont_hash_prefixes } =
-    Ppx_css_syntax.parse_stylesheet expr
+    Ppx_css_syntax.parse_stylesheet_exn expr
   in
   let anonymous_declarations = Anonymous_declarations.For_stylesheet.create css_string in
   generate_struct_from_css_string_and_options
@@ -724,7 +725,7 @@ let generate_inline_expression ~loc (expr : expression)
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
   let { Ppx_css_syntax.rewrite; css_string; dont_hash_prefixes } =
-    Ppx_css_syntax.parse_inline_expression expr
+    Ppx_css_syntax.parse_inline_expression_exn expr
   in
   let anonymous_declarations = Anonymous_declarations.create css_string in
   generate_expression_from_css_declarations_and_options

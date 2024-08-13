@@ -132,11 +132,13 @@ p q r {
 ;;
 
 let test_css_functions () =
-  let css = {|
+  let css =
+    {|
 {
   color: rgb(1, 2, 3);
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -174,11 +176,13 @@ let test_css_functions () =
 ;;
 
 let test_at_rule_page () =
-  let css = {|
+  let css =
+    {|
 @page {
   margin: 1cm;
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.At_rule
@@ -210,9 +214,11 @@ let test_at_rule_page () =
 ;;
 
 let test_at_rule_charset () =
-  let css = {|
+  let css =
+    {|
 @charset "utf-8";
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.At_rule
@@ -231,9 +237,11 @@ let test_at_rule_charset () =
 ;;
 
 let test_at_rule_import () =
-  let css = {|
+  let css =
+    {|
 @import url("fineprint.css") print;
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.At_rule
@@ -256,9 +264,11 @@ let test_at_rule_import () =
 ;;
 
 let test_at_rule_namespace () =
-  let css = {|
+  let css =
+    {|
 @namespace url(http://www.w3.org/1999/xhtml);
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.At_rule
@@ -617,11 +627,13 @@ let test_at_rule_keyframes () =
 ;;
 
 let test_at_rule_viewport () =
-  let css = {|
+  let css =
+    {|
 @viewport {
   width: device-width;
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.At_rule
@@ -754,11 +766,13 @@ let test_at_rule_font_feature_values () =
 ;;
 
 let test_hover_selector () =
-  let css = {|
+  let css =
+    {|
 :hover {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -790,11 +804,13 @@ let test_hover_selector () =
 ;;
 
 let test_id_selector () =
-  let css = {|
+  let css =
+    {|
 #id {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -825,11 +841,13 @@ let test_id_selector () =
 ;;
 
 let test_class_selector () =
-  let css = {|
+  let css =
+    {|
 .classname {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -871,11 +889,13 @@ let test_empty_stylesheet () =
 ;;
 
 let test_negative_numbers () =
-  let css = {|
+  let css =
+    {|
       {
         margin: -10px;
       }
-    |} in
+    |}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -991,13 +1011,15 @@ let test_css_variables () =
 ;;
 
 let test_at_rule_scope () =
-  let css = {|
+  let css =
+    {|
 @scope div {
   span {
     color: blue;
   }
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.At_rule
@@ -1079,11 +1101,13 @@ let test_at_rule_keyframes_with_vendor_prefixes () =
 ;;
 
 let test_p_space_first_child_selector () =
-  let css = {|
+  let css =
+    {|
 p :first-child {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -1116,11 +1140,13 @@ p :first-child {
 ;;
 
 let test_p_first_child_selector () =
-  let css = {|
+  let css =
+    {|
 p:first-child {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -1152,11 +1178,13 @@ p:first-child {
 ;;
 
 let test_p_star_space_first_child_selector () =
-  let css = {|
+  let css =
+    {|
 p * :first-child {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -1190,11 +1218,13 @@ p * :first-child {
 ;;
 
 let test_p_space_dot_classname () =
-  let css = {|
+  let css =
+    {|
 p .classname {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule
@@ -1227,11 +1257,13 @@ p .classname {
 ;;
 
 let test_p_space_hash_id () =
-  let css = {|
+  let css =
+    {|
 p #id {
   color: blue
 }
-|} in
+|}
+  in
   let ast = Css.Parser.parse_stylesheet css in
   let expected_ast =
     ( [ Rule.Style_rule

@@ -1,9 +1,16 @@
 open! Core
-open! Bonsai_web
+open! Bonsai_web.Proc
 open! Bonsai_web_test
 
 let%expect_test "css censoring" =
-  let module Style = [%css stylesheet ".foo {}"] in
+  let module Style =
+    [%css
+    stylesheet
+      {|
+        .foo {
+        }
+        |}]
+  in
   let handle =
     Handle.create
       (Result_spec.vdom Fn.id)
@@ -32,13 +39,13 @@ let%test_module "inline css" =
     ;;
 
     let%expect_test "normal case" =
-      test [%css {|background-color: blue|}];
+      test [%css {|background-color: blue;|}];
       [%expect {| <div class="ppx_css_anonymous_class_hash_replaced_in_test"> </div> |}]
     ;;
 
     let%expect_test "single variable interpolation" =
       let color = "tomato" in
-      test [%css {|background-color: %{color}|}];
+      test [%css {|background-color: %{color};|}];
       [%expect
         {|
         <div class="ppx_css_anonymous_class_hash_replaced_in_test"
@@ -48,7 +55,7 @@ let%test_module "inline css" =
 
     let%expect_test "single variable with module interpolation" =
       let color = `Hex "#ff0000" in
-      test [%css {|background-color: %{color#Css_gen.Color}|}];
+      test [%css {|background-color: %{color#Css_gen.Color};|}];
       [%expect
         {|
         <div class="ppx_css_anonymous_class_hash_replaced_in_test"
@@ -61,8 +68,9 @@ let%test_module "inline css" =
       test
         [%css
           {|
-   background-color: %{color#Css_gen.Color};
-   background-color: var(--background-color1);|}];
+            background-color: %{color#Css_gen.Color};
+            background-color: var(--background-color1);
+          |}];
       [%expect
         {|
         <div class="ppx_css_anonymous_class_hash_replaced_in_test"
@@ -78,12 +86,13 @@ let%test_module "inline css" =
       test
         [%css
           {|
-   background-color: %{color "first"#Css_gen.Color};
-   background-color: %{color "second"#Css_gen.Color};
-   background-color: %{color "third"#Css_gen.Color};
-   background-color: %{color "fourth"#Css_gen.Color};
-   background-color: %{color "fifth"#Css_gen.Color};
-   background-color: %{color "sixth"#Css_gen.Color}; |}];
+            background-color: %{color "first"#Css_gen.Color};
+            background-color: %{color "second"#Css_gen.Color};
+            background-color: %{color "third"#Css_gen.Color};
+            background-color: %{color "fourth"#Css_gen.Color};
+            background-color: %{color "fifth"#Css_gen.Color};
+            background-color: %{color "sixth"#Css_gen.Color};
+          |}];
       (* side effects occur in the order that they pop-up on-screen. *)
       [%expect
         {|
@@ -114,13 +123,13 @@ let%test_module "interpolated stylesheet css" =
     let%expect_test "single variable" =
       let color = "tomato" in
       let module Style =
-      [%css
-      stylesheet
-        {|
-          .foo {
-            background-color: %{color};
-          }
-      |}]
+        [%css
+        stylesheet
+          {|
+            .foo {
+              background-color: %{color};
+            }
+            |}]
       in
       test Style.foo;
       [%expect
@@ -134,18 +143,17 @@ let%test_module "interpolated stylesheet css" =
       let color = "tomato" in
       let color2 = "hotpink" in
       let module Style =
-      [%css
-      stylesheet
-        {|
-          .foo {
-            background-color: %{color};
-          }
+        [%css
+        stylesheet
+          {|
+            .foo {
+              background-color: %{color};
+            }
 
-
-          .foo.bar.baz {
-            background-color: %{color2};
-          }
-      |}]
+            .foo.bar.baz {
+              background-color: %{color2};
+            }
+            |}]
       in
       test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
       [%expect
@@ -160,19 +168,18 @@ let%test_module "interpolated stylesheet css" =
       let color2 = `Hex "#FF00FF" in
       let width = `Px 1 in
       let module Style =
-      [%css
-      stylesheet
-        {|
-          .foo {
-            background-color: %{color#Css_gen.Color};
-          }
+        [%css
+        stylesheet
+          {|
+            .foo {
+              background-color: %{color#Css_gen.Color};
+            }
 
-
-          .foo.bar.baz {
-            background-color: %{color2#Css_gen.Color};
-            width: %{width#Css_gen.Length};
-          }
-      |}]
+            .foo.bar.baz {
+              background-color: %{color2#Css_gen.Color};
+              width: %{width#Css_gen.Length};
+            }
+            |}]
       in
       test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
       [%expect
@@ -185,18 +192,17 @@ let%test_module "interpolated stylesheet css" =
     let%expect_test "user variables _and_ anonymous variables" =
       let color = `Name "tomato" in
       let module Style =
-      [%css
-      stylesheet
-        {|
-          .foo {
-            background-color: %{color#Css_gen.Color};
-          }
+        [%css
+        stylesheet
+          {|
+            .foo {
+              background-color: %{color#Css_gen.Color};
+            }
 
-
-          .foo.bar.baz {
-            background-color: var(--color);
-          }
-      |}]
+            .foo.bar.baz {
+              background-color: var(--color);
+            }
+            |}]
       in
       test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
       [%expect
@@ -212,21 +218,20 @@ let%test_module "interpolated stylesheet css" =
         `Name "tomato"
       in
       let module Style =
-      [%css
-      stylesheet
-        {|
-          .foo {
-            background-color: %{color "first"#Css_gen.Color};
-          }
+        [%css
+        stylesheet
+          {|
+            .foo {
+              background-color: %{color "first"#Css_gen.Color};
+            }
 
-
-          .foo.bar.baz {
-            background-color: %{color "second"#Css_gen.Color};
-            background-color: %{color "third"#Css_gen.Color};
-            background-color: var(--color);
-            background-color: %{color "fourth"#Css_gen.Color};
-          }
-      |}]
+            .foo.bar.baz {
+              background-color: %{color "second"#Css_gen.Color};
+              background-color: %{color "third"#Css_gen.Color};
+              background-color: var(--color);
+              background-color: %{color "fourth"#Css_gen.Color};
+            }
+            |}]
       in
       test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
       [%expect

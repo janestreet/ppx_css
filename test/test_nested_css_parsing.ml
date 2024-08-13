@@ -62,7 +62,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -102,7 +102,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -146,7 +146,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -193,7 +193,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -226,7 +226,9 @@ let%test_module "styled component parsing tests" =
 
     let%expect_test "parsing regression test" =
       (* The bug was that we ate up the whitespace between the & and then '*' *)
-      test [%expr {|
+      test
+        [%expr
+          {|
     & * { }
       |}];
       [%expect
@@ -245,7 +247,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -256,7 +258,9 @@ let%test_module "styled component parsing tests" =
 
         }|}
         |xxx}];
-      test [%expr {|
+      test
+        [%expr
+          {|
     & & { }
       |}];
       [%expect
@@ -275,7 +279,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -286,7 +290,9 @@ let%test_module "styled component parsing tests" =
 
         }|}
         |xxx}];
-      test [%expr {|
+      test
+        [%expr
+          {|
     & .foo .foo { }
       |}];
       [%expect
@@ -305,7 +311,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -322,7 +328,9 @@ let%test_module "styled component parsing tests" =
          The bug was that & was printed as a delimeter which is wrong. The fix was to
          instead parse ampersands into their own thing.
       *)
-      test [%expr {|
+      test
+        [%expr
+          {|
     + .foo .foo { }
       |}];
       [%expect
@@ -341,7 +349,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -355,7 +363,9 @@ let%test_module "styled component parsing tests" =
     ;;
 
     let%expect_test "& :hover is distinct from &:hover" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         & :hover {
 
         }
@@ -376,7 +386,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -387,7 +397,9 @@ let%test_module "styled component parsing tests" =
 
         }|}
         |xxx}];
-      test [%expr {|
+      test
+        [%expr
+          {|
         &:hover {
 
         }
@@ -408,7 +420,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -422,7 +434,9 @@ let%test_module "styled component parsing tests" =
     ;;
 
     let%expect_test "nested & within functions work" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         & :has(&) {
 
         }
@@ -443,7 +457,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -457,7 +471,9 @@ let%test_module "styled component parsing tests" =
     ;;
 
     let%expect_test "Nested functions allow for ident starting identifier" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         & :has(foo) {
 
         }
@@ -478,7 +494,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -515,7 +531,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -534,7 +550,8 @@ let%test_module "styled component parsing tests" =
          fine to remove the white space. This output shows correct behavior to my
          understanding. *)
       test
-        [%expr {|
+        [%expr
+          {|
         & :has(foo) + .bar + & ~ & > & - & #foo {
 
         }
@@ -555,7 +572,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -569,7 +586,9 @@ let%test_module "styled component parsing tests" =
     ;;
 
     let%expect_test "more complex & interactions" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         & :has(.foo), &:hover {
 
         }
@@ -590,7 +609,7 @@ let%test_module "styled component parsing tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -651,7 +670,7 @@ let%test_module "stylesheet parsing tests" =
         include Default
         let default : t = (module Default)
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -698,7 +717,7 @@ let%test_module "stylesheet parsing tests" =
         include Default
         let default : t = (module Default)
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 

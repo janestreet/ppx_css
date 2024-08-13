@@ -17,7 +17,7 @@ open Ppxlib
 type t =
   { css_string : string
   ; string_loc : location
-      (** Equivalent to where the "stylesheet" identifier is located from within the call to
+  (** Equivalent to where the "stylesheet" identifier is located from within the call to
       ppx_css. This is used to potentially give merlin information for MerlinTypeOf to
       know the type of the [stylesheet] function. *)
   ; delimiter : string option

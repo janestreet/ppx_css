@@ -38,10 +38,16 @@ module State = struct
   type t =
     { appended_items : String.Hash_set.t
     ; mutable items : string Prepend_and_append_list.t
+    ; mutable updated : bool
+    ; mutable future_appends_should_always_update : bool
     }
 
   let all_css =
-    { appended_items = String.Hash_set.create (); items = Prepend_and_append_list.empty }
+    { appended_items = String.Hash_set.create ()
+    ; items = Prepend_and_append_list.empty
+    ; updated = false
+    ; future_appends_should_always_update = false
+    }
   ;;
 
   let to_string () =
@@ -55,12 +61,16 @@ module State = struct
     if already_appended
     then `Already_appended
     else (
+      all_css.updated <- false;
       Hash_set.add all_css.appended_items a;
       all_css.items <- Prepend_and_append_list.append all_css.items a;
       `Newly_appended)
   ;;
 
-  let prepend a = all_css.items <- Prepend_and_append_list.prepend all_css.items a
+  let prepend a =
+    all_css.items <- Prepend_and_append_list.prepend all_css.items a;
+    all_css.updated <- false
+  ;;
 end
 
 module Strategy = struct
@@ -120,10 +130,15 @@ let update_strategy_from_state () =
     (* If the lazy isn't forced, then we don't need to do anything because all the
        contents will be loaded when [install_in_dom] is called. *)
     ()
-  | Some (Ok (T { state; strategy = (module M) })) -> M.update state (State.to_string ())
   | Some (Error _) ->
     (* don't print the error because it already got printed inside [install_in_dom] *)
     ()
+  | Some (Ok (T { state; strategy = (module M) })) ->
+    (match State.all_css.updated with
+     | true -> ()
+     | false ->
+       M.update state (State.to_string ());
+       State.all_css.updated <- true)
 ;;
 
 let append a =
@@ -133,9 +148,46 @@ let append a =
   | `Newly_appended -> update_strategy_from_state ()
 ;;
 
+let update_if_not_already_updated () =
+  update_strategy_from_state ();
+  State.all_css.future_appends_should_always_update <- true
+;;
+
+let is_in_browser =
+  Js.Optdef.test
+    (Js.Unsafe.pure_js_expr {|globalThis?.window?.requestAnimationFrame|} : _ Js.Optdef.t)
+;;
+
+let schedule_an_update_on_animation_frame () =
+  if is_in_browser
+  then (
+    let animation_frame_id =
+      Dom_html.window##requestAnimationFrame
+        (Js.wrap_callback (fun _ -> update_if_not_already_updated ()))
+    in
+    ignore animation_frame_id)
+;;
+
+let append_but_do_not_update a =
+  let already_appended = State.append a in
+  match already_appended with
+  | `Already_appended -> ()
+  | `Newly_appended ->
+    if State.all_css.future_appends_should_always_update
+    then update_strategy_from_state ()
+    else schedule_an_update_on_animation_frame ()
+;;
+
 let prepend a =
   State.prepend a;
   update_strategy_from_state ()
+;;
+
+let prepend_but_do_not_update a =
+  State.prepend a;
+  if State.all_css.future_appends_should_always_update
+  then update_strategy_from_state ()
+  else schedule_an_update_on_animation_frame ()
 ;;
 
 module For_testing = struct
@@ -160,6 +212,9 @@ end
 module Private = struct
   let append = append
   let prepend = prepend
+  let append_but_do_not_update = append_but_do_not_update
+  let prepend_but_do_not_update = prepend_but_do_not_update
+  let update_if_not_already_updated = update_if_not_already_updated
 
   module Dynamic = Inline_css_dynamic
 end

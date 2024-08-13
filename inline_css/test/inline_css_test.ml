@@ -12,7 +12,8 @@ let%expect_test "appending preserves order and deduplicates" =
   [ "a"; "b"; "a"; "c"; "d"; "e"; "e"; "e"; "f"; "g"; "h" ]
   |> List.iter ~f:Inline_css.Private.append;
   print_for_testing ();
-  [%expect {|
+  [%expect
+    {|
     a
     b
     c
@@ -51,7 +52,8 @@ let%expect_test "Which strategy is being used during tests?" =
 
 let%expect_test "[Strategy.update] is called many times" =
   let add_style_foo () =
-    Inline_css.Private.append {|
+    Inline_css.Private.append
+      {|
 .foo {
   background-color : blue;
 }|}

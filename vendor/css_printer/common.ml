@@ -69,8 +69,8 @@ let update_declarations
       existing
       ~init:(block, [])
       ~f:(fun (block, prev) (declarations, location) ->
-      let update, remain = add_all_declarations declarations block in
-      remain, (update, location) :: prev)
+        let update, remain = add_all_declarations declarations block in
+        remain, (update, location) :: prev)
   in
   match fst remain with
   | [] -> tl

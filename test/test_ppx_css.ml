@@ -8,7 +8,9 @@ let loc = Location.none
 
 let%expect_test "basic class" =
   test_struct
-    [%expr stylesheet {|
+    [%expr
+      stylesheet
+        {|
      .foo {
        background-color: red;
      }
@@ -35,7 +37,7 @@ let%expect_test "basic class" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -60,7 +62,9 @@ let%expect_test "charset" =
     module Default : S = struct module For_referencing = struct  end end
     include Default
     let default : t = (module Default)
-    let () = Inline_css.Private.append {|
+    let () =
+      Inline_css.Private.append_but_do_not_update
+        {|
     /* _none_ */
 
     @charset" UTF-8";|}
@@ -113,7 +117,7 @@ let%expect_test "nested at rule" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -168,7 +172,7 @@ let%expect_test "at rule" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -195,7 +199,9 @@ let%expect_test "not a string" =
 
 let%expect_test "basic id" =
   test_struct
-    [%expr stylesheet {|
+    [%expr
+      stylesheet
+        {|
      #foo {
        background-color: red;
      }
@@ -222,7 +228,7 @@ let%expect_test "basic id" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -233,7 +239,10 @@ let%expect_test "basic id" =
 ;;
 
 let%expect_test "missing closing brace" =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
      #foo {
        background-color: red;
       |}];
@@ -241,7 +250,8 @@ let%expect_test "missing closing brace" =
 ;;
 
 let%expect_test "listed identifiers" =
-  test_sig {|
+  test_sig
+    {|
     .a {}
     #b {}
     .c {}
@@ -268,7 +278,8 @@ let%expect_test "listed identifiers" =
 ;;
 
 let%expect_test "duplicates sig" =
-  test_sig {|
+  test_sig
+    {|
     .a {}
     #a {}
     .b {}
@@ -316,7 +327,8 @@ let%expect_test "politicians example" =
 ;;
 
 let%expect_test "variables on signature generation" =
-  test_sig {|
+  test_sig
+    {|
 :root {
   --bg-color: black;
 }
@@ -401,7 +413,7 @@ let%expect_test "animation" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -487,7 +499,7 @@ let%expect_test "dont hash flag" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -578,7 +590,7 @@ let%expect_test "empty rewrite" =
     module Default : S = struct module For_referencing = struct  end end
     include Default
     let default : t = (module Default)
-    let () = Inline_css.Private.append {|
+    let () = Inline_css.Private.append_but_do_not_update {|
     /* _none_ */
 
     |}
@@ -650,16 +662,24 @@ let%expect_test "Unsafe identifier collision through newly minted identifiers" =
 ;;
 
 let%expect_test "collisions between [~rewrite] keys." =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
     .a { }
-  |} ~rewrite:[ "a", "a"; "a", "b" ]];
+  |}
+        ~rewrite:[ "a", "a"; "a", "b" ]];
   [%expect {xxx| Found duplicate key "a" inside of [rewrite]. |xxx}]
 ;;
 
 let%expect_test "simple use of [~rewrite]." =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
     .a { }
-  |} ~rewrite:[ "a", M.a ]];
+  |}
+        ~rewrite:[ "a", M.a ]];
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
@@ -682,7 +702,7 @@ let%expect_test "simple use of [~rewrite]." =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         (Base.Printf.sprintf {|
     /* _none_ */
 
@@ -693,9 +713,13 @@ let%expect_test "simple use of [~rewrite]." =
 ;;
 
 let%expect_test "simple use of [~rewrite] through a string constant." =
-  test_struct [%expr stylesheet {| .a { color: green;
+  test_struct
+    [%expr
+      stylesheet
+        {| .a { color: green;
     }
-  |} ~rewrite:[ "a", "a" ]];
+  |}
+        ~rewrite:[ "a", "a" ]];
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
@@ -717,7 +741,9 @@ let%expect_test "simple use of [~rewrite] through a string constant." =
       end
     include Default
     let default : t = (module Default)
-    let () = Inline_css.Private.append {|
+    let () =
+      Inline_css.Private.append_but_do_not_update
+        {|
     /* _none_ */
 
     *.a {
@@ -784,7 +810,7 @@ let%expect_test "weirder ordering of [~rewrite]." =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         (Base.Printf.sprintf
            {|
     /* _none_ */
@@ -862,7 +888,7 @@ let%expect_test "both use of string constants and arbitrary expressions in use."
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         (Base.Printf.sprintf
            {|
     /* _none_ */
@@ -907,8 +933,8 @@ let%test_unit "ordering of mapping iteration is the same as the css string." =
       ~dont_hash_prefixes:[]
       style_sheet
       ~f:(fun (`Variable id | `Class id | `Id id) _ ->
-      (traversed_ids := Reversed_list.(id :: !traversed_ids));
-      id)
+        (traversed_ids := Reversed_list.(id :: !traversed_ids));
+        id)
     |> (ignore : Stylesheet.t -> unit);
     let traversed_ids = Reversed_list.rev !traversed_ids in
     match List.equal String.equal traversed_ids ids with
@@ -922,9 +948,13 @@ let%test_unit "ordering of mapping iteration is the same as the css string." =
 ;;
 
 let%expect_test "unused [~rewrite] target warning" =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
   .a { }
-  |} ~rewrite:[ "b", "b" ]];
+  |}
+        ~rewrite:[ "b", "b" ]];
   [%expect {xxx| Unused keys: (b) |xxx}]
 ;;
 
@@ -960,7 +990,7 @@ let%test_module "css_inliner_tests" =
         ==struct==
         struct
           let () =
-            Inline_css.Private.append
+            Inline_css.Private.append_but_do_not_update
               {|
         /* _none_ */
 
@@ -1026,7 +1056,7 @@ let%test_module "css_inliner_tests" =
         ==struct==
         struct
           let () =
-            Inline_css.Private.append
+            Inline_css.Private.append_but_do_not_update
               {|
         /* _none_ */
 
@@ -1075,7 +1105,8 @@ let%test_module "css_inliner_tests" =
 let%test_module "Variable setter creation" =
   (module struct
     let%expect_test "two variables variable creation" =
-      test_sig {|
+      test_sig
+        {|
 .a-class {
   --bg-color: white;
   --fg-color: black
@@ -1139,7 +1170,8 @@ let%expect_test "rewrite on identifier which would eventually get unkebab'ed" =
       end
     include Default
     let default : t = (module Default)
-    let () = Inline_css.Private.append {|
+    let () =
+      Inline_css.Private.append_but_do_not_update {|
     /* _none_ */
 
     *.a_b {
@@ -1149,9 +1181,13 @@ let%expect_test "rewrite on identifier which would eventually get unkebab'ed" =
 ;;
 
 let%expect_test "unused [~rewrite] target warning" =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
     .a { }
-  |} ~rewrite:[ "b", "b" ]];
+  |}
+        ~rewrite:[ "b", "b" ]];
   [%expect {xxx| Unused keys: (b) |xxx}]
 ;;
 
@@ -1202,7 +1238,7 @@ let%expect_test "apostrophe syntax" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1225,7 +1261,12 @@ let%expect_test "apostrophe syntax" =
 ;;
 
 let%expect_test "Both don't_hash and dont_hash are used" =
-  test_struct [%expr stylesheet ~don't_hash:[ "b" ] ~dont_hash:[ "b" ] {|
+  test_struct
+    [%expr
+      stylesheet
+        ~don't_hash:[ "b" ]
+        ~dont_hash:[ "b" ]
+        {|
     .b { }
   |}];
   [%expect
@@ -1290,7 +1331,7 @@ let%expect_test "ppx_css hashes variables" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1381,7 +1422,7 @@ let%expect_test "nested variables" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1473,7 +1514,7 @@ let%expect_test "css variables still respect [~rewrite]" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         (Base.Printf.sprintf
            {|
     /* _none_ */
@@ -1493,9 +1534,12 @@ let%expect_test "css variables still respect [~rewrite]" =
 
 let%expect_test "css variables still hashed under pseudo-selectors" =
   test_struct
-    [%expr stylesheet {|
+    [%expr
+      stylesheet
+        {|
     :not(.navbar) { }
-  |} ~rewrite:[ "navbar", "navbar_hash" ]];
+  |}
+        ~rewrite:[ "navbar", "navbar_hash" ]];
   [%expect
     {xxx|
     [@@@ocaml.warning "-32"]
@@ -1518,7 +1562,8 @@ let%expect_test "css variables still hashed under pseudo-selectors" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append {|
+      Inline_css.Private.append_but_do_not_update
+        {|
     /* _none_ */
 
     *:not(.navbar_hash) {
@@ -1571,7 +1616,7 @@ let%expect_test "enumeration of supported selector functions" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1612,7 +1657,9 @@ let%expect_test "demonstrate support of hashing for :is" =
       end
     include Default
     let default : t = (module Default)
-    let () = Inline_css.Private.append {|
+    let () =
+      Inline_css.Private.append_but_do_not_update
+        {|
     /* _none_ */
 
     *:is(.is_hash) {
@@ -1662,7 +1709,7 @@ let%expect_test "more complicated nested identifiers within selector functions" 
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1696,7 +1743,7 @@ let%expect_test "Does not hash invalid places for selectors." =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1708,7 +1755,10 @@ let%expect_test "Does not hash invalid places for selectors." =
 ;;
 
 let%expect_test "collision of names between ids and classes results in an alert." =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
 #foo {}
 .foo {}
   |}];
@@ -1740,7 +1790,7 @@ let%expect_test "collision of names between ids and classes results in an alert.
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1757,7 +1807,10 @@ let%expect_test "collision of names between ids and classes results in an alert.
 let%expect_test "collision of names between ids and classes colliding with a third party \
                  identifier elsewhere results in an error"
   =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
 #foo {}
 .foo {}
 .foo_class {}
@@ -1768,7 +1821,10 @@ let%expect_test "collision of names between ids and classes colliding with a thi
 ;;
 
 let%expect_test "behavior on sharing of id and class names" =
-  test_struct [%expr stylesheet {|
+  test_struct
+    [%expr
+      stylesheet
+        {|
     .a {}
     #a {}
                     |}];
@@ -1800,7 +1856,7 @@ let%expect_test "behavior on sharing of id and class names" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -1812,7 +1868,8 @@ let%expect_test "behavior on sharing of id and class names" =
 
     }|}
     |xxx}];
-  test_sig {|
+  test_sig
+    {|
     .a {}
     #a {}
                     |};
@@ -1899,7 +1956,7 @@ let%expect_test "dont_hash" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -2027,7 +2084,7 @@ let%expect_test "dont_hash_prefixes" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -2054,9 +2111,12 @@ let%expect_test "dont_hash_prefixes accidental shadowing" =
 
 let%expect_test "dont_hash_prefixes no mention of prefixes" =
   test_struct
-    [%expr stylesheet {|
+    [%expr
+      stylesheet
+        {|
     .a { }
-                    |} ~dont_hash_prefixes:[ "--" ]];
+                    |}
+        ~dont_hash_prefixes:[ "--" ]];
   [%expect {xxx| Unused prefixes: (--) |xxx}]
 ;;
 
@@ -2130,7 +2190,7 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -2180,7 +2240,7 @@ let%expect_test "[~rewrite] takes priority over [~dont_hash_prefixes]." =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -2283,7 +2343,7 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 

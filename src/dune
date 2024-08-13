@@ -4,6 +4,6 @@
  (kind ppx_deriver)
  (ppx_runtime_libraries ppx_css.inline_css virtual_dom)
  (libraries ppx_here.expander css_jane compiler-libs.common
-   core_kernel.reversed_list ppxlib ppx_string ppx_css_syntax)
+   core_kernel.reversed_list ppxlib ppx_string core ppx_css_syntax)
  (preprocess
   (pps ppx_jane ppxlib.metaquot ppx_sexp_conv)))

@@ -8,7 +8,9 @@ let%test_module "basic" =
     let test = Test_util.test_expression
 
     let%expect_test "basic" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         background-color: tomato;
       |}];
       [%expect
@@ -27,7 +29,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -38,7 +40,9 @@ let%test_module "basic" =
     ;;
 
     let%expect_test "basic with interpolation" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         background-color: %{color};
       |}];
       [%expect
@@ -66,7 +70,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -77,7 +81,9 @@ let%test_module "basic" =
     ;;
 
     let%expect_test "basic with modul-based interpolation" =
-      test [%expr {|
+      test
+        [%expr
+          {|
         background-color: %{color#Mod.Foo};
       |}];
       [%expect
@@ -105,7 +111,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -156,7 +162,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -209,7 +215,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -269,7 +275,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -284,7 +290,9 @@ let%test_module "basic" =
 
     let%expect_test "user-variables are not hashed." =
       (* Importantly, --foo is not hashed. *)
-      test [%expr {|
+      test
+        [%expr
+          {|
         background-color: var(--foo);
       |}];
       [%expect
@@ -303,7 +311,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -318,7 +326,8 @@ let%test_module "basic" =
         [%expr
           {|
         background-color: var(--foo);
-      |} ~rewrite:[ "--foo", "--bar" ]];
+      |}
+            ~rewrite:[ "--foo", "--bar" ]];
       [%expect
         {xxx|
         Expression context:
@@ -335,7 +344,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -352,9 +361,11 @@ let%test_module "basic" =
          error message, so no error is raised, giving the user the illusion of having
          done something that would've happened regardless. *)
       test
-        [%expr {|
+        [%expr
+          {|
         background-color: var(--foo);
-      |} ~dont_hash:[ "--foo" ]];
+      |}
+            ~dont_hash:[ "--foo" ]];
       [%expect
         {xxx| ~dont_hash is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
@@ -368,7 +379,8 @@ let%test_module "basic" =
         [%expr
           {|
         background-color: var(--foo);
-      |} ~dont_hash_prefixes:[ "--" ]];
+      |}
+            ~dont_hash_prefixes:[ "--" ]];
       [%expect
         {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}]
     ;;
@@ -391,7 +403,8 @@ let%test_module "basic" =
         [%expr
           {|
         background-color: var(--foo);
-      |} ~dont_hash_prefixes:[ "" ]];
+      |}
+            ~dont_hash_prefixes:[ "" ]];
       [%expect
         {xxx| ~dont_hash_prefixes is a no-op as classes and ids in the *inline* ppx_css syntax are not hashed. |xxx}];
       test
@@ -471,7 +484,7 @@ let%test_module "basic" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 

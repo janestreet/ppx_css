@@ -2,9 +2,9 @@ open! Core
 open Js_of_ocaml
 
 module Make (T : sig
-  val name : string
-  val parent_selector : string
-end) =
+    val name : string
+    val parent_selector : string
+  end) =
 struct
   include T
 
@@ -32,16 +32,16 @@ struct
 end
 
 module Into_head = Make (struct
-  let name = "<style> element inside <head> element"
-  let parent_selector = "head"
-end)
+    let name = "<style> element inside <head> element"
+    let parent_selector = "head"
+  end)
 
 module Into_body = Make (struct
-  let name = "<style> element inside <body> element"
-  let parent_selector = "body"
-end)
+    let name = "<style> element inside <body> element"
+    let parent_selector = "body"
+  end)
 
 module Into_root_element = Make (struct
-  let name = "any element inside the document"
-  let parent_selector = "*"
-end)
+    let name = "any element inside the document"
+    let parent_selector = "*"
+  end)

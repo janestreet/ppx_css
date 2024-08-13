@@ -9,23 +9,29 @@ module Style_sheet = struct
   let t : t Js.t Js.constr Js.Optdef.t = Js.Unsafe.global##._CSSStyleSheet
 
   let append : t Js.t -> unit =
-    Js.Unsafe.pure_js_expr
-      {js|
+    let f =
+      Js.Unsafe.pure_js_expr
+        {js|
   (function (style_sheet) {
     // push doesn't work because this field is really weird.
     document.adoptedStyleSheets =
       Array.prototype.concat.apply(document.adoptedStyleSheets, [style_sheet]);
   })
 |js}
+    in
+    fun style_sheet -> Js.Unsafe.fun_call f [| Js.Unsafe.inject style_sheet |]
   ;;
 
   let delete : t Js.t -> unit =
-    Js.Unsafe.pure_js_expr
-      {js|
+    let f =
+      Js.Unsafe.pure_js_expr
+        {js|
   (function (style_sheet) {
     document.adoptedStyleSheets = document.adoptedStyleSheets.filter(x => !(x === style_sheet))
   })
 |js}
+    in
+    fun style_sheet -> Js.Unsafe.fun_call f [| Js.Unsafe.inject style_sheet |]
   ;;
 end
 

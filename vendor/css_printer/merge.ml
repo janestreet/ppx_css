@@ -22,20 +22,22 @@ open StdLabels
 open Css_parser.Types
 
 module AtRule = Map.Make (struct
-  type t = string * Component_value.t list
+    type t = string * Component_value.t list
 
-  let compare at1 at2 =
-    let cmp = String.compare (fst at1) (fst at2) in
-    if cmp <> 0
-    then cmp
-    else
-      Comparator.compare_list
-        (fun l1 l2 ->
-          Comparator.component_value (l1, Common.location_none) (l2, Common.location_none))
-        (snd at1)
-        (snd at2)
-  ;;
-end)
+    let compare at1 at2 =
+      let cmp = String.compare (fst at1) (fst at2) in
+      if cmp <> 0
+      then cmp
+      else
+        Comparator.compare_list
+          (fun l1 l2 ->
+            Comparator.component_value
+              (l1, Common.location_none)
+              (l2, Common.location_none))
+          (snd at1)
+          (snd at2)
+    ;;
+  end)
 
 type at_type =
   | Empty
@@ -92,24 +94,24 @@ let rec extract_at : ats -> Css_parser.Types.Rule.t Seq.t =
   fun map ->
   AtRule.to_seq map
   |> Seq.map (fun ((name, prelude), (loc, value)) ->
-       let name = name, loc
-       and prelude = List.map ~f:(fun x -> x, loc) prelude, loc in
-       match value with
-       | Stylesheet css ->
-         let stylesheet = extract_css css in
-         let block = Brace_block.Stylesheet stylesheet in
-         Rule.At_rule At_rule.{ name; prelude; block; loc }
-       | Empty ->
-         let block = Brace_block.Empty in
-         Rule.At_rule At_rule.{ name; prelude; block; loc }
-       | Declaration decls ->
-         let declarations =
-           List.fold_left decls ~init:[] ~f:(fun acc (decl, _) ->
-             let elems = fst decl in
-             List.append elems acc)
-         in
-         let block = Brace_block.Declaration_list (declarations, loc) in
-         Rule.At_rule At_rule.{ name; prelude; block; loc })
+    let name = name, loc
+    and prelude = List.map ~f:(fun x -> x, loc) prelude, loc in
+    match value with
+    | Stylesheet css ->
+      let stylesheet = extract_css css in
+      let block = Brace_block.Stylesheet stylesheet in
+      Rule.At_rule At_rule.{ name; prelude; block; loc }
+    | Empty ->
+      let block = Brace_block.Empty in
+      Rule.At_rule At_rule.{ name; prelude; block; loc }
+    | Declaration decls ->
+      let declarations =
+        List.fold_left decls ~init:[] ~f:(fun acc (decl, _) ->
+          let elems = fst decl in
+          List.append elems acc)
+      in
+      let block = Brace_block.Declaration_list (declarations, loc) in
+      Rule.At_rule At_rule.{ name; prelude; block; loc })
 
 and extract_css : t -> Stylesheet.t =
   fun (styles, ats) ->

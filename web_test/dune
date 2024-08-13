@@ -1,5 +1,5 @@
 (library
  (name test_css_bonsai_integration)
- (libraries core bonsai.web_test)
+ (libraries core bonsai_web bonsai_web_test virtual_dom.css_gen)
  (preprocess
   (pps ppx_jane ppx_css ppxlib.metaquot)))

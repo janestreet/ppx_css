@@ -2,7 +2,7 @@
  (modes byte exe)
  (names css_inliner)
  (public_names css_inliner)
- (libraries async async_unix core_unix.command_unix ppx_css ppx_css_syntax
-   core)
+ (libraries async async_unix core_unix.command_unix core ppx_css
+   ppx_css_syntax ppxlib)
  (preprocess
   (pps ppx_jane)))

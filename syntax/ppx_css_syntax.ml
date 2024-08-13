@@ -39,13 +39,16 @@ module Serializable_options = struct
     =
     test {|((rewrite ()))|};
     [%expect {| ((rewrite ())) |}];
-    test {|((rewrite ())
+    test
+      {|((rewrite ())
     (brand_new_field ()))|};
     [%expect {| ((rewrite ())) |}];
-    test {|((rewrite ())
+    test
+      {|((rewrite ())
     (dont_hash ()))|};
     [%expect {| ((rewrite ())) |}];
-    test {|((rewrite ()) (dont_hash (1
+    test
+      {|((rewrite ()) (dont_hash (1
     2 3)))|};
     [%expect {| ((rewrite ()) (dont_hash (1 2 3))) |}]
   ;;
@@ -136,13 +139,13 @@ let parse_rewrite ~loc expression =
   let alist =
     parse_expr_list expression ~on_error:raise_due_to_malformed_rewrite
     |> List.map ~f:(fun expression ->
-         match expression with
-         | { pexp_desc =
-               Pexp_tuple
-                 [ { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ }; value ]
-           ; _
-           } -> key, loc_ghoster#expression value
-         | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
+      match expression with
+      | { pexp_desc =
+            Pexp_tuple
+              [ { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ }; value ]
+        ; _
+        } -> key, loc_ghoster#expression value
+      | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
   in
   match String.Map.of_alist alist with
   | `Ok rewrite -> rewrite
@@ -181,9 +184,9 @@ let parse_string_list ~name ~syntax_error_message ~loc expression =
   let out =
     parse_expr_list expression ~on_error:raise_on_error
     |> List.map ~f:(fun expression ->
-         match expression.pexp_desc with
-         | Pexp_constant (Pconst_string (s, _, _)) -> s
-         | _ -> raise_on_error ~loc:expression.pexp_loc)
+      match expression.pexp_desc with
+      | Pexp_constant (Pconst_string (s, _, _)) -> s
+      | _ -> raise_on_error ~loc:expression.pexp_loc)
   in
   let dups = List.find_all_dups out ~compare:String.compare in
   match dups with
@@ -262,8 +265,8 @@ let validate_args ~loc ~(kind : [ `Stylesheet | `Styled_component ]) args =
     let%map css_string, remaining_args =
       List.take_map args ~f:(fun (_, (arg : expression)) ->
         match arg.pexp_desc with
-        | Pexp_constant (Pconst_string (css_string, _, delimiter)) ->
-          Some { String_constant.css_string; string_loc = arg.pexp_loc; delimiter }
+        | Pexp_constant (Pconst_string (css_string, string_loc, delimiter)) ->
+          Some { String_constant.css_string; string_loc; delimiter }
         | _ -> None)
     in
     let rewrite, remaining_args =
@@ -364,7 +367,7 @@ let add_identifiers_from_jbuild_parameters ~loc (options : t) =
   { rewrite; dont_hash_prefixes; css_string = options.css_string }
 ;;
 
-let parse_stylesheet (expression : expression) =
+let parse_stylesheet_exn (expression : expression) =
   let loc = expression.pexp_loc in
   let loc = { loc with loc_ghost = true } in
   match expression.pexp_desc with
@@ -378,7 +381,7 @@ let parse_stylesheet (expression : expression) =
   | _ -> raise_misparse_with_syntax_instructions ~extra_message:"" ~loc
 ;;
 
-let parse_inline_expression (expression : expression) =
+let parse_inline_expression_exn (expression : expression) =
   let loc = expression.pexp_loc in
   let loc = { loc with loc_ghost = true } in
   let css_string, rewrite, dont_hash_prefixes =

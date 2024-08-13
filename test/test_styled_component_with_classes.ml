@@ -5,7 +5,9 @@ let test = Test_util.test_expression
 let loc = Location.none
 
 let%expect_test "with classes" =
-  test [%expr {|
+  test
+    [%expr
+      {|
        &.foo {
          background-color: tomato;
        }
@@ -26,7 +28,7 @@ let%expect_test "with classes" =
     Hoisted context:
     ----------------
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -77,7 +79,7 @@ let%expect_test "with classes - rewrite is supplied" =
     Hoisted context:
     ----------------
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -106,7 +108,9 @@ let%expect_test "with classes - dont hash prefixes is provided" =
 ;;
 
 let%expect_test "with ids" =
-  test [%expr {|
+  test
+    [%expr
+      {|
        &#foo {
          background-color: tomato;
        }
@@ -127,7 +131,7 @@ let%expect_test "with ids" =
     Hoisted context:
     ----------------
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -142,7 +146,9 @@ let%expect_test "with ids" =
 
 let%expect_test "with variables" =
   (* NOTE: This behavior is correct. *)
-  test [%expr {|
+  test
+    [%expr
+      {|
        & {
          background-color: var(--foo);
        }
@@ -163,7 +169,7 @@ let%expect_test "with variables" =
     Hoisted context:
     ----------------
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -202,7 +208,7 @@ let%expect_test {|ppx css does structure item generation check does not work wit
     Hoisted context:
     ----------------
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -241,7 +247,7 @@ let%expect_test {|Sanitizing hyphens vs underscores are respected.|} =
     Hoisted context:
     ----------------
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 

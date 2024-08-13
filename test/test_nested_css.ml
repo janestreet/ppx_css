@@ -10,7 +10,8 @@ let%test_module "styled components tests" =
 
     let%expect_test "single class" =
       test
-        [%expr {|
+        [%expr
+          {|
         background-color: tomato;
 
         .foo {
@@ -34,7 +35,7 @@ let%test_module "styled components tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -75,7 +76,7 @@ let%test_module "styled components tests" =
         Hoisted context:
         ----------------
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -197,7 +198,7 @@ let%test_module "stylesheet components tests" =
         include Default
         let default : t = (module Default)
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -251,7 +252,7 @@ let%test_module "stylesheet components tests" =
         include Default
         let default : t = (module Default)
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -305,7 +306,7 @@ let%test_module "stylesheet components tests" =
         include Default
         let default : t = (module Default)
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 
@@ -359,7 +360,7 @@ let%test_module "stylesheet components tests" =
         include Default
         let default : t = (module Default)
         let () =
-          Inline_css.Private.append
+          Inline_css.Private.append_but_do_not_update
             {|
         /* _none_ */
 

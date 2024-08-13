@@ -23,12 +23,19 @@ let inferred_do_not_hash ~string_loc ~parsed_parts =
     |> String.concat ~sep:""
   in
   let style_sheet =
-    [%string {|
-.%{placeholder_class}  {
+    let anonymous_declarations =
+      String.make
+        (Int.max 0 (string_loc.loc_start.pos_cnum - string_loc.loc_start.pos_bol))
+        ' '
+      ^ anonymous_declarations
+    in
+    [%string
+      {|.%{placeholder_class} {
 %{anonymous_declarations}
 }
   |}]
-    |> Stylesheet.of_string ~pos:string_loc.loc_start
+    |> Stylesheet.of_string
+         ~pos:{ string_loc.loc_start with pos_lnum = string_loc.loc_start.pos_lnum - 1 }
   in
   let ( - ) = Set.remove in
   Traverse_css.Get_all_identifiers.css_identifiers style_sheet
@@ -164,7 +171,8 @@ let%expect_test "[inferred_do_not_hash]" =
   [%expect {| () |}];
   test {|background-color: %{color#Module.Foo};|};
   [%expect {| () |}];
-  test {|
+  test
+    {|
     background-color: red;
     background-color: var(--foo);
   |};
@@ -177,11 +185,13 @@ let%expect_test "[inferred_do_not_hash]" =
     background-color: var(--beep)
   |};
   [%expect {| (--beep --foo) |}];
-  test {|
+  test
+    {|
     background-color: var(--i-have-slashes);
   |};
   [%expect {| (--i-have-slashes) |}];
-  test {|
+  test
+    {|
     --tom: tomato;
     background-color: var(--tom);
   |};
@@ -189,7 +199,8 @@ let%expect_test "[inferred_do_not_hash]" =
 ;;
 
 let to_stylesheet_string t =
-  [%string {|
+  [%string
+    {|
 .%{anonymous_class_name} { %{t.substituted_declarations} }|}]
 ;;
 
@@ -277,7 +288,7 @@ module For_stylesheet = struct
       t.anonymous_variables.variables
       ~init:String.Set.empty
       ~f:(fun acc variable ->
-      let name = Anonymous_variable.name variable in
-      Set.add acc ("--" ^ Anonymous_variable.Name.to_string name))
+        let name = Anonymous_variable.name variable in
+        Set.add acc ("--" ^ Anonymous_variable.Name.to_string name))
   ;;
 end

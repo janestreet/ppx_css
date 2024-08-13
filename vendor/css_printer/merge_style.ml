@@ -24,13 +24,13 @@ open Css_parser.Types
 let delim_coma = Component_value.Delim ",", Common.location_none
 
 module MapRule = Map.Make (struct
-  type t = Component_value.t list
+    type t = Component_value.t list
 
-  let compare =
-    Comparator.compare_list (fun l1 l2 ->
-      Comparator.component_value (l1, Common.location_none) (l2, Common.location_none))
-  ;;
-end)
+    let compare =
+      Comparator.compare_list (fun l1 l2 ->
+        Comparator.component_value (l1, Common.location_none) (l2, Common.location_none))
+    ;;
+  end)
 
 (** The type of the map contains both :
 
@@ -64,11 +64,11 @@ let add_style : Style_rule.t -> t -> t =
     MapRule.update
       group
       (function
-       | None ->
-         (* There is no declaration yet, just add this one *)
-         Some [ block, loc ]
-       | Some tl ->
-         (* The declaration is already present.
+        | None ->
+          (* There is no declaration yet, just add this one *)
+          Some [ block, loc ]
+        | Some tl ->
+          (* The declaration is already present.
 
                    For each of them, we check if the declaration is overriden
                    by the new one, and update the list.
@@ -76,17 +76,17 @@ let add_style : Style_rule.t -> t -> t =
                    The news declarations are added in a new block (a second
                    pass may be necessary to join all the remaining elements
                    together.
-                *)
-         Some (Common.update_declarations (block, loc) tl))
+          *)
+          Some (Common.update_declarations (block, loc) tl))
       map)
 ;;
 
 module ReversedMapRule = Map.Make (struct
-  type t = Declaration_list.t * Location.t
+    type t = Declaration_list.t * Location.t
 
-  (* Use a custom comparaison without the location *)
-  let compare l1 l2 = Comparator.declaration_list (fst l1) (fst l2)
-end)
+    (* Use a custom comparaison without the location *)
+    let compare l1 l2 = Comparator.declaration_list (fst l1) (fst l2)
+  end)
 
 type splitted_rules' = Component_value.t list list ReversedMapRule.t
 
@@ -103,8 +103,8 @@ let extract_style : t -> Rule.t Seq.t =
           ReversedMapRule.update
             (v, loc)
             (function
-             | None -> Some [ k ]
-             | Some tl -> Some (k :: tl))
+              | None -> Some [ k ]
+              | Some tl -> Some (k :: tl))
             map'))
       map
       ReversedMapRule.empty
@@ -112,20 +112,20 @@ let extract_style : t -> Rule.t Seq.t =
   (* The rebuild the rules *)
   ReversedMapRule.to_seq table
   |> Seq.map (fun ((block, loc), k) ->
-       let selectors =
-         List.fold_left k ~init:[] ~f:(fun acc v ->
-           let selectors = List.map v ~f:(fun x -> x, Common.location_none) in
-           let tail = List.append selectors acc in
-           delim_coma :: tail)
-       in
-       let prelude =
-         match selectors with
-         | (Component_value.Delim ",", _) :: tl ->
-           (* Remove the first delimiter element *)
-           tl, Common.location_none
-         | _ -> selectors, Common.location_none
-       in
-       Rule.Style_rule Style_rule.{ prelude; block; loc })
+    let selectors =
+      List.fold_left k ~init:[] ~f:(fun acc v ->
+        let selectors = List.map v ~f:(fun x -> x, Common.location_none) in
+        let tail = List.append selectors acc in
+        delim_coma :: tail)
+    in
+    let prelude =
+      match selectors with
+      | (Component_value.Delim ",", _) :: tl ->
+        (* Remove the first delimiter element *)
+        tl, Common.location_none
+      | _ -> selectors, Common.location_none
+    in
+    Rule.Style_rule Style_rule.{ prelude; block; loc })
 ;;
 
 let empty = MapRule.empty

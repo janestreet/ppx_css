@@ -28,17 +28,17 @@ type ('a, 'b) format_printer = (('a, 'b) printer, Format.formatter, unit) format
 
 type style_rule_format =
   ( Component_value.t with_loc list
-  , (Declaration_list.kind list, unit) printer )
-  format_printer
+    , (Declaration_list.kind list, unit) printer )
+    format_printer
 
 type declaration_format = (Declaration_list.kind list, unit) format_printer
 type stylesheet_format = (Rule.t list, unit) format_printer
 
 type at_rule_format =
   ( string -> (Component_value.t with_loc list, (Brace_block.t, unit) printer) printer
-  , Format.formatter
-  , unit )
-  format
+    , Format.formatter
+    , unit )
+    format
 
 type important_format = (unit, Format.formatter, unit) format
 

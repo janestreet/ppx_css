@@ -25,7 +25,10 @@ let test expr =
 ;;
 
 let%expect_test "basic" =
-  test [%expr stylesheet {|.hello {
+  test
+    [%expr
+      stylesheet
+        {|.hello {
       background-color: %{color};
   }|}];
   [%expect
@@ -59,7 +62,7 @@ let%expect_test "basic" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -111,7 +114,7 @@ let%expect_test "basic with many variables" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -166,7 +169,7 @@ let%expect_test "basic with modules" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -233,7 +236,7 @@ let%expect_test "Evaluation order matters" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -312,7 +315,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -387,7 +390,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -460,7 +463,7 @@ let%expect_test "dont hash" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -533,7 +536,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 
@@ -625,7 +628,7 @@ let%expect_test "duplicate classes, many classes" =
     include Default
     let default : t = (module Default)
     let () =
-      Inline_css.Private.append
+      Inline_css.Private.append_but_do_not_update
         {|
     /* _none_ */
 

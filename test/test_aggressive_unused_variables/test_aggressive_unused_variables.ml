@@ -1,7 +1,9 @@
 open! Core
 
-module _ = [%css stylesheet {|
-.b {
-
-}
-|}]
+module _ =
+  [%css
+  stylesheet
+    {|
+      .b {
+      }
+      |}]
