@@ -158,12 +158,20 @@ let is_in_browser =
     (Js.Unsafe.pure_js_expr {|globalThis?.window?.requestAnimationFrame|} : _ Js.Optdef.t)
 ;;
 
+let animation_frame_enqueued = ref false
+
 let schedule_an_update_on_animation_frame () =
-  if is_in_browser
+  (* NOTE: Calling [requestAnimationFrame] is expensive even if the callback it is given
+     is a no-op. Gating this behind a global bool ref makes it so that we do not ever have
+     two of these [requestAnimationFrame]s in progress. *)
+  if is_in_browser && not !animation_frame_enqueued
   then (
     let animation_frame_id =
+      animation_frame_enqueued := true;
       Dom_html.window##requestAnimationFrame
-        (Js.wrap_callback (fun _ -> update_if_not_already_updated ()))
+        (Js.wrap_callback (fun _ ->
+           animation_frame_enqueued := false;
+           update_if_not_already_updated ()))
     in
     ignore animation_frame_id)
 ;;
