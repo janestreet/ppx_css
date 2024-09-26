@@ -28,7 +28,7 @@ module Transform : sig
   val f
     :  loc:location
     -> pos:position
-    -> rewrite:expression String.Map.t
+    -> dont_hash:String.Set.t
     -> css_string:string
     -> dont_hash_prefixes:string list
     -> unused_allow_set:String.Set.t
@@ -52,7 +52,7 @@ end
 module For_testing : sig
   val map_style_sheet
     :  Stylesheet.t
-    -> rewrite:expression String.Map.t
+    -> dont_hash:String.Set.t
     -> dont_hash_prefixes:string list
     -> f:([ `Class of label | `Id of label | `Variable of label ] -> location -> label)
     -> Stylesheet.t

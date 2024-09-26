@@ -3,28 +3,14 @@ open! Ppxlib
 module String_constant = String_constant
 
 type t =
-  { rewrite : expression String.Map.t
+  { dont_hash : String.Set.t
   ; css_string : String_constant.t
   ; dont_hash_prefixes : string list
   }
 
-let combine_rewrite_and_dont_hash ~loc ~rewrite ~dont_hash =
-  List.fold dont_hash ~init:rewrite ~f:(fun acc dont_hash_this ->
-    Map.update acc dont_hash_this ~f:(function
-      | None ->
-        let open (val Ast_builder.make loc) in
-        pexp_constant (Pconst_string (dont_hash_this, loc, None))
-      | Some _ ->
-        Location.raise_errorf
-          ~loc
-          {|Found duplicate value \"%s\" between [dont_hash] and [rewrite].|}
-          dont_hash_this))
-;;
-
 module Serializable_options = struct
   type t =
-    { rewrite : string String.Map.t
-    ; dont_hash : string list [@sexp.list]
+    { dont_hash : string list [@sexp.list]
     ; dont_hash_prefixes : string list [@sexp.list]
     }
   [@@sexp.allow_extra_fields] [@@deriving sexp]
@@ -38,51 +24,28 @@ module Serializable_options = struct
                    Jenga Rule."
     =
     test {|((rewrite ()))|};
-    [%expect {| ((rewrite ())) |}];
+    [%expect {| () |}];
     test
       {|((rewrite ())
     (brand_new_field ()))|};
-    [%expect {| ((rewrite ())) |}];
+    [%expect {| () |}];
     test
       {|((rewrite ())
     (dont_hash ()))|};
-    [%expect {| ((rewrite ())) |}];
+    [%expect {| () |}];
     test
       {|((rewrite ()) (dont_hash (1
     2 3)))|};
-    [%expect {| ((rewrite ()) (dont_hash (1 2 3))) |}]
+    [%expect {| ((dont_hash (1 2 3))) |}]
   ;;
 
-  (* Parses the string "A.B.x" into a Ppxlib AST corresponding to an identifier.
-
-     Also parses the string "x" into a Ppxlib AST correponding to the string constant "x".
-  *)
-  let parse_string_to_expression : string -> expression =
-    fun s ->
-    let loc = Location.none in
-    let open (val Ast_builder.make loc) in
-    let items = String.split ~on:'.' s in
-    match items with
-    | [ single ] -> pexp_constant (Pconst_string (single, Location.none, None))
-    | first :: tl ->
-      List.fold ~init:(Lident first) tl ~f:(fun acc item -> Ldot (acc, item))
-      |> Located.mk
-      |> pexp_ident
-    | _ -> raise_s (Sexp.Atom "Expected a valid OCaml identifier expression")
-  ;;
-
-  let to_stylesheet_options { rewrite; dont_hash; dont_hash_prefixes } ~css_string =
-    { rewrite =
-        (let rewrite = Map.map rewrite ~f:(fun s -> parse_string_to_expression s) in
-         combine_rewrite_and_dont_hash ~loc:Location.none ~rewrite ~dont_hash)
-    ; css_string
-    ; dont_hash_prefixes
-    }
+  let to_stylesheet_options { dont_hash; dont_hash_prefixes } ~css_string =
+    { dont_hash = String.Set.of_list dont_hash; css_string; dont_hash_prefixes }
   ;;
 end
 
 let empty_stylesheet ~css_string =
-  { rewrite = String.Map.empty; css_string; dont_hash_prefixes = [] }
+  { dont_hash = String.Set.empty; css_string; dont_hash_prefixes = [] }
 ;;
 
 (* Parses the AST of a list of expressions into an actual [expression list]. *)
@@ -103,28 +66,16 @@ let parse_expr_list ~on_error expression =
   helper ~acc:[] ~expression
 ;;
 
-let loc_ghoster =
-  object
-    inherit Ast_traverse.map as super
-    method! location location = super#location { location with loc_ghost = true }
-  end
-;;
-
 let raise_due_to_malformed_rewrite ~loc =
   Location.raise_errorf
     ~loc
     "%s"
     (String.strip
-       {|
-The rewrite argument to 'stylesheet' must be called with a list literal containing tuple literals,
-where the first element of the tuple must be a string literal (the second element in the tuple can be
-any expression which evaluates to a string.)
-
-examples:
-  stylesheet ~rewrite:[ "foo_bar", "foo-bar" ] (* Rewrites instances of "foo_bar" in the css string to "foo-bar" *)
-  stylesheet ~rewrite:[ "foo-bar", "foo-bar" ] (* Prevents the "foo-bar" identifier from being hashed for uniqueness *)
-  stylesheet ~rewrite:[ "my_table", My_table_component.table ] (* References an identifier defined in another module *)
-|})
+       {| The use of ~rewrite is deprecated, please use ~dont_hash or ~dont_hash_prefixes
+       instead. Alternatively, consider writing all of your CSS in the same %css
+       stylesheet incantation. Deprecating ~rewrite allows for more optimiztions in ppx_css,
+       at the expense of expressibility. We've audited bonsai apps and believe this expressibility
+       was unused so we've removed it. If this conflicts with your use case please reach out.|})
 ;;
 
 (* Parses the AST of a [(string * string) list] of expressions where each tuple's first
@@ -135,22 +86,11 @@ examples:
    to:
 
    [String.Map.of_alist_exn ["class1", Style.x; "class2"; "class2"]]  *)
-let parse_rewrite ~loc expression =
-  let alist =
-    parse_expr_list expression ~on_error:raise_due_to_malformed_rewrite
-    |> List.map ~f:(fun expression ->
-      match expression with
-      | { pexp_desc =
-            Pexp_tuple
-              [ { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ }; value ]
-        ; _
-        } -> key, loc_ghoster#expression value
-      | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
-  in
-  match String.Map.of_alist alist with
-  | `Ok rewrite -> rewrite
-  | `Duplicate_key key ->
-    Location.raise_errorf ~loc "Found duplicate key \"%s\" inside of [rewrite]." key
+let parse_rewrite ~loc:_ expression =
+  parse_expr_list expression ~on_error:raise_due_to_malformed_rewrite
+  |> List.map ~f:(fun expression ->
+    match expression with
+    | { pexp_desc = _; _ } -> raise_due_to_malformed_rewrite ~loc:expression.pexp_loc)
 ;;
 
 let malformed_dont_hash_error_message =
@@ -218,8 +158,8 @@ end
 let raise_misparse_with_syntax_instructions ~extra_message ~loc =
   Location.raise_errorf
     ~loc
-    "%s%%css must contain a call to [?rewrite:(string * string) list -> \
-     ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> unit]"
+    "%s%%css must contain a call to [?dont_hash:string list -> dont_hash_prefixes:string \
+     list -> string -> unit]"
     extra_message
 ;;
 
@@ -269,11 +209,16 @@ let validate_args ~loc ~(kind : [ `Stylesheet | `Styled_component ]) args =
           Some { String_constant.css_string; string_loc; delimiter }
         | _ -> None)
     in
-    let rewrite, remaining_args =
+    let _rewrite, remaining_args =
       List.take_map remaining_args ~f:(function
-        | Labelled "rewrite", expression -> Some (parse_rewrite ~loc expression)
+        | Labelled "rewrite", expression ->
+          let rewrite_list =
+            List.map (parse_rewrite ~loc expression) ~f:(fun item ->
+              [%string {|"%{item}"|}])
+          in
+          Some rewrite_list
         | _ -> None)
-      |> Option.value ~default:(String.Map.empty, remaining_args)
+      |> Option.value ~default:([], remaining_args)
     in
     let dont_hash, remaining_args =
       List.take_map remaining_args ~f:(function
@@ -290,6 +235,7 @@ let validate_args ~loc ~(kind : [ `Stylesheet | `Styled_component ]) args =
         | _ -> None)
       |> Option.value ~default:([], remaining_args)
     in
+    let dont_hash = String.Set.of_list dont_hash in
     let dont_hash_prefixes, remaining_args =
       List.take_map remaining_args ~f:(function
         | Labelled (("dont_hash_prefixes" | "don't_hash_prefixes") as name), expression ->
@@ -305,66 +251,30 @@ let validate_args ~loc ~(kind : [ `Stylesheet | `Styled_component ]) args =
         | _ -> None)
       |> Option.value ~default:([], remaining_args)
     in
-    let rewrite =
-      List.fold dont_hash ~init:rewrite ~f:(fun acc dont_hash_this ->
-        Map.update acc dont_hash_this ~f:(function
-          | None ->
-            let open (val Ast_builder.make loc) in
-            pexp_constant (Pconst_string (dont_hash_this, loc, None))
-          | Some _ ->
-            Location.raise_errorf
-              ~loc
-              {|Found duplicate value \"%s\" between [dont_hash] and [rewrite].|}
-              dont_hash_this))
-    in
-    css_string, rewrite, remaining_args, dont_hash_prefixes
+    css_string, dont_hash, remaining_args, dont_hash_prefixes
   in
   match args with
   | None | Some (_, _, _ :: _, _) ->
     raise_misparse_with_syntax_instructions
       ~extra_message:"ppx_css found unexpected arguments. "
       ~loc
-  | Some (css_string, rewrite, [], dont_hash_prefixes) ->
-    css_string, rewrite, dont_hash_prefixes
+  | Some (css_string, dont_hash, [], dont_hash_prefixes) ->
+    css_string, dont_hash, dont_hash_prefixes
 ;;
 
 let add_identifiers_from_jbuild_parameters ~loc (options : t) =
   let open (val Ast_builder.make loc) in
   let { Preprocess_arguments.dont_hash = jbuild_dont_hash
       ; dont_hash_prefixes = jbuild_dont_hash_prefixes
-      ; rewrite = jbuild_rewrite
       }
     =
     Preprocess_arguments.get ()
   in
-  let jbuild_rewrite =
-    let jbuild_dont_hash = Set.to_map jbuild_dont_hash ~f:Fn.id in
-    let jbuild_rewrite =
-      Map.merge jbuild_rewrite jbuild_dont_hash ~f:(fun ~key -> function
-        | `Right x | `Left x -> Some x
-        | `Both _ ->
-          raise_s
-            [%message
-              "ppx_css received duplicate entries on [rewrite] and [dont_hash]. This \
-               occured on the jbuild's preprocess parameters."
-                ~duplicate_key:(key : string)])
-    in
-    String.Map.map jbuild_rewrite ~f:Serializable_options.parse_string_to_expression
-  in
-  let rewrite =
-    Map.merge jbuild_rewrite options.rewrite ~f:(fun ~key -> function
-      | `Left x | `Right x -> Some x
-      | `Both _ ->
-        raise_s
-          [%message
-            "ppx_css received duplicate [rewrite] entries. One of them was given through \
-             the jbuild ppx, and the other via the ppx"
-              ~duplicate_key:(key : string)])
-  in
   let dont_hash_prefixes =
     options.dont_hash_prefixes @ Set.to_list jbuild_dont_hash_prefixes
   in
-  { rewrite; dont_hash_prefixes; css_string = options.css_string }
+  let dont_hash = Set.union options.dont_hash jbuild_dont_hash in
+  { dont_hash; dont_hash_prefixes; css_string = options.css_string }
 ;;
 
 let parse_stylesheet_exn (expression : expression) =
@@ -372,34 +282,34 @@ let parse_stylesheet_exn (expression : expression) =
   let loc = { loc with loc_ghost = true } in
   match expression.pexp_desc with
   | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident "stylesheet"; loc }; _ }, args) ->
-    let css_string, rewrite, dont_hash_prefixes =
+    let css_string, dont_hash, dont_hash_prefixes =
       validate_args ~loc ~kind:`Stylesheet args
     in
     add_identifiers_from_jbuild_parameters
       ~loc
-      { css_string; rewrite; dont_hash_prefixes }
+      { css_string; dont_hash; dont_hash_prefixes }
   | _ -> raise_misparse_with_syntax_instructions ~extra_message:"" ~loc
 ;;
 
 let parse_inline_expression_exn (expression : expression) =
   let loc = expression.pexp_loc in
   let loc = { loc with loc_ghost = true } in
-  let css_string, rewrite, dont_hash_prefixes =
+  let css_string, dont_hash, dont_hash_prefixes =
     match expression.pexp_desc with
     | Pexp_apply
         (({ pexp_desc = Pexp_constant (Pconst_string (_, loc, _)); _ } as string), args)
       ->
       let args = (Nolabel, string) :: args in
-      let css_string, rewrite, dont_hash_prefixes =
+      let css_string, dont_hash, dont_hash_prefixes =
         validate_args ~loc ~kind:`Styled_component args
       in
-      css_string, rewrite, dont_hash_prefixes
+      css_string, dont_hash, dont_hash_prefixes
     | Pexp_constant (Pconst_string (_, loc, _)) ->
       let args = [ Nolabel, expression ] in
-      let css_string, rewrite, dont_hash_prefixes =
+      let css_string, dont_hash, dont_hash_prefixes =
         validate_args ~loc ~kind:`Styled_component args
       in
-      css_string, rewrite, dont_hash_prefixes
+      css_string, dont_hash, dont_hash_prefixes
     | _ ->
       Location.raise_errorf
         ~loc
@@ -407,7 +317,9 @@ let parse_inline_expression_exn (expression : expression) =
          list -> ?dont_hash:string list -> dont_hash_prefixes:string list -> string -> \
          unit]"
   in
-  add_identifiers_from_jbuild_parameters ~loc { css_string; rewrite; dont_hash_prefixes }
+  add_identifiers_from_jbuild_parameters
+    ~loc
+    { css_string; dont_hash; dont_hash_prefixes }
 ;;
 
 module Preprocess_arguments = Preprocess_arguments

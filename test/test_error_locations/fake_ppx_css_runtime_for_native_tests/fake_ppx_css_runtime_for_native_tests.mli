@@ -26,5 +26,6 @@ end
 module Inline_css : sig
   module Private : sig
     val append : string -> unit
+    val append_but_do_not_update : string -> unit
   end
 end

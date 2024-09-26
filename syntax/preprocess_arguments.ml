@@ -3,15 +3,10 @@ open! Core
 type t =
   { dont_hash_prefixes : String.Set.t
   ; dont_hash : String.Set.t
-  ; rewrite : string String.Map.t
   }
 
 let singleton =
-  ref
-    { dont_hash_prefixes = String.Set.empty
-    ; dont_hash = String.Set.empty
-    ; rewrite = String.Map.empty
-    }
+  ref { dont_hash_prefixes = String.Set.empty; dont_hash = String.Set.empty }
 ;;
 
 let get () = !singleton
@@ -26,9 +21,4 @@ let add_dont_hash_prefixes new_ =
     ~get:(fun t -> t.dont_hash_prefixes)
     ~set:(fun t dont_hash_prefixes -> { t with dont_hash_prefixes })
     new_
-;;
-
-let add_rewrite ~from ~to_ =
-  singleton
-  := { !singleton with rewrite = Map.set !singleton.rewrite ~key:from ~data:to_ }
 ;;

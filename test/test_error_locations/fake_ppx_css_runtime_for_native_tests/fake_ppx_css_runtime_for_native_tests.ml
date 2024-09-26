@@ -19,5 +19,6 @@ end
 module Inline_css = struct
   module Private = struct
     let append _ = ()
+    let append_but_do_not_update _ = ()
   end
 end

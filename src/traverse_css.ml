@@ -33,7 +33,7 @@ let hash_the_contents_of_these_selector_functions =
   String.Set.of_list [ "not"; "has"; "where"; "is" ]
 ;;
 
-let rec fold_c_value ~rewrite ~dont_hash_prefixes ~f prev v =
+let rec fold_c_value ~dont_hash ~dont_hash_prefixes ~f prev v =
   match prev, v with
   | _, ((Component_value.Delim "." as d), loc) -> Dot, (d, loc)
   | _, ((Delim ":" as d), loc) -> Colon, (d, loc)
@@ -45,18 +45,18 @@ let rec fold_c_value ~rewrite ~dont_hash_prefixes ~f prev v =
       let second =
         Tuple2.map_fst
           second
-          ~f:(map_component_value_list ~rewrite ~f ~dont_hash_prefixes)
+          ~f:(map_component_value_list ~dont_hash ~f ~dont_hash_prefixes)
       in
       Component_value.Function (first, second)
     in
     Other, (component_value, loc)
   | _, other -> Other, other
 
-and map_component_value_list ~f ~rewrite ~dont_hash_prefixes =
-  List.folding_map ~init:Other ~f:(fold_c_value ~rewrite ~dont_hash_prefixes ~f)
+and map_component_value_list ~f ~dont_hash ~dont_hash_prefixes =
+  List.folding_map ~init:Other ~f:(fold_c_value ~dont_hash ~dont_hash_prefixes ~f)
 ;;
 
-let map_stylesheet ~rewrite ~dont_hash_prefixes stylesheet ~f =
+let map_stylesheet ~dont_hash ~dont_hash_prefixes stylesheet ~f =
   let mapper =
     object
       inherit Css_jane.Traverse.map as super
@@ -68,7 +68,7 @@ let map_stylesheet ~rewrite ~dont_hash_prefixes stylesheet ~f =
             ~f:
               (List.folding_map
                  ~init:Other
-                 ~f:(fold_c_value ~rewrite ~f ~dont_hash_prefixes))
+                 ~f:(fold_c_value ~dont_hash ~f ~dont_hash_prefixes))
         in
         super#style_rule { style_rule with prelude }
 
@@ -102,13 +102,13 @@ let map_stylesheet ~rewrite ~dont_hash_prefixes stylesheet ~f =
 ;;
 
 (* Iterates over class, id, and variables in the file *)
-let iter_identifiers ~rewrite ~dont_hash_prefixes stylesheet ~f =
+let iter_identifiers ~dont_hash ~dont_hash_prefixes stylesheet ~f =
   let f ((`Class identifier | `Id identifier | `Variable identifier) as case) _loc =
     f case;
     identifier
   in
   (ignore : Stylesheet.t -> unit)
-    (map_stylesheet stylesheet ~rewrite ~f ~dont_hash_prefixes)
+    (map_stylesheet stylesheet ~dont_hash ~f ~dont_hash_prefixes)
 ;;
 
 let css_identifier_to_ocaml_identifier =
@@ -183,24 +183,27 @@ let string_constant ~loc l =
   pexp_constant (Pconst_string (l, loc, Some ""))
 ;;
 
-let raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers ~unused_allow_set
+let raise_if_unused_dont_hash_identifiers
+  ~loc
+  ~unused_dont_hash_identifiers
+  ~unused_allow_set
   =
-  let unused_rewrite_identifiers =
-    Set.of_hash_set (module String) unused_rewrite_identifiers
+  let unused_dont_hash_identifiers =
+    Set.of_hash_set (module String) unused_dont_hash_identifiers
   in
   let identifier_allow_list =
-    let { Preprocess_arguments.dont_hash; rewrite; dont_hash_prefixes = _ } =
+    let { Preprocess_arguments.dont_hash; dont_hash_prefixes = _ } =
       Preprocess_arguments.get ()
     in
-    Set.union_list (module String) [ dont_hash; Map.key_set rewrite; unused_allow_set ]
+    Set.union_list (module String) [ dont_hash; unused_allow_set ]
   in
-  match Set.is_subset unused_rewrite_identifiers ~of_:identifier_allow_list with
+  match Set.is_subset unused_dont_hash_identifiers ~of_:identifier_allow_list with
   | true -> ()
   | false ->
     Location.raise_errorf
       ~loc
       "Unused keys: %s"
-      (Sexp.to_string_hum ([%sexp_of: String.Set.t] unused_rewrite_identifiers))
+      (Sexp.to_string_hum ([%sexp_of: String.Set.t] unused_dont_hash_identifiers))
 ;;
 
 let raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes =
@@ -210,7 +213,7 @@ let raise_if_unused_prefixes ~loc ~used_prefixes ~dont_hash_prefixes =
       (String.Set.of_hash_set used_prefixes)
   in
   let prefix_allow_list =
-    let { Preprocess_arguments.dont_hash = _; rewrite = _; dont_hash_prefixes } =
+    let { Preprocess_arguments.dont_hash = _; dont_hash_prefixes } =
       Preprocess_arguments.get ()
     in
     dont_hash_prefixes
@@ -234,7 +237,7 @@ module Transform = struct
   let f
     ~loc
     ~pos
-    ~rewrite
+    ~dont_hash
     ~css_string:s
     ~dont_hash_prefixes
     ~unused_allow_set
@@ -247,7 +250,7 @@ module Transform = struct
       parsed
       |> Stylesheet.sexp_of_t
       |> Sexp.to_string_mach
-      |> sprintf "%s:%s" filename
+      |> sprintf "%s:%d:%d:%s" filename pos.pos_lnum (pos.pos_cnum - pos.pos_bol)
       |> Md5.digest_string
       |> Md5.to_hex
       |> Fn.flip String.prefix hash_prefix
@@ -255,17 +258,20 @@ module Transform = struct
     let identifier_mapping = String.Table.create () in
     let original_identifiers = String.Hash_set.create () in
     let reference_order = ref Reversed_list.[] in
-    let unused_rewrite_identifiers = String.Hash_set.of_list (Map.keys rewrite) in
+    let unused_dont_hash_identifiers = String.Hash_set.of_list (Set.to_list dont_hash) in
     iter_identifiers
-      ~rewrite
+      ~dont_hash
       ~dont_hash_prefixes
       parsed
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
         Hash_set.add original_identifiers identifier;
         match Set.mem always_hash identifier with
         | true -> ()
-        | false -> Hash_set.remove unused_rewrite_identifiers identifier);
-    raise_if_unused_rewrite_identifiers ~loc ~unused_rewrite_identifiers ~unused_allow_set;
+        | false -> Hash_set.remove unused_dont_hash_identifiers identifier);
+    raise_if_unused_dont_hash_identifiers
+      ~loc
+      ~unused_dont_hash_identifiers
+      ~unused_allow_set;
     let original_identifiers = Set.of_hash_set (module String) original_identifiers in
     let fixed_to_original = String.Table.create () in
     let used_prefixes = String.Hash_set.create () in
@@ -293,7 +299,7 @@ module Transform = struct
     in
     let sheet =
       map_stylesheet
-        ~rewrite
+        ~dont_hash
         ~dont_hash_prefixes
         parsed
         ~f:
@@ -309,22 +315,16 @@ module Transform = struct
           in
           let ret, expression =
             match
-              `Always_hash (Set.mem always_hash identifier), Map.find rewrite identifier
+              ( `Always_hash (Set.mem always_hash identifier)
+              , `Dont_hash (Set.mem dont_hash identifier) )
             with
             | `Always_hash true, _ -> force hashed
-            | `Always_hash false, None ->
+            | `Always_hash false, `Dont_hash false ->
               (match is_matched_by_a_prefix identifier with
                | false -> force hashed
                | true -> identifier, string_constant ~loc identifier)
-            | ( `Always_hash false
-              , Some
-                  { pexp_desc = Pexp_constant (Pconst_string (identifier, _, _))
-                  ; pexp_loc = loc
-                  ; _
-                  } ) -> identifier, string_constant ~loc identifier
-            | `Always_hash false, Some expression_to_use ->
-              (reference_order := Reversed_list.(expression_to_use :: !reference_order));
-              "%s", expression_to_use
+            | `Always_hash false, `Dont_hash true ->
+              identifier, string_constant ~loc identifier
           in
           let identifier_kind =
             match token with
@@ -363,7 +363,7 @@ module Get_all_identifiers = struct
   let css_identifiers stylesheet =
     let out = String.Hash_set.create () in
     iter_identifiers
-      ~rewrite:String.Map.empty
+      ~dont_hash:String.Map.empty
       ~dont_hash_prefixes:[]
       stylesheet
       ~f:(fun (`Class identifier | `Id identifier | `Variable identifier) ->
@@ -377,7 +377,7 @@ module Get_all_identifiers = struct
     let fixed_to_original = String.Table.create () in
     let original_identifiers = css_identifiers stylesheet in
     iter_identifiers
-      ~rewrite:String.Map.empty
+      ~dont_hash:String.Map.empty
       ~dont_hash_prefixes:[]
       stylesheet
       ~f:(fun current_item ->
@@ -404,7 +404,7 @@ module Get_all_identifiers = struct
 end
 
 module For_testing = struct
-  let map_style_sheet s ~rewrite ~dont_hash_prefixes ~f =
-    map_stylesheet s ~f ~rewrite ~dont_hash_prefixes
+  let map_style_sheet s ~dont_hash ~dont_hash_prefixes ~f =
+    map_stylesheet s ~f ~dont_hash ~dont_hash_prefixes
   ;;
 end

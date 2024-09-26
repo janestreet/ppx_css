@@ -14,7 +14,7 @@ let catch_location_error ~f =
 
 let test_struct expr =
   catch_location_error ~f:(fun () ->
-    let%tydi { txt = structure; ppx_css_string_expression } =
+    let%tydi { txt = structure; ppx_css_string_expression; css_string_for_testing = _ } =
       For_testing.generate_struct expr
     in
     let structure =
@@ -41,7 +41,7 @@ let print_heading s =
 
 let test_expression expr =
   catch_location_error ~f:(fun () ->
-    let%tydi { txt = expression; ppx_css_string_expression } =
+    let%tydi { txt = expression; ppx_css_string_expression; css_string_for_testing = _ } =
       expr |> For_testing.generate_inline_expression
     in
     print_heading "Expression context:";

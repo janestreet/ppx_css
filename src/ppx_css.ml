@@ -7,6 +7,7 @@ module With_hoisted_expression = struct
   type 'a t =
     { txt : 'a
     ; ppx_css_string_expression : expression
+    ; css_string_for_testing : string
     }
 end
 
@@ -15,24 +16,6 @@ module Expansion_kind = struct
     | Stylesheet
     | Styled_component of Anonymous_declarations.t
 end
-
-let () =
-  Driver.add_arg
-    "-rewrite"
-    ~doc:
-      "{string:string} Lets you override or rewrite the identifier that is used for an \
-       identifier. Syntax: '-rewrite=classname:new_classname'"
-    (String
-       (fun s ->
-         match String.lsplit2 s ~on:':' with
-         | Some (from, to_) -> Preprocess_arguments.add_rewrite ~from ~to_
-         | None ->
-           raise_s
-             [%message
-               "Invalid '-rewrite' arg"
-                 ~expected_something_like:"existing_identifier:identifier_to_use"
-                 ~but_got:(s : string)]))
-;;
 
 let () =
   Driver.add_arg
@@ -192,12 +175,8 @@ let create_type_info_function ~loc ~stylesheet_location =
         ~pat:
           [%pat?
             ([%p name] :
-              ?rewrite:(string * string) list
-              -> ?dont_hash:string list
-              -> ?dont_hash_prefixes:string list
-              -> string
-              -> unit)]
-        ~expr:[%expr fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()]
+              ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit)]
+        ~expr:[%expr fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()]
     ]
 ;;
 
@@ -573,7 +552,7 @@ let create_default_module_struct
 
 let generate_struct_from_css_string_and_options
   ~loc
-  ~rewrite
+  ~dont_hash
   ~css_string
   ~dont_hash_prefixes
   ~stylesheet_location
@@ -588,12 +567,13 @@ let generate_struct_from_css_string_and_options
     Traverse_css.Transform.f
       ~loc
       ~pos:stylesheet_location.loc_start
-      ~rewrite
+      ~dont_hash
       ~css_string
       ~dont_hash_prefixes
       ~unused_allow_set:inferred_do_not_hash
       ~always_hash
   in
+  let css_string_for_testing = css_string in
   let identifier_mapping = Hashtbl.to_alist identifier_mapping in
   let css_string = css_string_to_expression ~loc ~css_string ~reference_order in
   let variables =
@@ -643,20 +623,23 @@ let generate_struct_from_css_string_and_options
       ; [%stri let default : t = (module Default)]
       ]
   in
-  { With_hoisted_expression.txt = structure; ppx_css_string_expression = css_string }
+  { With_hoisted_expression.txt = structure
+  ; ppx_css_string_expression = css_string
+  ; css_string_for_testing
+  }
 ;;
 
 let generate_struct ~loc (expr : expression) =
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let { Ppx_css_syntax.rewrite; css_string; dont_hash_prefixes } =
+  let { Ppx_css_syntax.dont_hash; css_string; dont_hash_prefixes } =
     Ppx_css_syntax.parse_stylesheet_exn expr
   in
   let anonymous_declarations = Anonymous_declarations.For_stylesheet.create css_string in
   generate_struct_from_css_string_and_options
     ~expansion_kind:Stylesheet
     ~loc
-    ~rewrite
+    ~dont_hash
     ~css_string:
       (Anonymous_declarations.For_stylesheet.to_stylesheet_string anonymous_declarations)
     ~dont_hash_prefixes
@@ -670,7 +653,7 @@ let generate_struct ~loc (expr : expression) =
 
 let generate_expression_from_css_declarations_and_options
   ~loc
-  ~rewrite
+  ~dont_hash
   ~anonymous_declarations
   ~dont_hash_prefixes
   ~stylesheet_location
@@ -680,21 +663,18 @@ let generate_expression_from_css_declarations_and_options
   let inferred_do_not_hash =
     Anonymous_declarations.inferred_do_not_hash anonymous_declarations
   in
-  let rewrite =
-    List.fold inferred_do_not_hash ~init:rewrite ~f:(fun rewrite dont_hash ->
-      match Map.add rewrite ~key:dont_hash ~data:(estring dont_hash) with
-      | `Ok rewrite -> rewrite
-      | `Duplicate ->
-        (* NOTE: [rewrite] takes precedence over [inferred_dont_hash] *)
-        rewrite)
-  in
-  let { With_hoisted_expression.txt = module_; ppx_css_string_expression } =
+  let dont_hash = Set.union dont_hash (String.Set.of_list inferred_do_not_hash) in
+  let { With_hoisted_expression.txt = module_
+      ; ppx_css_string_expression
+      ; css_string_for_testing
+      }
+    =
     let inferred_do_not_hash = String.Set.of_list inferred_do_not_hash in
     generate_struct_from_css_string_and_options
       ~expansion_kind:(Styled_component anonymous_declarations)
       ~loc
       ~css_string:(Anonymous_declarations.to_stylesheet_string anonymous_declarations)
-      ~rewrite
+      ~dont_hash
       ~dont_hash_prefixes
       ~stylesheet_location
       ~inferred_do_not_hash
@@ -715,6 +695,7 @@ let generate_expression_from_css_declarations_and_options
         { structure with pmod_attributes = structure.pmod_attributes }
         body
   ; ppx_css_string_expression
+  ; css_string_for_testing
   }
 ;;
 
@@ -724,13 +705,13 @@ let generate_inline_expression ~loc (expr : expression)
   let open (val Ast_builder.make loc) in
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
-  let { Ppx_css_syntax.rewrite; css_string; dont_hash_prefixes } =
+  let { Ppx_css_syntax.dont_hash; css_string; dont_hash_prefixes } =
     Ppx_css_syntax.parse_inline_expression_exn expr
   in
   let anonymous_declarations = Anonymous_declarations.create css_string in
   generate_expression_from_css_declarations_and_options
     ~loc
-    ~rewrite
+    ~dont_hash
     ~anonymous_declarations
     ~dont_hash_prefixes
     ~stylesheet_location:css_string.string_loc
@@ -753,14 +734,14 @@ let create_sig_from_idents
 ;;
 
 module For_css_inliner = struct
-  let gen_struct ~rewrite ~css_string ~dont_hash_prefixes ~stylesheet_location =
+  let gen_struct ~dont_hash ~css_string ~dont_hash_prefixes ~stylesheet_location =
     let buffer = Buffer.create 1024 in
     let loc = Location.none in
-    let%tydi { txt = module_expr; ppx_css_string_expression } =
+    let%tydi { txt = module_expr; ppx_css_string_expression; css_string_for_testing = _ } =
       generate_struct_from_css_string_and_options
         ~expansion_kind:Stylesheet
         ~loc
-        ~rewrite
+        ~dont_hash
         ~css_string
         ~dont_hash_prefixes
         ~stylesheet_location
@@ -802,7 +783,9 @@ let ml_extension =
     Extension.Context.module_expr
     Ast_pattern.(single_expr_payload __)
     (fun ~loc ~path:_ (expr : expression) ->
-      let%tydi { txt = module_; ppx_css_string_expression } = generate_struct ~loc expr in
+      let%tydi { txt = module_; ppx_css_string_expression; css_string_for_testing = _ } =
+        generate_struct ~loc expr
+      in
       Hoister.register ~ppx_css_string_expression;
       let open (val Ast_builder.make loc) in
       pmod_structure module_)
@@ -814,7 +797,8 @@ let inline_extension =
     Extension.Context.expression
     Ast_pattern.(single_expr_payload __)
     (fun ~loc ~path:_ (expr : expression) ->
-      let%tydi { txt = expression; ppx_css_string_expression } =
+      let%tydi { txt = expression; ppx_css_string_expression; css_string_for_testing = _ }
+        =
         generate_inline_expression ~loc expr
       in
       Hoister.register ~ppx_css_string_expression;
@@ -849,9 +833,23 @@ let () =
 ;;
 
 module For_testing = struct
+  let generate_css_stylesheet_string ~loc expression =
+    let%tydi { css_string_for_testing; _ } = generate_struct ~loc expression in
+    css_string_for_testing
+  ;;
+
+  let generate_css_inline_string ~loc expression =
+    let%tydi { css_string_for_testing; _ } = generate_inline_expression ~loc expression in
+    css_string_for_testing
+  ;;
+
   let generate_struct = generate_struct ~loc:Location.none
   let generate_inline_expression = generate_inline_expression ~loc:Location.none
   let map_style_sheet = Traverse_css.For_testing.map_style_sheet
+
+  let reset_anonymous_variable_identifiers =
+    Anonymous_variable.For_testing.restart_identifiers
+  ;;
 
   module Traverse_css = Traverse_css
 

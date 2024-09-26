@@ -90,8 +90,6 @@ The syntax for sending options is: `[%css stylesheet {|...css string...|} ~optio
 - `~dont_hash_prefixes:string list`: Will not hash identifiers that match that prefix.
   (e.g. `[%css stylesheet {||} ~dont_hash_prefixes:[--]]` will stop hashing all css
   variables.)
-- `~rewrite:(string * string) list`: Let's you change what each identifier is rewritten
-  to. (e.g. `[%css stylesheet {||} ~rewrite:["foo", "bar"]]` rewrites "foo" into "bar")
 
 The stylesheet syntax also generates a `For_referencing` module that includes -
   `Styles.For_referencing.card : string` - the post-hashed name.

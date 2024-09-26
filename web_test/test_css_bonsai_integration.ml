@@ -24,7 +24,7 @@ let%expect_test "css censoring" =
       (Bonsai.const (Vdom.Node.div ~attrs:[ Style.foo ] []))
   in
   Handle.show handle;
-  [%expect {| <div class="foo_hash_6126cb4ca7"> </div> |}]
+  [%expect {| <div class="foo_hash_791cc55311"> </div> |}]
 ;;
 
 let%test_module "inline css" =

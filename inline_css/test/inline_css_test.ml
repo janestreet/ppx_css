@@ -16,8 +16,11 @@ let%expect_test "appending preserves order and deduplicates" =
     {|
     a
     b
+    a
     c
     d
+    e
+    e
     e
     f
     g
@@ -36,8 +39,11 @@ let%expect_test "prepending inserts at the front of the list" =
     prepend-a
     a
     b
+    a
     c
     d
+    e
+    e
     e
     f
     g
@@ -60,7 +66,7 @@ let%expect_test "[Strategy.update] is called many times" =
   in
   add_style_foo ();
   add_style_foo ();
-  Inline_css.For_testing.dump_strategy_state ();
+  print_for_testing ();
   [%expect
     {|
     prepend-b
@@ -68,12 +74,19 @@ let%expect_test "[Strategy.update] is called many times" =
     prepend-a
     a
     b
+    a
     c
     d
+    e
+    e
     e
     f
     g
     h
+
+    .foo {
+      background-color : blue;
+    }
 
     .foo {
       background-color : blue;

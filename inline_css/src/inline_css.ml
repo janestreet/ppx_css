@@ -36,15 +36,13 @@ end
 
 module State = struct
   type t =
-    { appended_items : String.Hash_set.t
-    ; mutable items : string Prepend_and_append_list.t
+    { mutable items : string Prepend_and_append_list.t
     ; mutable updated : bool
     ; mutable future_appends_should_always_update : bool
     }
 
   let all_css =
-    { appended_items = String.Hash_set.create ()
-    ; items = Prepend_and_append_list.empty
+    { items = Prepend_and_append_list.empty
     ; updated = false
     ; future_appends_should_always_update = false
     }
@@ -57,14 +55,8 @@ module State = struct
   ;;
 
   let append a =
-    let already_appended = Hash_set.mem all_css.appended_items a in
-    if already_appended
-    then `Already_appended
-    else (
-      all_css.updated <- false;
-      Hash_set.add all_css.appended_items a;
-      all_css.items <- Prepend_and_append_list.append all_css.items a;
-      `Newly_appended)
+    all_css.updated <- false;
+    all_css.items <- Prepend_and_append_list.append all_css.items a
   ;;
 
   let prepend a =
@@ -142,10 +134,8 @@ let update_strategy_from_state () =
 ;;
 
 let append a =
-  let already_appended = State.append a in
-  match already_appended with
-  | `Already_appended -> ()
-  | `Newly_appended -> update_strategy_from_state ()
+  State.append a;
+  update_strategy_from_state ()
 ;;
 
 let update_if_not_already_updated () =
@@ -158,24 +148,29 @@ let is_in_browser =
     (Js.Unsafe.pure_js_expr {|globalThis?.window?.requestAnimationFrame|} : _ Js.Optdef.t)
 ;;
 
+let animation_frame_enqueued = ref false
+
 let schedule_an_update_on_animation_frame () =
-  if is_in_browser
+  (* NOTE: Calling [requestAnimationFrame] is expensive even if the callback it is given
+     is a no-op. Gating this behind a global bool ref makes it so that we do not ever have
+     two of these [requestAnimationFrame]s in progress. *)
+  if is_in_browser && not !animation_frame_enqueued
   then (
     let animation_frame_id =
+      animation_frame_enqueued := true;
       Dom_html.window##requestAnimationFrame
-        (Js.wrap_callback (fun _ -> update_if_not_already_updated ()))
+        (Js.wrap_callback (fun _ ->
+           animation_frame_enqueued := false;
+           update_if_not_already_updated ()))
     in
     ignore animation_frame_id)
 ;;
 
 let append_but_do_not_update a =
-  let already_appended = State.append a in
-  match already_appended with
-  | `Already_appended -> ()
-  | `Newly_appended ->
-    if State.all_css.future_appends_should_always_update
-    then update_strategy_from_state ()
-    else schedule_an_update_on_animation_frame ()
+  State.append a;
+  if State.all_css.future_appends_should_always_update
+  then update_strategy_from_state ()
+  else schedule_an_update_on_animation_frame ()
 ;;
 
 let prepend a =

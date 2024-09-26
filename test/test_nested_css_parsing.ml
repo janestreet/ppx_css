@@ -22,7 +22,7 @@ let%test_module "styled component parsing tests" =
   (module struct
     let test expr =
       catch_location_error ~f:(fun () ->
-        let%tydi { txt = expression; ppx_css_string_expression } =
+        let%tydi { txt = expression; ppx_css_string_expression; _ } =
           expr |> For_testing.generate_inline_expression
         in
         print_heading "Expression context:";
@@ -56,7 +56,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_06c0c801b4|}
+                    {|ppx_css_anonymous_class_hash_83534dfc97|}
               end
           end in Ppx_css_anonymous_style__001_.ppx_css_anonymous_class
         Hoisted context:
@@ -66,7 +66,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_06c0c801b4 {
+        *.ppx_css_anonymous_class_hash_83534dfc97 {
          background-color:tomato;
          *&:hover {
           background-color:black
@@ -96,7 +96,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_1f33a9ce80|}
+                    {|ppx_css_anonymous_class_hash_3fff99b05f|}
               end
           end in Ppx_css_anonymous_style__002_.ppx_css_anonymous_class
         Hoisted context:
@@ -106,7 +106,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_1f33a9ce80 {
+        *.ppx_css_anonymous_class_hash_3fff99b05f {
          background-color:tomato;
          *&:foo {
 
@@ -140,7 +140,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_1f33a9ce80|}
+                    {|ppx_css_anonymous_class_hash_3fff99b05f|}
               end
           end in Ppx_css_anonymous_style__003_.ppx_css_anonymous_class
         Hoisted context:
@@ -150,7 +150,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_1f33a9ce80 {
+        *.ppx_css_anonymous_class_hash_3fff99b05f {
          background-color:tomato;
          *&:foo {
 
@@ -187,7 +187,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_4526837167|}
+                    {|ppx_css_anonymous_class_hash_d71f306138|}
               end
           end in Ppx_css_anonymous_style__004_.ppx_css_anonymous_class
         Hoisted context:
@@ -197,7 +197,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_4526837167 {
+        *.ppx_css_anonymous_class_hash_d71f306138 {
          background-color:tomato;
          *&:foo {
 
@@ -241,7 +241,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_0c03167bcf|}
+                    {|ppx_css_anonymous_class_hash_41079f4bf0|}
               end
           end in Ppx_css_anonymous_style__005_.ppx_css_anonymous_class
         Hoisted context:
@@ -251,7 +251,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_0c03167bcf {
+        *.ppx_css_anonymous_class_hash_41079f4bf0 {
          *& * {
 
          }
@@ -273,7 +273,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_1dd86cc423|}
+                    {|ppx_css_anonymous_class_hash_233338404a|}
               end
           end in Ppx_css_anonymous_style__006_.ppx_css_anonymous_class
         Hoisted context:
@@ -283,7 +283,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_1dd86cc423 {
+        *.ppx_css_anonymous_class_hash_233338404a {
          *& *& {
 
          }
@@ -305,7 +305,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_37b9d59af4|}
+                    {|ppx_css_anonymous_class_hash_5e22ec490a|}
               end
           end in Ppx_css_anonymous_style__007_.ppx_css_anonymous_class
         Hoisted context:
@@ -315,7 +315,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_37b9d59af4 {
+        *.ppx_css_anonymous_class_hash_5e22ec490a {
          *& *.foo *.foo {
 
          }
@@ -343,7 +343,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_c4d4e6073e|}
+                    {|ppx_css_anonymous_class_hash_038c6fd955|}
               end
           end in Ppx_css_anonymous_style__008_.ppx_css_anonymous_class
         Hoisted context:
@@ -353,7 +353,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_c4d4e6073e {
+        *.ppx_css_anonymous_class_hash_038c6fd955 {
          +*.foo *.foo {
 
          }
@@ -380,7 +380,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_7d3ff84693|}
+                    {|ppx_css_anonymous_class_hash_154bf438c7|}
               end
           end in Ppx_css_anonymous_style__009_.ppx_css_anonymous_class
         Hoisted context:
@@ -390,7 +390,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_7d3ff84693 {
+        *.ppx_css_anonymous_class_hash_154bf438c7 {
          *& *:hover {
 
          }
@@ -414,7 +414,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_1d06b4b6e2|}
+                    {|ppx_css_anonymous_class_hash_b3742a8e12|}
               end
           end in Ppx_css_anonymous_style__010_.ppx_css_anonymous_class
         Hoisted context:
@@ -424,7 +424,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_1d06b4b6e2 {
+        *.ppx_css_anonymous_class_hash_b3742a8e12 {
          *&:hover {
 
          }
@@ -451,7 +451,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_3a6c7e4ea2|}
+                    {|ppx_css_anonymous_class_hash_cf29595ac3|}
               end
           end in Ppx_css_anonymous_style__011_.ppx_css_anonymous_class
         Hoisted context:
@@ -461,7 +461,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_3a6c7e4ea2 {
+        *.ppx_css_anonymous_class_hash_cf29595ac3 {
          *& *:has(&) {
 
          }
@@ -488,7 +488,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_0585b06e67|}
+                    {|ppx_css_anonymous_class_hash_30775a8ff1|}
               end
           end in Ppx_css_anonymous_style__012_.ppx_css_anonymous_class
         Hoisted context:
@@ -498,7 +498,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_0585b06e67 {
+        *.ppx_css_anonymous_class_hash_30775a8ff1 {
          *& *:has(foo) {
 
          }
@@ -525,7 +525,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_1deb4e5862|}
+                    {|ppx_css_anonymous_class_hash_0cee80ad32|}
               end
           end in Ppx_css_anonymous_style__013_.ppx_css_anonymous_class
         Hoisted context:
@@ -535,7 +535,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_1deb4e5862 {
+        *.ppx_css_anonymous_class_hash_0cee80ad32 {
          *& *:has(& *:has-*&+*&>*& *#foo>*& *.foo &:has(& *:has(& *.foo *&))) {
 
          }
@@ -566,7 +566,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_7f6fcf5e26|}
+                    {|ppx_css_anonymous_class_hash_74b60db143|}
               end
           end in Ppx_css_anonymous_style__014_.ppx_css_anonymous_class
         Hoisted context:
@@ -576,7 +576,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_7f6fcf5e26 {
+        *.ppx_css_anonymous_class_hash_74b60db143 {
          *& *:has(foo)+*.bar+*&~*&>*&-*& *#foo {
 
          }
@@ -603,7 +603,7 @@ let%test_module "styled component parsing tests" =
               struct
                 let ppx_css_anonymous_class =
                   Virtual_dom.Vdom.Attr.class_
-                    {|ppx_css_anonymous_class_hash_8a70b922be|}
+                    {|ppx_css_anonymous_class_hash_62f92b2fb4|}
               end
           end in Ppx_css_anonymous_style__015_.ppx_css_anonymous_class
         Hoisted context:
@@ -613,7 +613,7 @@ let%test_module "styled component parsing tests" =
             {|
         /* _none_ */
 
-        *.ppx_css_anonymous_class_hash_8a70b922be {
+        *.ppx_css_anonymous_class_hash_62f92b2fb4 {
          *& *:has(.foo),*&:hover {
 
          }
@@ -628,7 +628,7 @@ let%test_module "stylesheet parsing tests" =
   (module struct
     let test expr =
       catch_location_error ~f:(fun () ->
-        let%tydi { txt = structure; ppx_css_string_expression } =
+        let%tydi { txt = structure; ppx_css_string_expression; _ } =
           For_testing.generate_struct expr
         in
         let structure =
@@ -652,10 +652,8 @@ let%test_module "stylesheet parsing tests" =
         {xxx|
         [@@@ocaml.warning "-32"]
         let __type_info_for_ppx_css :
-          ?rewrite:(string * string) list ->
-            ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit
-          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+          ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
         module type S  =
           sig
             module For_referencing : sig val foo : string end
@@ -664,8 +662,8 @@ let%test_module "stylesheet parsing tests" =
         type t = (module S)
         module Default : S =
           struct
-            module For_referencing = struct let foo = {|foo_hash_ed1292223b|} end
-            let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_ed1292223b|}
+            module For_referencing = struct let foo = {|foo_hash_400d77f021|} end
+            let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_400d77f021|}
           end
         include Default
         let default : t = (module Default)
@@ -674,7 +672,7 @@ let%test_module "stylesheet parsing tests" =
             {|
         /* _none_ */
 
-        *.foo_hash_ed1292223b {
+        *.foo_hash_400d77f021 {
          *& {
 
          }
@@ -689,10 +687,8 @@ let%test_module "stylesheet parsing tests" =
         {xxx|
         [@@@ocaml.warning "-32"]
         let __type_info_for_ppx_css :
-          ?rewrite:(string * string) list ->
-            ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit
-          = fun ?rewrite:_ ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+          ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
         module type S  =
           sig
             module For_referencing :
@@ -706,13 +702,13 @@ let%test_module "stylesheet parsing tests" =
           struct
             module For_referencing =
               struct
-                let foo = {|foo_hash_66de0ac9e5|}
-                let baz = {|baz_hash_66de0ac9e5|}
-                let bar = {|bar_hash_66de0ac9e5|}
+                let foo = {|foo_hash_c8ffad4dfc|}
+                let baz = {|baz_hash_c8ffad4dfc|}
+                let bar = {|bar_hash_c8ffad4dfc|}
               end
-            let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_66de0ac9e5|}
-            let baz = Virtual_dom.Vdom.Attr.class_ {|baz_hash_66de0ac9e5|}
-            let bar = Virtual_dom.Vdom.Attr.class_ {|bar_hash_66de0ac9e5|}
+            let foo = Virtual_dom.Vdom.Attr.class_ {|foo_hash_c8ffad4dfc|}
+            let baz = Virtual_dom.Vdom.Attr.class_ {|baz_hash_c8ffad4dfc|}
+            let bar = Virtual_dom.Vdom.Attr.class_ {|bar_hash_c8ffad4dfc|}
           end
         include Default
         let default : t = (module Default)
@@ -721,10 +717,10 @@ let%test_module "stylesheet parsing tests" =
             {|
         /* _none_ */
 
-        *.foo_hash_66de0ac9e5 {
+        *.foo_hash_c8ffad4dfc {
          *& {
-          *&.bar_hash_66de0ac9e5 {
-           *&.baz_hash_66de0ac9e5 {
+          *&.bar_hash_c8ffad4dfc {
+           *&.baz_hash_c8ffad4dfc {
 
            }
 
