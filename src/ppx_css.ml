@@ -686,7 +686,7 @@ let generate_expression_from_css_declarations_and_options
   let body =
     pexp_ident
       (Located.mk
-         (Ldot (Lident style_module_name, Anonymous_declarations.anonymous_class_name)))
+         (Ldot (Lident style_module_name, Anonymous_declarations.anonymous_class_name loc)))
   in
   let structure = pmod_structure module_ in
   { With_hoisted_expression.txt =

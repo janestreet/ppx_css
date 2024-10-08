@@ -6,6 +6,7 @@ type token =
   | UNICODE_RANGE of string
   | STRING of string
   | SEMI_COLON
+  | SELECTOR_FUNCTION of string
   | RIGHT_PAREN
   | RIGHT_BRACKET
   | RIGHT_BRACE

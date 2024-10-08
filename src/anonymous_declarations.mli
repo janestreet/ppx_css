@@ -34,7 +34,7 @@ val create : Ppx_css_syntax.String_constant.t -> t
 val to_stylesheet_string : t -> string
 
 (** The "anonymous classname" for the declarations. *)
-val anonymous_class_name : string
+val anonymous_class_name : location -> string
 
 (** [anonymous_variables] encode the interpolation replacements that [%css] performs.
 

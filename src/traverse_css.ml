@@ -33,23 +33,63 @@ let hash_the_contents_of_these_selector_functions =
   String.Set.of_list [ "not"; "has"; "where"; "is" ]
 ;;
 
+let raise_due_to_unknown_function_with_identifiers ~loc ~fn_name ~utilized_identifiers =
+  let utilized_identifiers =
+    Set.to_list utilized_identifiers
+    |> List.map ~f:(fun identifier -> [%string {|"%{identifier}"|}])
+    |> String.concat ~sep:"; "
+  in
+  Location.raise_errorf
+    ~loc
+    "Unsafe use of classes or ids [%s] within unknown function '%s'. Please contact the \
+     owners of [ppx_css] so that this CSS function can be audited and added to the allow \
+     list in order to resolve this bug."
+    utilized_identifiers
+    fn_name
+;;
+
 let rec fold_c_value ~dont_hash ~dont_hash_prefixes ~f prev v =
   match prev, v with
   | _, ((Component_value.Delim "." as d), loc) -> Dot, (d, loc)
   | _, ((Delim ":" as d), loc) -> Colon, (d, loc)
   | Dot, (Ident s, loc) -> Other, (Ident (f (`Class s) loc), loc)
   | _, (Hash s, loc) -> Other, (Hash (f (`Id s) loc), loc)
-  | Colon, (Function (((fn_name, _) as first), second), loc)
-    when Set.mem hash_the_contents_of_these_selector_functions fn_name ->
-    let component_value =
+  | Colon, (Function (((fn_name, _) as first), second), loc) ->
+    if Set.mem hash_the_contents_of_these_selector_functions fn_name
+    then (
+      let component_value =
+        let second =
+          Tuple2.map_fst
+            second
+            ~f:(map_component_value_list ~dont_hash ~f ~dont_hash_prefixes)
+        in
+        Component_value.Function (first, second)
+      in
+      Other, (component_value, loc))
+    else (
+      (* if we don't recognize the function, we scan it for things that 
+         look like ids, classes, and variables, and emit an error. *)
+      let utilized_identifiers = String.Hash_set.create () in
+      let f identifier _loc =
+        let css_identifier, identifier =
+          match identifier with
+          | `Id identifier -> "#" ^ identifier, identifier
+          | `Class identifier -> "." ^ identifier, identifier
+          | `Variable identifier -> "--" ^ identifier, identifier
+        in
+        Hash_set.add utilized_identifiers css_identifier;
+        identifier
+      in
       let second =
         Tuple2.map_fst
           second
           ~f:(map_component_value_list ~dont_hash ~f ~dont_hash_prefixes)
       in
-      Component_value.Function (first, second)
-    in
-    Other, (component_value, loc)
+      let utilized_identifiers = String.Set.of_hash_set utilized_identifiers in
+      match Set.is_empty utilized_identifiers with
+      | true -> Other, (Component_value.Function (first, second), loc)
+      | false ->
+        raise_due_to_unknown_function_with_identifiers ~loc ~fn_name ~utilized_identifiers)
   | _, other -> Other, other
 
 and map_component_value_list ~f ~dont_hash ~dont_hash_prefixes =

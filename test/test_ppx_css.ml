@@ -675,26 +675,25 @@ let%expect_test "unused [~dont_hash] target warning" =
   [%expect {xxx| Unused keys: (b) |xxx}]
 ;;
 
-let%test_module "css_inliner_tests" =
-  (module struct
-    let test_sig_and_struct s =
-      let struct_ =
-        For_css_inliner.gen_struct
-          ~dont_hash:String.Set.empty
-          ~css_string:s
-          ~dont_hash_prefixes:[]
-          ~stylesheet_location:Location.none
-      in
-      let sig_ = For_css_inliner.gen_sig s in
-      print_endline "==struct==";
-      print_endline struct_;
-      print_endline "==sig==";
-      print_endline sig_
-    ;;
+module%test [@name "css_inliner_tests"] _ = struct
+  let test_sig_and_struct s =
+    let struct_ =
+      For_css_inliner.gen_struct
+        ~dont_hash:String.Set.empty
+        ~css_string:s
+        ~dont_hash_prefixes:[]
+        ~stylesheet_location:Location.none
+    in
+    let sig_ = For_css_inliner.gen_sig s in
+    print_endline "==struct==";
+    print_endline struct_;
+    print_endline "==sig==";
+    print_endline sig_
+  ;;
 
-    let%expect_test "basic generation" =
-      test_sig_and_struct
-        {|
+  let%expect_test "basic generation" =
+    test_sig_and_struct
+      {|
         .a {
           color: green;
         }
@@ -702,63 +701,63 @@ let%test_module "css_inliner_tests" =
         .b {
           color: white;
         } |};
-      [%expect
-        {xxx|
-        ==struct==
-        struct
-          let () =
-            Inline_css.Private.append_but_do_not_update
-              {|
-        /* _none_ */
+    [%expect
+      {xxx|
+      ==struct==
+      struct
+        let () =
+          Inline_css.Private.append_but_do_not_update
+            {|
+      /* _none_ */
 
-        *.a_hash_5da393bd89 {
-         color:green
-        }
+      *.a_hash_5da393bd89 {
+       color:green
+      }
 
-        *.b_hash_5da393bd89 {
-         color:white
-        }|}
-          [@@@ocaml.warning "-32"]
-          let __type_info_for_ppx_css :
-            ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit
-            = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-          module type S  =
-            sig
-              module For_referencing : sig val a : string val b : string end
-              val a : Virtual_dom.Vdom.Attr.t
-              val b : Virtual_dom.Vdom.Attr.t
-            end
-          type t = (module S)
-          module Default : S =
-            struct
-              module For_referencing =
-                struct let b = {|b_hash_5da393bd89|}
-                       let a = {|a_hash_5da393bd89|} end
-              let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_5da393bd89|}
-              let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_5da393bd89|}
-            end
-          include Default
-          let default : t = (module Default)
-        ==sig==
-        sig
-          module type S  =
-            sig
-              module For_referencing : sig val a : string val b : string end
-              val a : Virtual_dom.Vdom.Attr.t
-              val b : Virtual_dom.Vdom.Attr.t
-            end
-          type t = (module S)
-          val default : t
-          module For_referencing : sig val a : string val b : string end
-          val a : Virtual_dom.Vdom.Attr.t
-          val b : Virtual_dom.Vdom.Attr.t
-        |xxx}]
-    ;;
+      *.b_hash_5da393bd89 {
+       color:white
+      }|}
+        [@@@ocaml.warning "-32"]
+        let __type_info_for_ppx_css :
+          ?dont_hash:string list ->
+            ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        module type S  =
+          sig
+            module For_referencing : sig val a : string val b : string end
+            val a : Virtual_dom.Vdom.Attr.t
+            val b : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        module Default : S =
+          struct
+            module For_referencing =
+              struct let b = {|b_hash_5da393bd89|}
+                     let a = {|a_hash_5da393bd89|} end
+            let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_5da393bd89|}
+            let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_5da393bd89|}
+          end
+        include Default
+        let default : t = (module Default)
+      ==sig==
+      sig
+        module type S  =
+          sig
+            module For_referencing : sig val a : string val b : string end
+            val a : Virtual_dom.Vdom.Attr.t
+            val b : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        val default : t
+        module For_referencing : sig val a : string val b : string end
+        val a : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+      |xxx}]
+  ;;
 
-    let%expect_test "generation with duplicate names." =
-      test_sig_and_struct
-        {|
+  let%expect_test "generation with duplicate names." =
+    test_sig_and_struct
+      {|
         .a {
           color: green;
         }
@@ -767,100 +766,97 @@ let%test_module "css_inliner_tests" =
           color: white;
         }
         |};
-      [%expect
-        {xxx|
-        ==struct==
-        struct
-          let () =
-            Inline_css.Private.append_but_do_not_update
-              {|
-        /* _none_ */
+    [%expect
+      {xxx|
+      ==struct==
+      struct
+        let () =
+          Inline_css.Private.append_but_do_not_update
+            {|
+      /* _none_ */
 
-        *.a_hash_c7bdcfd04c {
-         color:green
-        }
+      *.a_hash_c7bdcfd04c {
+       color:green
+      }
 
-        *.a_hash_c7bdcfd04c {
-         color:white
-        }|}
-          [@@@ocaml.warning "-32"]
-          let __type_info_for_ppx_css :
-            ?dont_hash:string list ->
-              ?dont_hash_prefixes:string list -> string -> unit
-            = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-          module type S  =
-            sig
-              module For_referencing : sig val a : string end
-              val a : Virtual_dom.Vdom.Attr.t
-            end
-          type t = (module S)
-          module Default : S =
-            struct
-              module For_referencing = struct let a = {|a_hash_c7bdcfd04c|} end
-              let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_c7bdcfd04c|}
-            end
-          include Default
-          let default : t = (module Default)
-        ==sig==
-        sig
-          module type S  =
-            sig
-              module For_referencing : sig val a : string end
-              val a : Virtual_dom.Vdom.Attr.t
-            end
-          type t = (module S)
-          val default : t
-          module For_referencing : sig val a : string end
-          val a : Virtual_dom.Vdom.Attr.t
-        |xxx}]
-    ;;
-  end)
-;;
+      *.a_hash_c7bdcfd04c {
+       color:white
+      }|}
+        [@@@ocaml.warning "-32"]
+        let __type_info_for_ppx_css :
+          ?dont_hash:string list ->
+            ?dont_hash_prefixes:string list -> string -> unit
+          = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        module type S  =
+          sig
+            module For_referencing : sig val a : string end
+            val a : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        module Default : S =
+          struct
+            module For_referencing = struct let a = {|a_hash_c7bdcfd04c|} end
+            let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_c7bdcfd04c|}
+          end
+        include Default
+        let default : t = (module Default)
+      ==sig==
+      sig
+        module type S  =
+          sig
+            module For_referencing : sig val a : string end
+            val a : Virtual_dom.Vdom.Attr.t
+          end
+        type t = (module S)
+        val default : t
+        module For_referencing : sig val a : string end
+        val a : Virtual_dom.Vdom.Attr.t
+      |xxx}]
+  ;;
+end
 
-let%test_module "Variable setter creation" =
-  (module struct
-    let%expect_test "two variables variable creation" =
-      test_sig
-        {|
+module%test [@name "Variable setter creation"] _ = struct
+  let%expect_test "two variables variable creation" =
+    test_sig
+      {|
 .a-class {
   --bg-color: white;
   --fg-color: black
 }
         |};
-      [%expect
-        {|
-        sig
-          module type S  =
-            sig
-              module Variables :
-              sig
-                val set :
-                  ?bg_color:string ->
-                    ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
-                val set_all :
-                  bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
-              end
-              module For_referencing :
-              sig val a_class : string val bg_color : string val fg_color : string
-              end
-              val a_class : Virtual_dom.Vdom.Attr.t
-            end
-          type t = (module S)
-          val default : t
-          module Variables :
+    [%expect
+      {|
+      sig
+        module type S  =
           sig
-            val set :
-              ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
-            val set_all :
-              bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
+            module Variables :
+            sig
+              val set :
+                ?bg_color:string ->
+                  ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+              val set_all :
+                bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
+            end
+            module For_referencing :
+            sig val a_class : string val bg_color : string val fg_color : string
+            end
+            val a_class : Virtual_dom.Vdom.Attr.t
           end
-          module For_referencing :
-          sig val a_class : string val bg_color : string val fg_color : string end
-          val a_class : Virtual_dom.Vdom.Attr.t
-        |}]
-    ;;
-  end)
-;;
+        type t = (module S)
+        val default : t
+        module Variables :
+        sig
+          val set :
+            ?bg_color:string -> ?fg_color:string -> unit -> Virtual_dom.Vdom.Attr.t
+          val set_all :
+            bg_color:string -> fg_color:string -> Virtual_dom.Vdom.Attr.t
+        end
+        module For_referencing :
+        sig val a_class : string val bg_color : string val fg_color : string end
+        val a_class : Virtual_dom.Vdom.Attr.t
+      |}]
+  ;;
+end
 
 let%expect_test "unused [~dont_hash] target warning" =
   test_struct
@@ -1661,4 +1657,198 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
      color:var(--cm-bg-color)
     }|}
     |xxx}]
+;;
+
+let%expect_test "String attrs with identifiers should not be hashed" =
+  test_struct
+    [%expr
+      stylesheet
+        {|
+                div:asdf('.a .b .c') { }
+                div:asdf(".a .b .c") { }
+                div:has('.a .b .c') { }
+                div:has(".a .b .c") { }
+                div[foo=".a .b .c"] { }
+                div[bar='.a .b .c'] { }
+       |}];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  = sig module For_referencing : sig  end end
+    type t = (module S)
+    module Default : S = struct module For_referencing = struct  end end
+    include Default
+    let default : t = (module Default)
+    let () =
+      Inline_css.Private.append_but_do_not_update
+        {|
+    /* _none_ */
+
+    div:asdf(".a .b .c") {
+
+    }
+
+    div:asdf(".a .b .c") {
+
+    }
+
+    div:has(".a .b .c") {
+
+    }
+
+    div:has(".a .b .c") {
+
+    }
+
+    div[foo=".a .b .c"] {
+
+    }
+
+    div[bar=".a .b .c"] {
+
+    }|}
+    |xxx}]
+;;
+
+let%expect_test "Known  css functions with identifiers should hash" =
+  test_struct
+    [%expr
+      stylesheet
+        {|
+                div:has(.a .b) {
+        
+                }
+                div:not(.c + .d) {
+        
+                }
+                div:where(.e ~ .f) {
+        
+                }
+                div:is(.g > .h) {
+        
+                }
+       |}];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  =
+      sig
+        module For_referencing :
+        sig
+          val a : string
+          val b : string
+          val c : string
+          val d : string
+          val e : string
+          val f : string
+          val g : string
+          val h : string
+        end
+        val a : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+        val c : Virtual_dom.Vdom.Attr.t
+        val d : Virtual_dom.Vdom.Attr.t
+        val e : Virtual_dom.Vdom.Attr.t
+        val f : Virtual_dom.Vdom.Attr.t
+        val g : Virtual_dom.Vdom.Attr.t
+        val h : Virtual_dom.Vdom.Attr.t
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module For_referencing =
+          struct
+            let g = {|g_hash_8f2cc541c7|}
+            let c = {|c_hash_8f2cc541c7|}
+            let b = {|b_hash_8f2cc541c7|}
+            let e = {|e_hash_8f2cc541c7|}
+            let f = {|f_hash_8f2cc541c7|}
+            let d = {|d_hash_8f2cc541c7|}
+            let h = {|h_hash_8f2cc541c7|}
+            let a = {|a_hash_8f2cc541c7|}
+          end
+        let g = Virtual_dom.Vdom.Attr.class_ {|g_hash_8f2cc541c7|}
+        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_8f2cc541c7|}
+        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_8f2cc541c7|}
+        let e = Virtual_dom.Vdom.Attr.class_ {|e_hash_8f2cc541c7|}
+        let f = Virtual_dom.Vdom.Attr.class_ {|f_hash_8f2cc541c7|}
+        let d = Virtual_dom.Vdom.Attr.class_ {|d_hash_8f2cc541c7|}
+        let h = Virtual_dom.Vdom.Attr.class_ {|h_hash_8f2cc541c7|}
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_8f2cc541c7|}
+      end
+    include Default
+    let default : t = (module Default)
+    let () =
+      Inline_css.Private.append_but_do_not_update
+        {|
+    /* _none_ */
+
+    div:has(.a_hash_8f2cc541c7 *.b_hash_8f2cc541c7) {
+
+    }
+
+    div:not(.c_hash_8f2cc541c7+*.d_hash_8f2cc541c7) {
+
+    }
+
+    div:where(.e_hash_8f2cc541c7~*.f_hash_8f2cc541c7) {
+
+    }
+
+    div:is(.g_hash_8f2cc541c7>*.h_hash_8f2cc541c7) {
+
+    }|}
+    |xxx}]
+;;
+
+let%expect_test "Doesn't throw on pseudoclasses without selectors" =
+  test_struct
+    [%expr
+      stylesheet
+        {|
+                div:asdf() { }
+                div:bar { }
+       |}];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  = sig module For_referencing : sig  end end
+    type t = (module S)
+    module Default : S = struct module For_referencing = struct  end end
+    include Default
+    let default : t = (module Default)
+    let () =
+      Inline_css.Private.append_but_do_not_update
+        {|
+    /* _none_ */
+
+    div:asdf() {
+
+    }
+
+    div:bar {
+
+    }|}
+    |xxx}]
+;;
+
+let%expect_test "Unknown css functions with identifiers should error out" =
+  test_struct
+    [%expr
+      stylesheet
+        {|
+                div:asdf(.a .b .c) {
+                }
+       |}];
+  [%expect
+    {xxx| Unsafe use of classes or ids [".a"; ".b"; ".c"] within unknown function 'asdf'. Please contact the owners of [ppx_css] so that this CSS function can be audited and added to the allow list in order to resolve this bug. |xxx}]
 ;;

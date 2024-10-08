@@ -2,6 +2,14 @@ open! Core
 open Ppxlib
 open Ppx_css
 
+let loc_with_mock_name =
+  let loc = Location.none in
+  let pos_fname = "app/foo/foo.ml" in
+  let loc_start = { loc.loc_start with pos_fname }
+  and loc_end = { loc.loc_end with pos_fname } in
+  { loc with loc_start; loc_end }
+;;
+
 let loc = Location.none
 
 let catch_location_error ~f =

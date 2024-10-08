@@ -20,11 +20,10 @@ let%expect_test "with classes" =
       struct
         include
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_41ad4a9fe9|}
+            let inline_class =
+              Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_eb6fc2da0b|}
           end
-      end in Ppx_css_anonymous_style__001_.ppx_css_anonymous_class
+      end in Ppx_css_anonymous_style__001_.inline_class
     Hoisted context:
     ----------------
     let () =
@@ -32,7 +31,7 @@ let%expect_test "with classes" =
         {|
     /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_41ad4a9fe9 {
+    *.inline_class_hash_eb6fc2da0b {
      *&.foo {
       background-color:tomato
      }
@@ -85,11 +84,10 @@ let%expect_test "with ids" =
       struct
         include
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_3cd267b337|}
+            let inline_class =
+              Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_64b5b54d28|}
           end
-      end in Ppx_css_anonymous_style__002_.ppx_css_anonymous_class
+      end in Ppx_css_anonymous_style__002_.inline_class
     Hoisted context:
     ----------------
     let () =
@@ -97,7 +95,7 @@ let%expect_test "with ids" =
         {|
     /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_3cd267b337 {
+    *.inline_class_hash_64b5b54d28 {
      *&#foo {
       background-color:tomato
      }
@@ -123,11 +121,10 @@ let%expect_test "with variables" =
       struct
         include
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_6bc0038d94|}
+            let inline_class =
+              Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_b533eea165|}
           end
-      end in Ppx_css_anonymous_style__003_.ppx_css_anonymous_class
+      end in Ppx_css_anonymous_style__003_.inline_class
     Hoisted context:
     ----------------
     let () =
@@ -135,7 +132,7 @@ let%expect_test "with variables" =
         {|
     /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_6bc0038d94 {
+    *.inline_class_hash_b533eea165 {
      *& {
       background-color:var(--foo)
      }
@@ -162,11 +159,10 @@ let%expect_test {|ppx css does structure item generation check does not work wit
       struct
         include
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_38d0c189a4|}
+            let inline_class =
+              Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_a073221f2b|}
           end
-      end in Ppx_css_anonymous_style__004_.ppx_css_anonymous_class
+      end in Ppx_css_anonymous_style__004_.inline_class
     Hoisted context:
     ----------------
     let () =
@@ -174,7 +170,7 @@ let%expect_test {|ppx css does structure item generation check does not work wit
         {|
     /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_38d0c189a4 {
+    *.inline_class_hash_a073221f2b {
      *.cm-editor {
       overflow:auto;
       max-height:90vh
@@ -201,11 +197,10 @@ let%expect_test {|Sanitizing hyphens vs underscores are respected.|} =
       struct
         include
           struct
-            let ppx_css_anonymous_class =
-              Virtual_dom.Vdom.Attr.class_
-                {|ppx_css_anonymous_class_hash_a985c6c875|}
+            let inline_class =
+              Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_0550d7d305|}
           end
-      end in Ppx_css_anonymous_style__005_.ppx_css_anonymous_class
+      end in Ppx_css_anonymous_style__005_.inline_class
     Hoisted context:
     ----------------
     let () =
@@ -213,7 +208,7 @@ let%expect_test {|Sanitizing hyphens vs underscores are respected.|} =
         {|
     /* _none_ */
 
-    *.ppx_css_anonymous_class_hash_a985c6c875 {
+    *.inline_class_hash_0550d7d305 {
      *.a-b_c-d {
       overflow:auto;
       max-height:90vh

@@ -98,7 +98,21 @@ module Find_anonymous_variables = struct
   ;;
 end
 
-let anonymous_class_name = "ppx_css_anonymous_class"
+let anonymous_class_name location =
+  let file_basename =
+    match String.split ~on:'/' location.loc_start.pos_fname |> List.rev with
+    | [] -> None
+    | basename :: _ ->
+      Option.map (String.lsplit2 ~on:'.' basename) ~f:(fun (name, _) ->
+        String.filter name ~f:(function
+          | '_' | 'a' .. 'z' | 'A' .. 'Z' -> true
+          | _ -> false))
+  in
+  let name = "inline_class" in
+  match file_basename with
+  | None -> name
+  | Some file_basename -> [%string "%{file_basename}__%{name}"]
+;;
 
 let create
   { Ppx_css_syntax.String_constant.css_string = original_declaration_string
@@ -118,6 +132,7 @@ let create
     Find_anonymous_variables.f ~parsed_parts
   in
   let anonymous_variables = Anonymous_variable.Collection.of_list anonymous_variables in
+  let anonymous_class_name = anonymous_class_name string_loc in
   { original_declaration_string = { txt = original_declaration_string; loc = string_loc }
   ; parsed_parts
   ; inferred_do_not_hash
@@ -128,7 +143,7 @@ let create
 ;;
 
 let always_hash t =
-  let init = String.Set.singleton anonymous_class_name in
+  let init = String.Set.singleton t.anonymous_class_name in
   List.fold t.anonymous_variables.variables ~init ~f:(fun acc variable ->
     let name = Anonymous_variable.name variable in
     Set.add acc ("--" ^ Anonymous_variable.Name.to_string name))
@@ -146,12 +161,12 @@ let%expect_test "[always_hash]" =
     print_s [%sexp (always_hash result : String.Set.t)]
   in
   test {|background-color: red|};
-  [%expect {| (ppx_css_anonymous_class) |}];
+  [%expect {| (inline_class) |}];
   (* (--red) is not hashed *)
   test {|background-color: var(--red)|};
-  [%expect {| (ppx_css_anonymous_class) |}];
+  [%expect {| (inline_class) |}];
   test {|background-color: %{color}|};
-  [%expect {| (--ppx_css_anonymous_var_1 ppx_css_anonymous_class) |}]
+  [%expect {| (--ppx_css_anonymous_var_1 inline_class) |}]
 ;;
 
 let%expect_test "[inferred_do_not_hash]" =
@@ -201,7 +216,7 @@ let%expect_test "[inferred_do_not_hash]" =
 let to_stylesheet_string t =
   [%string
     {|
-.%{anonymous_class_name} { %{t.substituted_declarations} }|}]
+.%{t.anonymous_class_name} { %{t.substituted_declarations} }|}]
 ;;
 
 let%expect_test _ =
@@ -216,13 +231,11 @@ let%expect_test _ =
     create string_constant |> to_stylesheet_string |> print_endline
   in
   test {|background-color: blue|};
-  [%expect {| .ppx_css_anonymous_class { background-color: blue } |}];
+  [%expect {| .inline_class { background-color: blue } |}];
   test {|background-color: %{color};|};
-  [%expect
-    {| .ppx_css_anonymous_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
+  [%expect {| .inline_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
   test {|background-color: %{color#Module.Foo};|};
-  [%expect
-    {| .ppx_css_anonymous_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
+  [%expect {| .inline_class { background-color: var(--ppx_css_anonymous_var_1); } |}];
   test
     {|
     background-color: red;
@@ -235,7 +248,7 @@ let%expect_test _ =
   |};
   [%expect
     {|
-    .ppx_css_anonymous_class {
+    .inline_class {
         background-color: red;
         background-color: var(--foo);
         --tom: tomato;

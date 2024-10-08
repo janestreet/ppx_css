@@ -64,6 +64,7 @@ let token_to_string = function
   | AT_RULE_WITHOUT_BODY s -> "AT_RULE_WITHOUT_BODY(" ^ s ^ ")"
   | AT_RULE s -> "AT_RULE(" ^ s ^ ")"
   | FUNCTION s -> "FUNCTION(" ^ s ^ ")"
+  | SELECTOR_FUNCTION s -> "SELECTOR_FUNCTION(" ^ s ^ ")"
   | HASH s -> "HASH(" ^ s ^ ")"
   | NUMBER s -> "NUMBER(" ^ s ^ ")"
   | UNICODE_RANGE s -> "UNICODE_RANGE(" ^ s ^ ")"
@@ -255,7 +256,13 @@ let rec get_next_tokens buf spaces_detected =
   (* NOTE: should be placed above ident, otherwise pattern with
    * '-[0-9a-z]{1,6}' cannot be matched *)
   | _u, '+', unicode_range -> [ UNICODE_RANGE (Lex_buffer.latin1 buf) ]
-  | ident, '(' -> [ FUNCTION (Lex_buffer.latin1 ~drop:1 buf) ]
+  | ident, '(' ->
+    let f = Lex_buffer.latin1 ~drop:1 buf in
+    (match f with
+     (* NOTE: These functions have a selector payload and are treated differently in the
+        at parse-time as the way their payload gets parsed is different. *)
+     | "has" | "not" | "where" | "host" | "host-context" | "is" -> [ SELECTOR_FUNCTION f ]
+     | _ -> [ FUNCTION f ])
   | ident -> [ IDENT (Lex_buffer.latin1 buf) ]
   | '#', name ->
     if spaces_detected
