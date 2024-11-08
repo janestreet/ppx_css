@@ -26,7 +26,7 @@ open Ppxlib
     ]}
 *)
 
-val register : ppx_css_string_expression:expression -> unit
+val register : structure_item:structure_item -> unit
 val create_hoisted_module : loc:location -> structure_item
 val ppx_css_expression_to_structure_item : loc:location -> expression -> structure_item
 val is_empty : unit -> bool

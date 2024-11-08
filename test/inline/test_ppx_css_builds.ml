@@ -38,3 +38,8 @@ module Variable_clashes_called_set =
         width: var(--width);
       }
       |}]
+
+module _ = Normal
+module _ = With_variables
+module _ = Clashing_id_and_class
+module _ = Variable_clashes_called_set

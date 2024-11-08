@@ -1,0 +1,16 @@
+(library
+ (name test_moves_module_timer_above)
+ (libraries core)
+ (preprocess
+  (pps ppx_css -lazy-loading-optimization=true ppx_jane)))
+
+(rule
+ (targets test_moves_module_timer_above.pp-output)
+ (deps
+  (:first_dep test_moves_module_timer_above.ml.pp))
+ (action
+  (bash "cp %{first_dep} %{targets}")))
+
+(alias
+ (name DEFAULT)
+ (deps test_moves_module_timer_above.pp-output))

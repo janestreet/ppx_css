@@ -21,10 +21,11 @@ let standalone ~serializable_options ~src =
       Writer.write
         w
         (For_css_inliner.gen_struct
-           ~rewrite:options.rewrite
+           ~dont_hash:options.dont_hash
            ~css_string:options.css_string.css_string
            ~dont_hash_prefixes:options.dont_hash_prefixes
-           ~stylesheet_location:options.css_string.string_loc);
+           ~stylesheet_location:options.css_string.string_loc
+           ~lazy_loading_optimization:options.lazy_loading_optimization);
       Writer.write w " end";
       Writer.close w)
   and () =

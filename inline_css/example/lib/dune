@@ -1,6 +1,6 @@
 (library
  (name inline_css_example_lib)
- (libraries inline_css)
+ (libraries inline_css js_of_ocaml core)
  (preprocess
   (pps ppx_css ppx_jane)))
 

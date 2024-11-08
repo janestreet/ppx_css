@@ -2,19 +2,20 @@ open! Core
 
 (* This file constains unit tests for the transform_css module inside ppx_css. *)
 
-let%test_module "Get_all_identifiers" =
-  (module struct
-    open Ppx_css.For_testing.Traverse_css
+module%test Get_all_identifiers = struct
+  open Ppx_css.For_testing.Traverse_css
 
-    let test (s : string) =
-      let stylesheet = Css_jane.Stylesheet.of_string s in
-      let result = Get_all_identifiers.ocaml_identifiers stylesheet in
-      print_s (Get_all_identifiers.sexp_of_result result)
-    ;;
+  let test (s : string) =
+    let stylesheet =
+      Css_jane.Stylesheet.of_string s |> Ppx_css.Stable_stylesheet.of_stylesheet
+    in
+    let result = get_all_identifiers stylesheet in
+    print_s [%message (result : Ppx_css.Css_identifier.Set.t)]
+  ;;
 
-    let%expect_test "Testing identifiers" =
-      test
-        {|
+  let%expect_test "Testing identifiers" =
+    test
+      {|
         .class {}
 
         #an_id {}
@@ -27,18 +28,17 @@ let%test_module "Get_all_identifiers" =
 
         #both {}
     |};
-      [%expect
-        {|
-        ((variables ())
-         (identifiers
-          ((an_id Only_id) (both Both) (a_b_c Only_class) (class Only_class)
-           (with_kebab_case Only_class))))
-        |}]
-    ;;
+    [%expect
+      {|
+      (result
+       ((Id an_id) (Id both) (Class a-b_c) (Class both) (Class class)
+        (Class with-kebab-case)))
+      |}]
+  ;;
 
-    let%expect_test "Testing variables" =
-      test
-        {|
+  let%expect_test "Testing variables" =
+    test
+      {|
         :root {
            --with-kebab: 100px;
            --with_snakecase: 100px
@@ -49,8 +49,11 @@ let%test_module "Get_all_identifiers" =
         }
 
     |};
-      [%expect
-        {| ((variables (with_snakecase with_kebab inside_a_var)) (identifiers ())) |}]
-    ;;
-  end)
-;;
+    [%expect
+      {|
+      (result
+       ((Variable --inside-a-var) (Variable --with-kebab)
+        (Variable --with_snakecase)))
+      |}]
+  ;;
+end

@@ -25,6 +25,13 @@ end
 
 module Inline_css : sig
   module Private : sig
-    val append : string -> unit
+    module Stylesheet : sig
+      type t
+    end
+
+    val create_stylesheet : unit -> Stylesheet.t
+    val append_stylesheet : Stylesheet.t -> unit
+    val append : _ -> unit
+    val update_stylesheet : _ -> string -> unit
   end
 end

@@ -1,7 +1,7 @@
 (executables
  (modes byte exe)
  (names make_css)
- (libraries inline_css re core inline_css_example_lib)
+ (libraries js_of_ocaml inline_css re core inline_css_example_lib)
  (preprocess
   (pps ppx_jane)))
 

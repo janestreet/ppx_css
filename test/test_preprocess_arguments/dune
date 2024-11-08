@@ -2,8 +2,7 @@
  (name ppx_css_test_preprocess_arguments)
  (libraries core)
  (preprocess
-  (pps ppx_css -dont-hash=class1 -dont-hash-prefixes=--
-    -rewrite=class2:class3)))
+  (pps ppx_css -dont-hash=class1 -dont-hash-prefixes=--)))
 
 (rule
  (targets ppx_css_test_preprocess_arguments.pp-output)

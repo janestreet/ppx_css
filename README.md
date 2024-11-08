@@ -3,7 +3,7 @@
 __PPX CSS__ is a
 [PPX](https://ocaml.org/docs/metaprogramming#:~:text=OCaml%20supports%20the%20execution%20of,acronym%20for%20Pre%2DProcessor%20eXtension.)
 for dealing with [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) from within OCaml
-    🐫. It it designed to be used within apps made with [Bonsai
+    🐫. It is designed to be used within apps made with [Bonsai
     🌳](https://opensource.janestreet.com/bonsai/),
     [Incr_dom](https://opensource.janestreet.com/incr_dom/), or anything
     that uses the [virtual_dom](https://github.com/janestreet/virtual_dom) library. It
@@ -76,7 +76,7 @@ PPX CSS will additionally do the following things behind the scenes:
 
 - It will **hash** your identifiers. Normal CSS is prone to name clashes. PPX_CSS adds a
   unique hash to your classnames (e.g. "card_hash_12345") to be resilient against CSS
-  naming clases. You do not need to add unique prefixes while using ppx_css.
+  naming clashes. You do not need to add unique prefixes while using ppx_css.
 - It will **register** your CSS. You do not need to serve/bundle your own CSS files. Under
   the hood, ppx_css registers your styles using the [CSSStylesheet
   API](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet).
@@ -85,13 +85,11 @@ PPX CSS will additionally do the following things behind the scenes:
 You can opt-out of hashing behavior/customize it with the following options.
 The syntax for sending options is: `[%css stylesheet {|...css string...|} ~option_name:OPTION_VALUE]`
 
-- `~dont_hash:string list`: Will not hash the identifiers it seems Will not hash the
-  identifiers it sees.  (e.g. `[%css stylesheet {||} ~dont_hash:["card"]]`)
+- `~dont_hash:string list`: Will not hash the identifiers it sees.  
+  (e.g. `[%css stylesheet {||} ~dont_hash:["card"]]`)
 - `~dont_hash_prefixes:string list`: Will not hash identifiers that match that prefix.
   (e.g. `[%css stylesheet {||} ~dont_hash_prefixes:[--]]` will stop hashing all css
   variables.)
-- `~rewrite:(string * string) list`: Let's you change what each identifier is rewritten
-  to. (e.g. `[%css stylesheet {||} ~rewrite:["foo", "bar"]]` rewrites "foo" into "bar")
 
 The stylesheet syntax also generates a `For_referencing` module that includes -
   `Styles.For_referencing.card : string` - the post-hashed name.

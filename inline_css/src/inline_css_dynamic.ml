@@ -8,7 +8,7 @@ module Input = struct
 end
 
 module State = struct
-  type t = Constructed_stylesheet_strategy.t Or_error.t
+  type t = Stylesheet.t Or_error.t
 
   let iter (t : t) ~f =
     match t with
@@ -26,9 +26,10 @@ module S = struct
   module State = State
 
   let init string _element =
-    let state = Constructed_stylesheet_strategy.initialize () in
+    let state = Stylesheet.create_stylesheet () in
     State.iter state ~f:(fun stylesheet ->
-      Constructed_stylesheet_strategy.update stylesheet string);
+      Stylesheet.append_stylesheet stylesheet;
+      Stylesheet.update_stylesheet stylesheet string);
     state
   ;;
 
@@ -39,13 +40,11 @@ module S = struct
     then ( (* do nothing if the inputs don't change *) )
     else
       State.iter state ~f:(fun stylesheet ->
-        Constructed_stylesheet_strategy.update stylesheet new_input)
+        Stylesheet.update_stylesheet stylesheet new_input)
   ;;
 
   let destroy _input state _element =
-    State.iter state ~f:(fun stylesheet ->
-      Constructed_stylesheet_strategy.update stylesheet "";
-      Constructed_stylesheet_strategy.delete_stylesheet stylesheet)
+    State.iter state ~f:(fun stylesheet -> Stylesheet.delete_stylesheet stylesheet)
   ;;
 end
 

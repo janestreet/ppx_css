@@ -33,6 +33,7 @@ open Types
 %token <string> AT_RULE_WITHOUT_BODY
 %token <string> AT_RULE
 %token <string> FUNCTION
+%token <string> SELECTOR_FUNCTION
 %token <string> HASH
 %token <string> NUMBER
 %token <string> UNICODE_RANGE
@@ -174,6 +175,10 @@ component_value:
   | d = DELIM { Component_value.Delim d }
   | option(WHITESPACE); COLON { Component_value.Delim ":" }
   | option(WHITESPACE); DOT { Component_value.Delim "." }
+  | f = SELECTOR_FUNCTION; xs = list(component_value_with_loc); RIGHT_PAREN {
+      Component_value.Function ((f, Lex_buffer.make_loc_and_fix $startpos(f) $endpos(f)),
+                                (xs, Lex_buffer.make_loc_and_fix $startpos(xs) $endpos(xs)))
+    }
   | f = FUNCTION; xs = list(component_value_with_loc); RIGHT_PAREN {
       Component_value.Function ((f, Lex_buffer.make_loc_and_fix $startpos(f) $endpos(f)),
                                 (xs, Lex_buffer.make_loc_and_fix $startpos(xs) $endpos(xs)))
@@ -194,6 +199,9 @@ component_value_in_prelude:
   | b = paren_block { Component_value.Paren_block b }
   | b = bracket_block { Component_value.Bracket_block b }
   | c = common_component_values_in_prelude { c }
+  | f = SELECTOR_FUNCTION; xs = list(component_value_with_loc_in_prelude); RIGHT_PAREN {
+      Component_value.Function ((f, Lex_buffer.make_loc_and_fix $startpos(f) $endpos(f)),
+                                (xs, Lex_buffer.make_loc_and_fix $startpos(xs) $endpos(xs))) }
   | f = FUNCTION; xs = list(component_value_with_loc); RIGHT_PAREN {
       Component_value.Function ((f, Lex_buffer.make_loc_and_fix $startpos(f) $endpos(f)),
                                 (xs, Lex_buffer.make_loc_and_fix $startpos(xs) $endpos(xs))) }
@@ -280,6 +288,9 @@ component_value_in_nested_prelude:
   (* Importantly, this one allows for nested identifiers and ampersands. *)
   | c = common_nested_component_value { c }
   | i = IDENT { Component_value.Ident i }
+  | f = SELECTOR_FUNCTION; xs = list(component_value_in_nested_prelude_with_loc); RIGHT_PAREN {
+      Component_value.Function ((f, Lex_buffer.make_loc_and_fix $startpos(f) $endpos(f)),
+                                (xs, Lex_buffer.make_loc_and_fix $startpos(xs) $endpos(xs))) }
   | f = FUNCTION; xs = list(component_value_in_nested_prelude_with_loc); RIGHT_PAREN {
       Component_value.Function ((f, Lex_buffer.make_loc_and_fix $startpos(f) $endpos(f)),
                                 (xs, Lex_buffer.make_loc_and_fix $startpos(xs) $endpos(xs))) }
