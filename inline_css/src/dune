@@ -1,6 +1,7 @@
 (library
  (name inline_css)
  (public_name ppx_css.inline_css)
- (libraries js_of_ocaml core core_kernel.reversed_list virtual_dom)
+ (libraries am_running_how_js core js_of_ocaml core_kernel.reversed_list
+   virtual_dom)
  (preprocess
   (pps js_of_ocaml-ppx ppx_let ppx_string ppx_jane)))

@@ -83,50 +83,60 @@ let%expect_test "Duplicated version" =
       struct
         module For_referencing =
           struct
-            let d = {|d_hash_044f510dea|}
-            let c = {|c_hash_044f510dea|}
-            let b = {|b_hash_044f510dea|}
-            let a = {|a_hash_044f510dea|}
+            let a = {|a_hash_5975ba6d79|}
+            let b = {|b_hash_5975ba6d79|}
+            let c = {|c_hash_5975ba6d79|}
+            let d = {|d_hash_5975ba6d79|}
           end
-        let d = Virtual_dom.Vdom.Attr.class_ {|d_hash_044f510dea|}
-        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_044f510dea|}
-        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_044f510dea|}
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_044f510dea|}
+        let a =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_2;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_5975ba6d79|}))
+        let b =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_3;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_5975ba6d79|}))
+        let c =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|c_hash_5975ba6d79|}))
+        let d =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|d_hash_5975ba6d79|}))
       end
     include Default
     let default : t = (module Default)
-    let () =
-      Inline_css.Private.append_but_do_not_update
-        {|
+
+    Hoisted module:
+
+    let sheet_x__001___5975ba6d79__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__001___5975ba6d79__1 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__001___5975ba6d79__2 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__001___5975ba6d79__3 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let update_sheet_lazy_fn_x__001___5975ba6d79__group_0 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__2
+           {|
     /* _none_ */
 
-    *.a_hash_044f510dea:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:3%;
-     left:3%;
-     width:94%;
-     height:44%
-    }
-
-    *.b_hash_044f510dea:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:53%;
-     left:3%;
-     width:94%;
-     height:44%
-    }
-
-    *.c_hash_044f510dea:hover::after {
+    *.c_hash_5975ba6d79:hover::after {
      content:"";
      background:tomato;
      position:absolute;
@@ -137,9 +147,14 @@ let%expect_test "Duplicated version" =
      left:3%;
      width:44%;
      height:94%
-    }
+    }|})
+    let update_sheet_lazy_fn_x__001___5975ba6d79__group_1 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__3
+           {|
+    /* _none_ */
 
-    *.d_hash_044f510dea:hover::after {
+    *.d_hash_5975ba6d79:hover::after {
      content:"";
      background:tomato;
      position:absolute;
@@ -150,7 +165,43 @@ let%expect_test "Duplicated version" =
      left:53%;
      width:44%;
      height:94%
-    }|}
+    }|})
+    let update_sheet_lazy_fn_x__001___5975ba6d79__group_2 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__0
+           {|
+    /* _none_ */
+
+    *.a_hash_5975ba6d79:hover::after {
+     content:"";
+     background:tomato;
+     position:absolute;
+     border:3px solid grey;
+     border-radius:10px;
+     pointer-events:none;
+     top:3%;
+     left:3%;
+     width:94%;
+     height:44%
+    }|})
+    let update_sheet_lazy_fn_x__001___5975ba6d79__group_3 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__1
+           {|
+    /* _none_ */
+
+    *.b_hash_5975ba6d79:hover::after {
+     content:"";
+     background:tomato;
+     position:absolute;
+     border:3px solid grey;
+     border-radius:10px;
+     pointer-events:none;
+     top:53%;
+     left:3%;
+     width:94%;
+     height:44%
+    }|})
     |xxx}]
 ;;
 
@@ -201,24 +252,54 @@ let%expect_test "Merged version - with a specificity battle later" =
       struct
         module For_referencing =
           struct
-            let d = {|d_hash_677c1e8bce|}
-            let c = {|c_hash_677c1e8bce|}
-            let b = {|b_hash_677c1e8bce|}
-            let a = {|a_hash_677c1e8bce|}
+            let a = {|a_hash_02042c0574|}
+            let b = {|b_hash_02042c0574|}
+            let c = {|c_hash_02042c0574|}
+            let d = {|d_hash_02042c0574|}
           end
-        let d = Virtual_dom.Vdom.Attr.class_ {|d_hash_677c1e8bce|}
-        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_677c1e8bce|}
-        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_677c1e8bce|}
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_677c1e8bce|}
+        let a =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_02042c0574|}))
+        let b =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_02042c0574|}))
+        let c =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|c_hash_02042c0574|}))
+        let d =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|d_hash_02042c0574|}))
       end
     include Default
     let default : t = (module Default)
-    let () =
-      Inline_css.Private.append_but_do_not_update
-        {|
+
+    Hoisted module:
+
+    let sheet_x__002___02042c0574__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__002___02042c0574__1 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let update_sheet_lazy_fn_x__002___02042c0574__group_0 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__002___02042c0574__0
+           {|
     /* _none_ */
 
-    *.a_hash_677c1e8bce:hover::after,*.b_hash_677c1e8bce:hover::after,*.c_hash_677c1e8bce:hover::after,*.d_hash_677c1e8bce:hover::after {
+    *.a_hash_02042c0574:hover::after,*.b_hash_02042c0574:hover::after,*.c_hash_02042c0574:hover::after,*.d_hash_02042c0574:hover::after {
      content:"";
      background:tomato;
      position:absolute;
@@ -229,10 +310,13 @@ let%expect_test "Merged version - with a specificity battle later" =
      left:53%;
      width:44%;
      height:94%
-    }
+    }|};
+         Inline_css.Private.update_stylesheet sheet_x__002___02042c0574__1
+           {|
+    /* _none_ */
 
-    *.a_hash_677c1e8bce:hover::after {
+    *.a_hash_02042c0574:hover::after {
      top:100%
-    }|}
+    }|})
     |xxx}]
 ;;

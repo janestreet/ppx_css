@@ -6,12 +6,14 @@ type t =
   { dont_hash : String.Set.t
   ; css_string : String_constant.t
   ; dont_hash_prefixes : string list
+  ; lazy_loading_optimization : Preprocess_arguments.lazy_loading_optimization
   }
 
 module Serializable_options = struct
   type t =
     { dont_hash : string list [@sexp.list]
     ; dont_hash_prefixes : string list [@sexp.list]
+    ; lazy_loading_optimization : bool option [@sexp.option]
     }
   [@@sexp.allow_extra_fields] [@@deriving sexp]
 
@@ -36,16 +38,40 @@ module Serializable_options = struct
     test
       {|((rewrite ()) (dont_hash (1
     2 3)))|};
-    [%expect {| ((dont_hash (1 2 3))) |}]
+    [%expect {| ((dont_hash (1 2 3))) |}];
+    test
+      {|((lazy_loading_optimization true) (dont_hash (1
+    2 3)))|};
+    [%expect {| ((dont_hash (1 2 3)) (lazy_loading_optimization true)) |}];
+    test
+      {|((lazy_loading_optimization false) (dont_hash (1
+    2 3)))|};
+    [%expect {| ((dont_hash (1 2 3)) (lazy_loading_optimization false)) |}]
   ;;
 
-  let to_stylesheet_options { dont_hash; dont_hash_prefixes } ~css_string =
-    { dont_hash = String.Set.of_list dont_hash; css_string; dont_hash_prefixes }
+  let to_stylesheet_options
+    { dont_hash; dont_hash_prefixes; lazy_loading_optimization }
+    ~css_string
+    =
+    let lazy_loading_optimization =
+      match lazy_loading_optimization with
+      | Some true -> Preprocess_arguments.Lazy_graph
+      | None | Some false -> Preprocess_arguments.Eager
+    in
+    { dont_hash = String.Set.of_list dont_hash
+    ; css_string
+    ; dont_hash_prefixes
+    ; lazy_loading_optimization
+    }
   ;;
 end
 
 let empty_stylesheet ~css_string =
-  { dont_hash = String.Set.empty; css_string; dont_hash_prefixes = [] }
+  { dont_hash = String.Set.empty
+  ; css_string
+  ; dont_hash_prefixes = []
+  ; lazy_loading_optimization = Preprocess_arguments.Eager
+  }
 ;;
 
 (* Parses the AST of a list of expressions into an actual [expression list]. *)
@@ -57,10 +83,11 @@ let parse_expr_list ~on_error expression =
          used to populate a map, but if it ever were to matter that the list is
          reversed, then this list would need to be reversed here.   *)
       acc
-    | Pexp_construct
-        ( { txt = Lident "::"; _ }
-        , Some { pexp_desc = Pexp_tuple [ expression; child ]; _ } ) ->
-      helper ~acc:(expression :: acc) ~expression:child
+    | Pexp_construct ({ txt = Lident "::"; _ }, Some { pexp_desc; pexp_loc; _ }) ->
+      (match Ppxlib_jane.Shim.Expression_desc.of_parsetree pexp_desc ~loc:pexp_loc with
+       | Pexp_tuple [ (None, expression); (None, child) ] ->
+         helper ~acc:(expression :: acc) ~expression:child
+       | _ -> on_error ~loc:expression.pexp_loc)
     | _ -> on_error ~loc:expression.pexp_loc
   in
   helper ~acc:[] ~expression
@@ -211,12 +238,7 @@ let validate_args ~loc ~(kind : [ `Stylesheet | `Styled_component ]) args =
     in
     let _rewrite, remaining_args =
       List.take_map remaining_args ~f:(function
-        | Labelled "rewrite", expression ->
-          let rewrite_list =
-            List.map (parse_rewrite ~loc expression) ~f:(fun item ->
-              [%string {|"%{item}"|}])
-          in
-          Some rewrite_list
+        | Labelled "rewrite", expression -> Some (parse_rewrite ~loc expression)
         | _ -> None)
       |> Option.value ~default:([], remaining_args)
     in
@@ -266,6 +288,8 @@ let add_identifiers_from_jbuild_parameters ~loc (options : t) =
   let open (val Ast_builder.make loc) in
   let { Preprocess_arguments.dont_hash = jbuild_dont_hash
       ; dont_hash_prefixes = jbuild_dont_hash_prefixes
+      ; lazy_loading_optimization
+      ; _
       }
     =
     Preprocess_arguments.get ()
@@ -274,7 +298,11 @@ let add_identifiers_from_jbuild_parameters ~loc (options : t) =
     options.dont_hash_prefixes @ Set.to_list jbuild_dont_hash_prefixes
   in
   let dont_hash = Set.union options.dont_hash jbuild_dont_hash in
-  { dont_hash; dont_hash_prefixes; css_string = options.css_string }
+  { dont_hash
+  ; dont_hash_prefixes
+  ; css_string = options.css_string
+  ; lazy_loading_optimization
+  }
 ;;
 
 let parse_stylesheet_exn (expression : expression) =
@@ -287,7 +315,13 @@ let parse_stylesheet_exn (expression : expression) =
     in
     add_identifiers_from_jbuild_parameters
       ~loc
-      { css_string; dont_hash; dont_hash_prefixes }
+      { css_string
+      ; dont_hash
+      ; dont_hash_prefixes
+        (* Lazy loading optimization is ignored here as the value is pulled from the
+           jbuild and not the individual calls to ppx_css *)
+      ; lazy_loading_optimization = Preprocess_arguments.Eager
+      }
   | _ -> raise_misparse_with_syntax_instructions ~extra_message:"" ~loc
 ;;
 
@@ -319,7 +353,13 @@ let parse_inline_expression_exn (expression : expression) =
   in
   add_identifiers_from_jbuild_parameters
     ~loc
-    { css_string; dont_hash; dont_hash_prefixes }
+    { css_string
+    ; dont_hash
+    ; dont_hash_prefixes
+      (* Lazy loading optimization is ignored here as the value is pulled from the
+         jbuild and not the individual calls to ppx_css *)
+    ; lazy_loading_optimization = Preprocess_arguments.Eager
+    }
 ;;
 
 module Preprocess_arguments = Preprocess_arguments

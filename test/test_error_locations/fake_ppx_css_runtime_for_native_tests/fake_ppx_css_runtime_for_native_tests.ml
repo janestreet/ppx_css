@@ -18,7 +18,13 @@ end
 
 module Inline_css = struct
   module Private = struct
+    module Stylesheet = struct
+      type t = unit
+    end
+
     let append _ = ()
-    let append_but_do_not_update _ = ()
+    let append_stylesheet _ = ()
+    let create_stylesheet () = ()
+    let update_stylesheet _ _ = ()
   end
 end

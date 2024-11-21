@@ -9,9 +9,18 @@ open! Inline_css
    be using the components in your app. *)
 let () = Callback.register "keeping this value alive" Inline_css_example_lib.app
 
+let to_string () =
+  Js_of_ocaml.Js.Unsafe.js_expr
+    {js|
+     (function () {
+       return [...document.adoptedStyleSheets].map((sheet) => sheet.text).join("\n");
+     }()
+     )
+  |js}
+  |> Js_of_ocaml.Js.to_string
+;;
+
 let () =
   let regex = Re.Str.regexp "_hash_\\([a-z0-9]+\\)*" in
-  Inline_css.For_testing.to_string ()
-  |> Re.Str.global_replace regex "_hash_replaced_in_test"
-  |> print_endline
+  to_string () |> Re.Str.global_replace regex "_hash_replaced_in_test" |> print_endline
 ;;

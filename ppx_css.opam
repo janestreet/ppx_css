@@ -11,6 +11,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "5.1.0"}
+  "am_running_how_js"
   "async"
   "async_unix"
   "core"
@@ -21,14 +22,16 @@ depends: [
   "ppx_let"
   "ppx_sexp_conv"
   "ppx_string"
+  "ppxlib_jane"
   "stdio"
   "virtual_dom"
-  "dune"            {>= "3.11.0"}
-  "js_of_ocaml"     {>= "5.1.1" & < "5.7.0"}
-  "js_of_ocaml-ppx" {>= "5.1.1" & < "5.7.0"}
+  "dune"              {>= "3.11.0"}
+  "js_of_ocaml"       {>= "5.1.1" & < "5.7.0"}
+  "js_of_ocaml-ppx"   {>= "5.1.1" & < "5.7.0"}
   "menhirLib"
-  "ppxlib"          {>= "0.33.0"}
-  "sedlex"          {>= "2.6"}
+  "ocamlgraph"        {= "2.0.0"}
+  "ppxlib"            {>= "0.33.0"}
+  "sedlex"            {>= "2.6"}
 ]
 available: arch != "arm32" & arch != "x86_32"
 synopsis: "A ppx that takes in css strings and produces a module for accessing the unique names defined within"

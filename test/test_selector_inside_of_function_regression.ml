@@ -26,21 +26,38 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     module Default : S =
       struct
         module For_referencing =
-          struct let b = {|b_hash_938c1b32dc|}
-                 let a = {|a_hash_938c1b32dc|} end
-        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_938c1b32dc|}
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_938c1b32dc|}
+          struct let a = {|a_hash_f40d9e8892|}
+                 let b = {|b_hash_f40d9e8892|} end
+        let a =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___f40d9e8892__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_f40d9e8892|}))
+        let b =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___f40d9e8892__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_f40d9e8892|}))
       end
     include Default
     let default : t = (module Default)
-    let () =
-      Inline_css.Private.append_but_do_not_update
-        {|
+
+    Hoisted module:
+
+    let sheet_x__001___f40d9e8892__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let update_sheet_lazy_fn_x__001___f40d9e8892__group_0 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__001___f40d9e8892__0
+           {|
     /* _none_ */
 
-    *:has(.a_hash_938c1b32dc *.b_hash_938c1b32dc) {
+    *:has(.a_hash_f40d9e8892 *.b_hash_f40d9e8892) {
 
-    }|}
+    }|})
     |xxx}];
   (* Nested CSS was always fine - only the top-level selector in this situation was affected. *)
   Test_util.test_struct [%expr stylesheet {|:has(.a .b) { :has(.a .b) { } }|}];
@@ -60,24 +77,41 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     module Default : S =
       struct
         module For_referencing =
-          struct let b = {|b_hash_314f16a762|}
-                 let a = {|a_hash_314f16a762|} end
-        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_314f16a762|}
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_314f16a762|}
+          struct let a = {|a_hash_a3450c6ec7|}
+                 let b = {|b_hash_a3450c6ec7|} end
+        let a =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___a3450c6ec7__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_a3450c6ec7|}))
+        let b =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___a3450c6ec7__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_a3450c6ec7|}))
       end
     include Default
     let default : t = (module Default)
-    let () =
-      Inline_css.Private.append_but_do_not_update
-        {|
+
+    Hoisted module:
+
+    let sheet_x__002___a3450c6ec7__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let update_sheet_lazy_fn_x__002___a3450c6ec7__group_0 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__002___a3450c6ec7__0
+           {|
     /* _none_ */
 
-    *:has(.a_hash_314f16a762 *.b_hash_314f16a762) {
-     *:has(.a_hash_314f16a762 *.b_hash_314f16a762) {
+    *:has(.a_hash_a3450c6ec7 *.b_hash_a3450c6ec7) {
+     *:has(.a_hash_a3450c6ec7 *.b_hash_a3450c6ec7) {
 
      }
 
-    }|}
+    }|})
     |xxx}]
 ;;
 
@@ -88,22 +122,30 @@ let%expect_test "Selectors inside of styled components - seem fine" =
     {xxx|
     Expression context:
     -------------------
-    let module Ppx_css_anonymous_style__001_ =
+    let module Ppx_css_anonymous_style__004_ =
       struct
         include
           struct
             let inline_class =
-              Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_1bd2a82f21|}
+              Virtual_dom.Vdom.Attr.lazy_
+                (lazy
+                   (Inline_css.Ppx_css_runtime.force
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___f3dff972a4__group_0;
+                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_f3dff972a4|}))
           end
-      end in Ppx_css_anonymous_style__001_.inline_class
+      end in Ppx_css_anonymous_style__004_.inline_class
     Hoisted context:
     ----------------
-    let () =
-      Inline_css.Private.append_but_do_not_update
-        {|
+    let sheet_x__003___f3dff972a4__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let update_sheet_lazy_fn_x__003___f3dff972a4__group_0 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__003___f3dff972a4__0
+           {|
     /* _none_ */
 
-    *.inline_class_hash_1bd2a82f21 {
+    *.inline_class_hash_f3dff972a4 {
      *& {
       *:has(.a *.b) {
 
@@ -111,7 +153,7 @@ let%expect_test "Selectors inside of styled components - seem fine" =
 
      }
 
-    }|}
+    }|})
     |xxx}]
 ;;
 

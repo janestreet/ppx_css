@@ -36,9 +36,11 @@ let inferred_do_not_hash ~string_loc ~parsed_parts =
   |}]
     |> Stylesheet.of_string
          ~pos:{ string_loc.loc_start with pos_lnum = string_loc.loc_start.pos_lnum - 1 }
+    |> Tuple2.map_fst ~f:Rule_id.identify_stylesheet
   in
   let ( - ) = Set.remove in
-  Traverse_css.Get_all_identifiers.css_identifiers style_sheet
+  (Traverse_css.get_all_identifiers style_sheet
+   |> String.Set.map ~f:Css_identifier.extract_css_identifier)
   - placeholder_class
   - placeholder_variable
   |> Set.to_list

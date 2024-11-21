@@ -14,6 +14,8 @@ type t =
   ; css_string : String_constant.t
   (** The contained CSS string. Equivalent to the string parameter given to ppx_css. *)
   ; dont_hash_prefixes : string list
+  (** Whether or not we should use the lazy loading optimization for this CSS sheet *)
+  ; lazy_loading_optimization : Preprocess_arguments.lazy_loading_optimization
   }
 
 (** Given the AST of an expression like [stylesheet ~rewrite:[] ""] will result in a
@@ -36,6 +38,7 @@ module Serializable_options : sig
   type t =
     { dont_hash : string list
     ; dont_hash_prefixes : string list
+    ; lazy_loading_optimization : bool option
     }
   [@@deriving of_sexp]
 
