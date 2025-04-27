@@ -1,6 +1,6 @@
 open! Core
 open Ppxlib
-open Css_jane
+open Css_parser
 
 type t = Rule.t Rule_id.Map.t * location
 

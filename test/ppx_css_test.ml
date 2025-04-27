@@ -1,0 +1,16 @@
+module Test_css_process_stylesheet = Test_css_process_stylesheet
+module Test_css_stylesheet_graph = Test_css_stylesheet_graph
+module Test_css_traverse = Test_css_traverse
+module Test_inline_ppx_css = Test_inline_ppx_css
+module Test_layer_splitting = Test_layer_splitting
+module Test_nested_css = Test_nested_css
+module Test_nested_css_parsing = Test_nested_css_parsing
+module Test_ppx_css = Test_ppx_css
+module Test_ppx_css_comma_specificity = Test_ppx_css_comma_specificity
+
+module Test_selector_inside_of_function_regression =
+  Test_selector_inside_of_function_regression
+
+module Test_styled_component_with_classes = Test_styled_component_with_classes
+module Test_stylesheet_interpolation = Test_stylesheet_interpolation
+module Test_util = Test_util

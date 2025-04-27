@@ -1,6 +1,6 @@
 open! Core
 open! Ppxlib
-open Css_jane
+open Css_parser
 module Preprocess_arguments = Ppx_css_syntax.Preprocess_arguments
 module Group_type = Traverse_css.Graph.Group_type
 module Rule_id = Rule_id
@@ -11,7 +11,7 @@ module With_hoisted_expression = struct
   type 'a t =
     { txt : 'a
     ; hoisted_structure_items : structure_item list
-    ; css_string_for_testing : string
+    ; css_string_for_testing : string Lazy.t
     }
 end
 
@@ -378,7 +378,7 @@ let validate_no_collisions_after_warnings_and_rewrites
 ;;
 
 let stylesheet_to_string (sheet, loc) =
-  let css_string = Stylesheet.to_string_hum (sheet, loc) in
+  let css_string = Css_parser.stylesheet_to_string (sheet, loc) in
   sprintf
     "\n/* %s */\n\n%s"
     (Ppx_here_expander.expand_filename loc.loc_start.pos_fname)
@@ -403,12 +403,12 @@ type hoisted_module_struct_result =
   { struct_to_hoist : structure
   ; maybe_generate_lazy_expr : original_expr:expression -> Css_identifier.t -> expression
   ; assert_post_conditions : unit -> unit
+  ; css_string_for_testing : string Lazy.t
   }
 
-let create_sheet_hash ~pos ~original_stylesheet =
-  let hash_prefix = Ppxlib.gen_symbol ()
-  and stylesheet_hash = Traverse_css.Transform.generate_hash ~pos original_stylesheet in
-  {%string|%{hash_prefix}__%{stylesheet_hash}|}
+let create_sheet_hash hash =
+  let hash_prefix = Ppxlib.gen_symbol () in
+  {%string|%{hash_prefix}__%{hash}|}
 ;;
 
 let generate_struct_to_hoist
@@ -475,10 +475,10 @@ let generate_struct_to_hoist
 let create_hoisted_module_struct
   ~(stylesheet :
       Rule.t Traverse_css.Original_and_post_processed.t Rule_id.Map.t * location)
+  ~hash
   ~lazy_loading_optimization
   ~should_hash_identifier
   ~loc
-  ~pos
   ~expansion_kind:(_ : Expansion_kind.t)
   =
   let open (val Ast_builder.make loc) in
@@ -490,7 +490,7 @@ let create_hoisted_module_struct
     Tuple2.map_fst stylesheet ~f:(fun rules ->
       Map.map rules ~f:(fun { original = _; post_processed } -> post_processed))
   in
-  let sheet_hash = create_sheet_hash ~pos ~original_stylesheet in
+  let sheet_hash = create_sheet_hash hash in
   let { Traverse_css.Graph.group_to_rule_indices; get_group_for_identifier; _ } =
     Traverse_css.Graph.map_stylesheet_for_graph
       ~lazy_loading_optimization
@@ -514,6 +514,7 @@ let create_hoisted_module_struct
     Identifier_helper.assert_expression_and_pattern_symmetry sheet_name;
     Identifier_helper.assert_expression_and_pattern_symmetry group_lazy_fn_name
   in
+  let css_string_for_testing = lazy (Map.data css_strings |> String.concat_lines) in
   let struct_to_hoist =
     generate_struct_to_hoist
       ~sheet_name
@@ -540,7 +541,11 @@ let create_hoisted_module_struct
             (Inline_css.Ppx_css_runtime.force [%e fn_name_exp];
              [%e original_expr]))]
   in
-  { struct_to_hoist; maybe_generate_lazy_expr; assert_post_conditions }
+  { struct_to_hoist
+  ; maybe_generate_lazy_expr
+  ; assert_post_conditions
+  ; css_string_for_testing
+  }
 ;;
 
 (* Creates the module struct that - given "var1" and "var2" as variables, and "classname_1"
@@ -829,8 +834,10 @@ let create_should_hash_identifier ~dont_hash ~dont_hash_prefixes ~always_hash =
 
 let generate_struct_from_css_string_and_options
   ~loc
+  ~pos_for_hashing
   ~lazy_loading_optimization
   ~dont_hash
+  ~original_css_string
   ~css_string
   ~dont_hash_prefixes
   ~stylesheet_location
@@ -838,13 +845,17 @@ let generate_struct_from_css_string_and_options
   ~inferred_do_not_hash
   ~always_hash
   ~anonymous_variables
+  ~disable_hashing
   : structure With_hoisted_expression.t
   =
   let open (val Ast_builder.make loc) in
   let stable_stylesheet =
     let stylesheet =
       let stylesheet =
-        Stylesheet.of_string ~pos:stylesheet_location.loc_start css_string
+        Css_parser.parse_stylesheet
+          ~parsing_config:Css_parser.Parsing_config.raise_on_recoverable_errors
+          ~pos:stylesheet_location.loc_start
+          css_string
       in
       match lazy_loading_optimization with
       | Preprocess_arguments.Lazy_graph -> Traverse_css.split_layers stylesheet
@@ -865,19 +876,25 @@ let generate_struct_from_css_string_and_options
       ~should_hash_identifier
       stable_stylesheet
   in
-  let { Traverse_css.Transform.stylesheet; identifier_mapping } =
+  let { Traverse_css.Transform.stylesheet; identifier_mapping; hash } =
     Traverse_css.Transform.f
-      ~pos:stylesheet_location.loc_start
+      ~pos_for_hashing
+      ~original_css_string
       ~should_hash_identifier
+      ~disable_hashing
       stable_stylesheet
   in
-  let css_string_for_testing = css_string in
-  let { struct_to_hoist; maybe_generate_lazy_expr; assert_post_conditions } =
+  let { struct_to_hoist
+      ; maybe_generate_lazy_expr
+      ; assert_post_conditions
+      ; css_string_for_testing
+      }
+    =
     create_hoisted_module_struct
       ~lazy_loading_optimization
       ~loc
+      ~hash
       ~should_hash_identifier
-      ~pos:stylesheet_location.loc_start
       ~expansion_kind
       ~stylesheet
   in
@@ -927,7 +944,8 @@ let generate_struct_from_css_string_and_options
   }
 ;;
 
-let generate_struct ~loc (expr : expression) =
+let generate_struct ~loc ~disable_hashing (expr : expression) =
+  let pos_for_hashing = loc.loc_start in
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
   let { Ppx_css_syntax.dont_hash
@@ -942,8 +960,10 @@ let generate_struct ~loc (expr : expression) =
   generate_struct_from_css_string_and_options
     ~expansion_kind:Stylesheet
     ~loc
+    ~pos_for_hashing
     ~lazy_loading_optimization
     ~dont_hash
+    ~original_css_string:css_string.css_string
     ~css_string:
       (Anonymous_declarations.For_stylesheet.to_stylesheet_string anonymous_declarations)
     ~dont_hash_prefixes
@@ -953,15 +973,19 @@ let generate_struct ~loc (expr : expression) =
       (Anonymous_declarations.For_stylesheet.always_hash anonymous_declarations)
     ~anonymous_variables:
       (Anonymous_declarations.For_stylesheet.anonymous_variables anonymous_declarations)
+    ~disable_hashing
 ;;
 
 let generate_expression_from_css_declarations_and_options
   ~loc
+  ~pos_for_hashing
   ~dont_hash
   ~lazy_loading_optimization
   ~anonymous_declarations
   ~dont_hash_prefixes
+  ~original_css_string
   ~stylesheet_location
+  ~disable_hashing
   : expression With_hoisted_expression.t
   =
   let open (val Ast_builder.make loc) in
@@ -977,6 +1001,8 @@ let generate_expression_from_css_declarations_and_options
     let inferred_do_not_hash = String.Set.of_list inferred_do_not_hash in
     generate_struct_from_css_string_and_options
       ~expansion_kind:(Styled_component anonymous_declarations)
+      ~original_css_string
+      ~pos_for_hashing
       ~loc
       ~lazy_loading_optimization
       ~css_string:(Anonymous_declarations.to_stylesheet_string anonymous_declarations)
@@ -987,6 +1013,7 @@ let generate_expression_from_css_declarations_and_options
       ~always_hash:(Anonymous_declarations.always_hash anonymous_declarations)
       ~anonymous_variables:
         (Anonymous_declarations.anonymous_variables anonymous_declarations)
+      ~disable_hashing
   in
   let style_module_name = gen_symbol ~prefix:"Ppx_css_anonymous_style" () in
   let body =
@@ -1005,9 +1032,10 @@ let generate_expression_from_css_declarations_and_options
   }
 ;;
 
-let generate_inline_expression ~loc (expr : expression)
+let generate_inline_expression ~loc (expr : expression) ~disable_hashing
   : expression With_hoisted_expression.t
   =
+  let pos_for_hashing = loc.loc_start in
   let open (val Ast_builder.make loc) in
   let loc = { loc with loc_ghost = true } in
   let expr = loc_ghoster#expression expr in
@@ -1022,11 +1050,14 @@ let generate_inline_expression ~loc (expr : expression)
   let anonymous_declarations = Anonymous_declarations.create css_string in
   generate_expression_from_css_declarations_and_options
     ~loc
+    ~pos_for_hashing
     ~lazy_loading_optimization
     ~dont_hash
     ~anonymous_declarations
     ~dont_hash_prefixes
+    ~original_css_string:css_string.css_string
     ~stylesheet_location:css_string.string_loc
+    ~disable_hashing
 ;;
 
 let create_sig_from_idents ~loc ~identifiers =
@@ -1042,19 +1073,29 @@ let create_sig_from_idents ~loc ~identifiers =
 ;;
 
 module For_css_inliner = struct
+  type result =
+    { ml_file : string
+    ; css_string_for_testing : string Lazy.t
+    }
+
   let gen_struct
     ~dont_hash
     ~css_string
     ~dont_hash_prefixes
     ~stylesheet_location
     ~lazy_loading_optimization
+    ~disable_hashing
     =
     let buffer = Buffer.create 1024 in
     let loc = Location.none in
-    let%tydi { txt = module_expr; hoisted_structure_items; _ } =
+    let%tydi { txt = module_expr; hoisted_structure_items; css_string_for_testing } =
       generate_struct_from_css_string_and_options
         ~lazy_loading_optimization
+        ~pos_for_hashing:stylesheet_location.loc_start
+          (* Have to pass in the [loc_start] of the stylesheet as it's the only location we
+           have *)
         ~expansion_kind:Stylesheet
+        ~original_css_string:css_string
         ~loc
         ~dont_hash
         ~css_string
@@ -1063,6 +1104,7 @@ module For_css_inliner = struct
         ~inferred_do_not_hash:String.Set.empty
         ~always_hash:String.Set.empty
         ~anonymous_variables:Anonymous_variable.Collection.empty
+        ~disable_hashing
     in
     let () =
       List.iter hoisted_structure_items ~f:(fun structure_item ->
@@ -1073,14 +1115,20 @@ module For_css_inliner = struct
       pmod_structure (Hoister.create_hoisted_module ~loc :: module_expr)
     in
     Pprintast.module_expr (Format.formatter_of_buffer buffer) module_expr;
-    Buffer.contents buffer
+    let ml_file = Buffer.contents buffer in
+    { ml_file; css_string_for_testing }
   ;;
 
   open Traverse_css
 
-  let gen_sig css =
+  let gen_sig ~stylesheet_location css =
     let buffer = Buffer.create 1024 in
-    let stylesheet = Stylesheet.of_string css in
+    let stylesheet =
+      Css_parser.parse_stylesheet
+        ~parsing_config:Css_parser.Parsing_config.raise_on_recoverable_errors
+        ~pos:stylesheet_location.loc_start
+        css
+    in
     let identifiers =
       get_all_identifiers (Tuple2.map_fst stylesheet ~f:Rule_id.identify_stylesheet)
     in
@@ -1096,7 +1144,7 @@ end
 
 let ml_extension_fn ~loc (expression : expression) =
   let%tydi { txt = module_; hoisted_structure_items; _ } =
-    generate_struct ~loc expression
+    generate_struct ~loc expression ~disable_hashing:false
   in
   List.iter hoisted_structure_items ~f:(fun structure_item ->
     Hoister.register ~structure_item);
@@ -1114,7 +1162,7 @@ let ml_extension =
 
 let inline_extension_fn ~loc (expression : expression) =
   let%tydi { txt = expression; hoisted_structure_items; _ } =
-    generate_inline_expression ~loc expression
+    generate_inline_expression ~loc expression ~disable_hashing:false
   in
   List.iter hoisted_structure_items ~f:(fun structure_item ->
     Hoister.register ~structure_item);
@@ -1154,10 +1202,9 @@ let attempt_to_put_structure_item_after_the_ppx_module_timer_start
     structure_item :: structure
 ;;
 
-(** We want [ppx_css] to run after [ppx_html] has transformed style nodes into
-    [ppx_css]. We then want the hoisted module to be inserted at the top of the file
-    so that the modules are registered and available to the rest of the file.
-*)
+(** We want [ppx_css] to run after [ppx_html] has transformed style nodes into [ppx_css].
+    We then want the hoisted module to be inserted at the top of the file so that the
+    modules are registered and available to the rest of the file. *)
 let register_hoisted_css =
   Driver.Instrument.make ~position:Driver.Instrument.After (fun structure ->
     match Hoister.is_empty (), structure with
@@ -1183,18 +1230,28 @@ let () =
 ;;
 
 module For_testing = struct
-  let generate_css_stylesheet_string ~loc expression =
-    let%tydi { css_string_for_testing; _ } = generate_struct ~loc expression in
-    css_string_for_testing
+  let generate_css_stylesheet_string ~loc ~disable_hashing expression =
+    let%tydi { css_string_for_testing; txt = _; hoisted_structure_items = _ } =
+      generate_struct ~loc expression ~disable_hashing
+    in
+    force css_string_for_testing
   ;;
 
-  let generate_css_inline_string ~loc expression =
-    let%tydi { css_string_for_testing; _ } = generate_inline_expression ~loc expression in
-    css_string_for_testing
+  let generate_css_inline_string ~loc ~disable_hashing expression =
+    let%tydi { css_string_for_testing; txt = _; hoisted_structure_items = _ } =
+      generate_inline_expression ~loc expression ~disable_hashing
+    in
+    force css_string_for_testing
   ;;
 
-  let generate_struct = generate_struct ~loc:Location.none
-  let generate_inline_expression = generate_inline_expression ~loc:Location.none
+  let generate_struct ~loc ~disable_hashing expression =
+    generate_struct ~loc ~disable_hashing expression
+  ;;
+
+  let generate_inline_expression ~loc ~disable_hashing expression =
+    generate_inline_expression ~disable_hashing expression ~loc
+  ;;
+
   let map_style_sheet = Traverse_css.For_testing.map_style_sheet
 
   let reset_anonymous_variable_identifiers =

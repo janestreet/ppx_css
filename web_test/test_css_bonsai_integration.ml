@@ -1,5 +1,5 @@
 open! Core
-open! Bonsai_web.Proc
+open! Bonsai_web_proc
 open! Bonsai_web_test
 
 let%expect_test "css censoring" =
@@ -9,7 +9,7 @@ let%expect_test "css censoring" =
       {|
         .foo {
         }
-        |}]
+      |}]
   in
   let handle =
     Handle.create
@@ -24,7 +24,7 @@ let%expect_test "css censoring" =
       (Bonsai.const (Vdom.Node.div ~attrs:[ Style.foo ] []))
   in
   Handle.show handle;
-  [%expect {| <div class="foo_hash_791cc55311"> </div> |}]
+  [%expect {| <div class="foo_hash_16b35a5108"> </div> |}]
 ;;
 
 module%test [@name "inline css"] _ = struct
@@ -127,7 +127,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
           .foo {
             background-color: %{color};
           }
-          |}]
+        |}]
     in
     test Style.foo;
     [%expect
@@ -151,7 +151,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
           .foo.bar.baz {
             background-color: %{color2};
           }
-          |}]
+        |}]
     in
     test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
     [%expect
@@ -177,7 +177,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
             background-color: %{color2#Css_gen.Color};
             width: %{width#Css_gen.Length};
           }
-          |}]
+        |}]
     in
     test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
     [%expect
@@ -200,7 +200,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
           .foo.bar.baz {
             background-color: var(--color);
           }
-          |}]
+        |}]
     in
     test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
     [%expect
@@ -229,7 +229,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
             background-color: var(--color);
             background-color: %{color "fourth"#Css_gen.Color};
           }
-          |}]
+        |}]
     in
     test (Vdom.Attr.many [ Style.foo; Style.bar; Style.baz ]);
     [%expect

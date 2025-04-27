@@ -19,8 +19,8 @@ let%expect_test "make sure inline css laziness works" =
     {|
     /* ppx/ppx_css/test/test_laziness/test_laziness_forced_inline/test_laziness_forced_inline.ml */
 
-    *.test_laziness_forced_inline__inline_class_hash_84f931cbc9 {
-     display:flex
+    .test_laziness_forced_inline__inline_class_hash_d98773e646 {
+      display: flex;
     }
     |}]
 ;;

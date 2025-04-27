@@ -16,7 +16,7 @@ module Style =
         .hashed {
         }
       }
-      |}
+    |}
     ~dont_hash:[ "foo"; "bar" ]]
 
 let () = (ignore : Style.t -> unit) (module Style)

@@ -7,7 +7,9 @@ module%test Get_all_identifiers = struct
 
   let test (s : string) =
     let stylesheet =
-      Css_jane.Stylesheet.of_string s |> Ppx_css.Stable_stylesheet.of_stylesheet
+      Css_parser.(
+        parse_stylesheet ~parsing_config:Parsing_config.raise_on_recoverable_errors s)
+      |> Ppx_css.Stable_stylesheet.of_stylesheet
     in
     let result = get_all_identifiers stylesheet in
     print_s [%message (result : Ppx_css.Css_identifier.Set.t)]
@@ -41,11 +43,11 @@ module%test Get_all_identifiers = struct
       {|
         :root {
            --with-kebab: 100px;
-           --with_snakecase: 100px
+           --with_snakecase: 100px;
         }
 
         html {
-           color: var(--inside-a-var)
+           color: var(--inside-a-var);
         }
 
     |};

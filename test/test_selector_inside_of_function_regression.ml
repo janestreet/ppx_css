@@ -4,7 +4,8 @@ open Ppxlib
 (* This test is a regression test for a bug on ppx_css where selectors inside of selector
    functions were altered incorrectly. *)
 
-let loc = Location.none
+let loc = Test_util.loc_with_mock_name
+let () = Ppx_css_syntax.Preprocess_arguments.set_lazy_loading_optimization (Some true)
 
 let%expect_test "Selectors inside selector functions were incorrectly transformed." =
   Test_util.test_struct [%expr stylesheet {|:has(.a .b) {}|}];
@@ -26,37 +27,36 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     module Default : S =
       struct
         module For_referencing =
-          struct let a = {|a_hash_f40d9e8892|}
-                 let b = {|b_hash_f40d9e8892|} end
+          struct let a = {|a_hash_2bb500d951|}
+                 let b = {|b_hash_2bb500d951|} end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___f40d9e8892__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_f40d9e8892|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___2bb500d951__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_2bb500d951|}))
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___f40d9e8892__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_f40d9e8892|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___2bb500d951__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_2bb500d951|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__001___f40d9e8892__0 =
+    let sheet_x__001___2bb500d951__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__001___f40d9e8892__group_0 =
+    let update_sheet_lazy_fn_x__001___2bb500d951__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___f40d9e8892__0
+        (Inline_css.Private.update_stylesheet sheet_x__001___2bb500d951__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:has(.a_hash_f40d9e8892 *.b_hash_f40d9e8892) {
-
+    :has(.a_hash_2bb500d951 .b_hash_2bb500d951) {
     }|})
     |xxx}];
   (* Nested CSS was always fine - only the top-level selector in this situation was affected. *)
@@ -77,40 +77,38 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     module Default : S =
       struct
         module For_referencing =
-          struct let a = {|a_hash_a3450c6ec7|}
-                 let b = {|b_hash_a3450c6ec7|} end
+          struct let a = {|a_hash_3d435d56f0|}
+                 let b = {|b_hash_3d435d56f0|} end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___a3450c6ec7__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_a3450c6ec7|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___3d435d56f0__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_3d435d56f0|}))
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___a3450c6ec7__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_a3450c6ec7|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___3d435d56f0__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_3d435d56f0|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__002___a3450c6ec7__0 =
+    let sheet_x__002___3d435d56f0__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__002___a3450c6ec7__group_0 =
+    let update_sheet_lazy_fn_x__002___3d435d56f0__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__002___a3450c6ec7__0
+        (Inline_css.Private.update_stylesheet sheet_x__002___3d435d56f0__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:has(.a_hash_a3450c6ec7 *.b_hash_a3450c6ec7) {
-     *:has(.a_hash_a3450c6ec7 *.b_hash_a3450c6ec7) {
-
-     }
-
+    :has(.a_hash_3d435d56f0 .b_hash_3d435d56f0) {
+      :has(.a_hash_3d435d56f0 .b_hash_3d435d56f0) {
+      }
     }|})
     |xxx}]
 ;;
@@ -126,39 +124,40 @@ let%expect_test "Selectors inside of styled components - seem fine" =
       struct
         include
           struct
-            let inline_class =
+            let foo__inline_class =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___f3dff972a4__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_f3dff972a4|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___c9092a589a__group_0;
+                    Virtual_dom.Vdom.Attr.class_
+                      {|foo__inline_class_hash_c9092a589a|}))
           end
-      end in Ppx_css_anonymous_style__004_.inline_class
+      end in Ppx_css_anonymous_style__004_.foo__inline_class
     Hoisted context:
     ----------------
-    let sheet_x__003___f3dff972a4__0 =
+    let sheet_x__003___c9092a589a__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__003___f3dff972a4__group_0 =
+    let update_sheet_lazy_fn_x__003___c9092a589a__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__003___f3dff972a4__0
+        (Inline_css.Private.update_stylesheet sheet_x__003___c9092a589a__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.inline_class_hash_f3dff972a4 {
-     *& {
-      *:has(.a *.b) {
-
+    .foo__inline_class_hash_c9092a589a {
+      & {
+        :has(.a .b) {
+        }
       }
-
-     }
-
     }|})
     |xxx}]
 ;;
 
 let test s =
-  print_endline (Css_jane.Stylesheet.to_string_hum (Css_jane.Stylesheet.of_string s))
+  print_endline
+    (Css_parser.stylesheet_to_string
+       Css_parser.(
+         parse_stylesheet ~parsing_config:Parsing_config.raise_on_recoverable_errors s))
 ;;
 
 (* This is the same test suite as above, but showing that the bug is present at the
@@ -168,18 +167,15 @@ module%test Parser_test = struct
     test {|:has(.a .b) {}|};
     [%expect
       {|
-      *:has(.a *.b) {
-
+      :has(.a .b) {
       }
       |}];
     test {|:has(.a .b) { :has(.c .d) { } }|};
     [%expect
       {|
-      *:has(.a *.b) {
-       *:has(.c *.d) {
-
-       }
-
+      :has(.a .b) {
+        :has(.c .d) {
+        }
       }
       |}]
   ;;
@@ -188,15 +184,13 @@ module%test Parser_test = struct
     test {|:foo(:has(.a .b) + .c > .d:hover .e + .f  .g.h) {}|};
     [%expect
       {|
-      *:foo(:has(.a.b)+.c>.d:hover.e+.f.g.h) {
-
+      :foo(:has(.a .b) + .c > .d:hover .e + .f .g.h) {
       }
       |}];
     test {|:not(:has(.a .b) + .c > .d:hover .e + .f  .g.h) {}|};
     [%expect
       {|
-      *:not(:has(.a *.b)+*.c>*.d:hover *.e+*.f *.g.h) {
-
+      :not(:has(.a .b) + .c > .d:hover .e + .f .g.h) {
       }
       |}]
   ;;
@@ -210,28 +204,17 @@ module%test Parser_test = struct
     (* These do not add the '*'. *)
     [%expect
       {|
-      *:dir(ltr) {
-
+      :dir(ltr) {
       }
-
-      *:lang(en) {
-
+      :lang(en) {
       }
-
-      *:state(checked) {
-
+      :state(checked) {
       }
-
-      *:dir(.a.b) {
-
+      :dir(.a .b) {
       }
-
-      *:lang(.a.b) {
-
+      :lang(.a .b) {
       }
-
-      *:state(.a.b) {
-
+      :state(.a .b) {
       }
       |}]
   ;;
@@ -240,8 +223,7 @@ module%test Parser_test = struct
     test {|:foo(.a .b) {}|};
     [%expect
       {|
-      *:foo(.a.b) {
-
+      :foo(.a .b) {
       }
       |}]
   ;;
@@ -258,67 +240,46 @@ module%test Parser_test = struct
     |};
     [%expect
       {|
-      *:has(.a *.b) {
-
+      :has(.a .b) {
       }
-
-      *:is(.a *.b) {
-
+      :is(.a .b) {
       }
-
-      *:where(.a *.b) {
-
+      :where(.a .b) {
       }
-
-      *:not(.a *.b) {
-
+      :not(.a .b) {
       }
-
-      *:host(.a *.b) {
-
+      :host(.a .b) {
       }
-
-      *:host-context(.a *.b) {
-
+      :host-context(.a .b) {
       }
       |}]
   ;;
 
-  let%expect_test "WEIRD: paren block + bracket blocks" =
-    test {|(.a .b) {}|};
-    [%expect
-      {|
-      (.a.b) {
-
-      }
-      |}];
+  let%expect_test "REGRESSION: bracket blocks should maintain spacing" =
     test {|[ .a .b ] {}|};
     [%expect
       {|
-      [.a.b] {
-
+      [.a .b] {
       }
       |}]
   ;;
 end
 
-module%test Actual_bug_in_handling_of_scope = struct
-  let%expect_test "Scope selectors in at-rules have their whitespaces removed" =
+module%test Actual_bug_in_handling_of_scope_regression = struct
+  let%expect_test "Scope selectors in at-rules do not have their whitespaces removed" =
     test {| @scope (.a .b) to (figure) { } |};
     [%expect
       {|
-      @scope (.a.b) to (figure){
-
+      @scope (.a .b) to (figure) {
       }
       |}]
   ;;
 
-  let%expect_test "nth-child is broken" =
+  let%expect_test "nth-child maintains spacing" =
     test {| div:nth-child(2n + 1) {} |};
     [%expect
       {|
-      div:nth-child(2 n+1) {
-
+      div:nth-child(2n + 1) {
       }
       |}]
   ;;

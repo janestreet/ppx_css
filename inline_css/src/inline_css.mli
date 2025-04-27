@@ -4,8 +4,8 @@ module Private : sig
   (** [append css_string] will append a stylesheet to the webpage *)
   val append : string -> unit
 
-  (** [prepend] is like [append], but instead of the added CSS being added to the back
-      of the list of stylesheets, it'll be added to the front. *)
+  (** [prepend] is like [append], but instead of the added CSS being added to the back of
+      the list of stylesheets, it'll be added to the front. *)
   val prepend : string -> unit
 
   val create_stylesheet : unit -> Stylesheet.t Or_error.t

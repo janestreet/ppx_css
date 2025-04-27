@@ -7,10 +7,10 @@ module String_constant = String_constant
 
 type t =
   { dont_hash : String.Set.t
-  (** For a given (key, value) pair, value will "rewrite" itself wherever "key" is roughly: [s/$key/$value/g]
+  (** For a given (key, value) pair, value will "rewrite" itself wherever "key" is
+      roughly: [s/$key/$value/g]
 
-      Equivalent to the [~rewrite] parameter in the call to [stylesheet] on [ppx_css].
-  *)
+      Equivalent to the [~rewrite] parameter in the call to [stylesheet] on [ppx_css]. *)
   ; css_string : String_constant.t
   (** The contained CSS string. Equivalent to the string parameter given to ppx_css. *)
   ; dont_hash_prefixes : string list
@@ -21,8 +21,8 @@ type t =
 (** Given the AST of an expression like [stylesheet ~rewrite:[] ""] will result in a
     "parsed" [t].
 
-    [stylesheet] is the [%css stylesheet {|stylesheet...|}] syntax and expands to a module declaration.
-*)
+    [stylesheet] is the [%css stylesheet {|stylesheet...|}] syntax and expands to a module
+    declaration. *)
 val parse_stylesheet_exn : expression -> t
 
 (** Given the AST of an expression like ["" ~rewrite:[]] will result in a "parsed" [t]

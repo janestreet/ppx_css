@@ -5,6 +5,6 @@ module Style =
       .a {
         display: flex;
       }
-      |}]
+    |}]
 
 module _ = Style

@@ -1,6 +1,6 @@
 open! Core
 open! Ppxlib
-open Css_jane
+open Css_parser
 
 module Original_and_post_processed : sig
   type 'a t =
@@ -13,9 +13,10 @@ module Transform : sig
   type result =
     { stylesheet : Rule.t Original_and_post_processed.t Rule_id.Map.t * location
     ; identifier_mapping : expression Css_identifier.Table.t
+    ; hash : string
     }
 
-  val generate_hash : pos:position -> Stable_stylesheet.t -> string
+  val generate_hash : disable_hashing:bool -> pos:position -> string -> string
 
   (* Transform takes a string of css and produces a new css string, with
      all of the identifiers ammended with a hash.  The mapping from
@@ -24,9 +25,11 @@ module Transform : sig
      [pos] is the source-code-position of the css string in the ocaml file, so
      that error messages from parsing the css show up in the right location. *)
   val f
-    :  pos:position
+    :  pos_for_hashing:position
+    -> original_css_string:string
     -> should_hash_identifier:
          (Css_identifier.t -> [ `Hash | `Dont_hash | `Dont_hash_prefixes of string ])
+    -> disable_hashing:bool
     -> Stable_stylesheet.t
     -> result
 end

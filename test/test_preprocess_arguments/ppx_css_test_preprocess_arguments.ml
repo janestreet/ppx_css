@@ -9,6 +9,6 @@ module Foo =
       .class2 {
         background-color: var(--another-color);
       }
-      |}]
+    |}]
 
 module _ = Foo

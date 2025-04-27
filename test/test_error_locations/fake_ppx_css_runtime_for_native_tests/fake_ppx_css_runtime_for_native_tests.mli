@@ -1,12 +1,11 @@
 open! Core
 
-(** Top-level expect tests cannot _only_ be run in a jsoo
-    context. This makes testing of compilation error locations
-    tricky to test as the virtual_dom library cannot be depended on
-    as the real virtual_dom library depends on js_of_ocaml.
+(** Top-level expect tests cannot _only_ be run in a jsoo context. This makes testing of
+    compilation error locations tricky to test as the virtual_dom library cannot be
+    depended on as the real virtual_dom library depends on js_of_ocaml.
 
-    This library stubs out Virtual_dom and other ppx_css-related libraries
-    to in a native context. . *)
+    This library stubs out Virtual_dom and other ppx_css-related libraries to in a native
+    context. . *)
 module Vdom : sig
   module Attr : sig
     type t

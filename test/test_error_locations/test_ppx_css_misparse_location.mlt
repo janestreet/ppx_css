@@ -24,8 +24,8 @@ background-color: tomato;
 
 [%%expect
   {|
-Line 14, characters 21-22:
-Error: Parse error while reading token ';'
+Line 14, characters 12-13:
+Error: Error while parsing pseudoclass selector. Expected an identifier or function but got WHITESPACE
 |}]
 
 let x : Virtual_dom.Vdom.Attr.t =
@@ -51,8 +51,8 @@ background-color: tomato;
 
 [%%expect
   {|
-Line 42, characters 19-20:
-Error: Parse error while reading token ';'
+Line 42, characters 12-13:
+Error: Error while parsing pseudoclass selector. Expected an identifier or function but got WHITESPACE
 |}]
 
 module Style =
@@ -77,14 +77,14 @@ module Style =
 
 [%%expect
   {|
-Line 71, characters 23-24:
-Error: Parse error while reading token ';'
+Line 71, characters 16-17:
+Error: Error while parsing pseudoclass selector. Expected an identifier or function but got WHITESPACE
 |}]
 
 let single_line = {%css|.background-color: tomato;|}
 
 [%%expect
   {|
-Line 84, characters 49-50:
-Error: Parse error while reading token ';'
+Line 84, characters 42-43:
+Error: Error while parsing pseudoclass selector. Expected an identifier or function but got WHITESPACE
 |}]

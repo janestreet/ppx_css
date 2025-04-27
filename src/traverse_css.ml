@@ -1,112 +1,50 @@
 open! Core
 open! Ppxlib
-open Css_jane
+open Css_parser
 module Preprocess_arguments = Ppx_css_syntax.Preprocess_arguments
 module Graph_lib = Graph
 
-let map_loc (v, loc) ~f = f v, loc
-
-module Prev_delimeter = struct
-  type t =
-    | Other
-    | Dot
-    | Colon
-end
-
-open Prev_delimeter
-
-(* Hashes ".a" within :not(.a). We are taking a "not hash by default" approach rather than
-   immediately hashing every identifier in the AST to not break existing apps. *)
-let hash_the_contents_of_these_selector_functions =
-  String.Set.of_list [ "not"; "has"; "where"; "is" ]
-;;
-
-let raise_due_to_unknown_function_with_identifiers ~loc ~fn_name ~utilized_identifiers =
-  let utilized_identifiers =
-    Set.to_list utilized_identifiers
-    |> List.map ~f:(fun identifier ->
-      [%string {|"%{Css_identifier.extract_css_identifier identifier}"|}])
-    |> String.concat ~sep:"; "
-  in
-  Location.raise_errorf
-    ~loc
-    "Unsafe use of classes or ids [%s] within unknown function '%s'. Please contact the \
-     owners of [ppx_css] so that this CSS function can be audited and added to the allow \
-     list in order to resolve this bug."
-    utilized_identifiers
-    fn_name
-;;
-
-let rec fold_c_value ~f prev v =
-  match prev, v with
-  | _, ((Component_value.Delim "." as d), loc) -> Dot, (d, loc)
-  | _, ((Delim ":" as d), loc) -> Colon, (d, loc)
-  | Dot, (Ident s, loc) -> Other, (Ident (f (Css_identifier.Class s) loc), loc)
-  | _, (Hash s, loc) -> Other, (Hash (f (Css_identifier.Id s) loc), loc)
-  | Colon, (Function (((fn_name, _) as first), second), loc) ->
-    if Set.mem hash_the_contents_of_these_selector_functions fn_name
-    then (
-      let component_value =
-        let second = Tuple2.map_fst second ~f:(map_component_value_list ~f) in
-        Component_value.Function (first, second)
-      in
-      Other, (component_value, loc))
-    else (
-      (* if we don't recognize the function, we scan it for things that
-         look like ids, classes, and variables, and emit an error. *)
-      let utilized_identifiers = Css_identifier.Hash_set.create () in
-      let f identifier (_loc : location) =
-        let original_identifier =
-          match identifier with
-          | Css_identifier.Id original_identifier
-          | Class original_identifier
-          | Variable original_identifier -> original_identifier
-        in
-        Hash_set.add utilized_identifiers identifier;
-        original_identifier
-      in
-      let second = Tuple2.map_fst second ~f:(map_component_value_list ~f) in
-      let utilized_identifiers = Css_identifier.Set.of_hash_set utilized_identifiers in
-      match Set.is_empty utilized_identifiers with
-      | true -> Other, (Component_value.Function (first, second), loc)
-      | false ->
-        raise_due_to_unknown_function_with_identifiers ~loc ~fn_name ~utilized_identifiers)
-  | _, other -> Other, other
-
-and map_component_value_list ~f = List.folding_map ~init:Other ~f:(fold_c_value ~f)
-
-let mapper ~f =
+let mapper ~(f : Css_identifier.t -> Location.t -> string) =
   object
-    inherit Css_jane.Traverse.map as super
+    inherit Css_parser.Traverse.map as super
 
-    method! style_rule (style_rule : Style_rule.t) =
-      let prelude =
-        map_loc style_rule.prelude ~f:(List.folding_map ~init:Other ~f:(fold_c_value ~f))
+    method! selector_with_loc (selector, selector_loc) =
+      let selector =
+        match selector with
+        | Id (ident, flag) -> Selector.Id (f (Id ident) selector_loc, flag)
+        | Class ident -> Class (f (Class ident) selector_loc)
+        | other -> other
       in
-      super#style_rule { style_rule with prelude }
+      (selector, selector_loc) |> super#selector_with_loc
 
+    (* Fetching custom css property declarations. This assumes that all custom property 
+       declarations are css variables, which is not always the case.
+
+       We may want to consider parsing declarations with variants for custom and 
+       non-custom sometime in the future *)
     method! declaration (declaration : Declaration.t) =
-      let name, loc = declaration.name in
+      let (name, name_loc), comments = declaration.name in
       let name =
         match String.is_prefix name ~prefix:"--" with
-        | true -> f (Css_identifier.Variable name) loc
+        | true -> f (Variable name) name_loc
         | false -> name
       in
-      let name = name, loc in
-      let declaration = { declaration with name } in
+      let name = name, name_loc in
+      let declaration = { declaration with name = name, comments } in
       super#declaration declaration
 
+    (* Fetching all variables that refer to a custom css property. We may want to
+       consider parsing css vars as their own thing in the future *)
     method! component_value (component_value : Component_value.t) =
       let component_value =
         match component_value with
-        | Function ((("var", _) as first), (((Ident s, loc) :: remaining, _) as second))
+        | Function
+            ((("var", _) as fn_name_with_loc), (Ident (s, ident_loc), loc) :: remaining)
           when String.is_prefix s ~prefix:"--" ->
-          let second =
-            Tuple2.map_fst second ~f:(fun _ ->
-              (Component_value.Ident (f (Css_identifier.Variable s) loc), loc)
-              :: remaining)
+          let args : Component_value.t with_loc list =
+            (Ident (f (Variable s) loc, ident_loc), loc) :: remaining
           in
-          Component_value.Function (first, second)
+          Component_value.Function (fn_name_with_loc, args)
         | _ -> component_value
       in
       super#component_value component_value
@@ -148,6 +86,9 @@ let retrieve_the_contents_of_these_selector_functions = String.Set.of_list [ "ha
    declarations, as it becomes increasingly more difficult to maintain ordering
    (and my sanity) if we allow for recursively breaking down the rules into stylesheets
 
+   Note that other at-rules such as @media and @supports could potentially be split up,
+   but those aren't used as frequently and can probably remain as eagerly applied.
+
    Example:
    ```css
    @layer test {
@@ -173,7 +114,7 @@ let retrieve_the_contents_of_these_selector_functions = String.Set.of_list [ "ha
    }
    ```
 *)
-let processable_at_rules = String.Set.of_list [ "layer" ]
+let splittable_at_rules = String.Set.of_list [ "layer" ]
 
 let rec split_layers ((stylesheet, loc) : Stylesheet.t) : Stylesheet.t =
   ( List.fold
@@ -181,32 +122,60 @@ let rec split_layers ((stylesheet, loc) : Stylesheet.t) : Stylesheet.t =
       ~init:Reversed_list.[]
       ~f:(fun acc rule ->
         match rule with
-        (* [At_rule]s within the [processable_at_rules] list will be split into multiple
+        (* [At_rule]s within the [splittable_at_rules] list will be split into multiple
          rules that each contain one declaration within them *)
-        | Rule.At_rule ({ name = name, _; prelude = _; block; _ } as at_rule)
-          when Set.mem processable_at_rules name ->
+        | Rule.At_rule ({ name; prelude = _; block; _ } as at_rule)
+          when Set.mem splittable_at_rules name ->
           (match block with
            (* If the block is empty, there's nothing to process *)
-           | Empty -> rule :: acc
+           | None -> rule :: acc
            (* [Declaration_list]s can contain key-value pairs of CSS declarations. I don't
-           think `@layer` can contain a [Declaration_list], so for now I think it is okay
-           to eagerly force this and not process [At_rule]s with [Declaration_list]s
-           *)
-           | Declaration_list _ ->
-             Core.eprint_s
-               [%message
-                 "Layer [At_rule]s should not contain [Declaration_list]s" [%here]];
-             rule :: acc
-           | Stylesheet (sheet, sheet_loc) ->
-             List.fold sheet ~init:acc ~f:(fun acc rule ->
-               let processed_rule, _processed_loc = split_layers ([ rule ], sheet_loc) in
-               List.fold processed_rule ~init:acc ~f:(fun acc sheet ->
-                 Rule.At_rule
-                   { at_rule with block = Brace_block.Stylesheet ([ sheet ], sheet_loc) }
-                 :: acc)))
+              think `@layer` can contain a [Declaration_list], so for now I think it is okay
+              to eagerly force this and not process [At_rule]s with [Declaration_list]s *)
+           | Some (Declaration_list (_, loc)) ->
+             Location.raise_errorf
+               ~loc
+               {|PPX_CSS Bug: Layer [At_rules]s should not contain [Declaration_list]s. Please report this bug.|}
+           | Some (Style_block (block, block_loc)) ->
+             (* Split each individual rule within the at-rule into a rule wrapped by 
+                the at-rule and add it to the overall list of rules *)
+             List.fold block ~init:acc ~f:(fun acc rule ->
+               match rule with
+               | Comment (comment, comment_loc) ->
+                 let rule : Rule.t =
+                   At_rule
+                     { at_rule with
+                       block =
+                         Some
+                           (Style_block ([ Comment (comment, comment_loc) ], comment_loc))
+                     }
+                 in
+                 rule :: acc
+               | Rule (rule, rule_loc) ->
+                 let processed_rule, _processed_loc =
+                   split_layers ([ rule ], block_loc)
+                 in
+                 List.fold processed_rule ~init:acc ~f:(fun acc sheet ->
+                   let rule : Rule.t =
+                     At_rule
+                       { at_rule with
+                         block = Some (Style_block ([ Rule (sheet, rule_loc) ], rule_loc))
+                       }
+                   in
+                   rule :: acc)
+               | Declaration (decl, decl_loc) ->
+                 let rule : Rule.t =
+                   At_rule
+                     { at_rule with
+                       block =
+                         Some
+                           (Declaration_list ([ Declaration (decl, decl_loc) ], decl_loc))
+                     }
+                 in
+                 rule :: acc))
         (* All other [At_rule]s will be skipped over *)
-        (* [Style_rule]s will not be processed *)
-        | Rule.At_rule _ | Rule.Style_rule _ -> rule :: acc)
+        (* [Style_rule]s, [Qualified_rule]s, [Comment]s will not be processed *)
+        | At_rule _ | Style_rule _ | Qualified_rule _ | Comment _ -> rule :: acc)
     |> Reversed_list.rev
   , loc )
 ;;
@@ -224,7 +193,7 @@ let remove_unhashed_identifiers
   Set.filter identifiers ~f:is_hashed_identifier
 ;;
 
-module Css_prelude_identifiers = struct
+module Graph_node_identifiers = struct
   (* This is a 2d list because we need to represent a selector list. A selector list is
      something like
 
@@ -238,7 +207,7 @@ module Css_prelude_identifiers = struct
      (index of t) = [x] and (index of t[x]) = [y]
 
      Each t[x] in the prelude is independently affected by the declarations in the rule.
-o    This means that the above example is saying the rule applies to
+     This means that the above example is saying the rule applies to
 
      [.div #some-id > .a] OR [.b + .c] OR [:has(.q + .r)]
 
@@ -311,38 +280,41 @@ o    This means that the above example is saying the rule applies to
       | Identifier _ -> false)
   ;;
 
-  let rec of_prelude value_list =
-    List.fold_until
-      value_list
-      ~init:(Other, [], [])
-      ~finish:(fun (_, current_selectors, acc) -> current_selectors :: acc)
-      ~f:iterate_identifiers
-
-  (* The accumulator is broken up into three things:
-   1. The previous character
-   2. The current running list of selectors in this index of the selector list
-   3. The total list of selectors that will be returned
-  *)
-  and iterate_identifiers (prev, current_selectors, acc) (v, _) =
-    match prev, v with
-    (* If we've hit a comma we need to add the set of current selectors to the
-     overall total set of selectors
-    *)
-    | _, Component_value.Delim "," -> Continue (Other, [], current_selectors :: acc)
-    | _, Component_value.Delim "." -> Continue (Dot, current_selectors, acc)
-    | _, Component_value.Ampersand -> Continue (Other, Ampersand :: current_selectors, acc)
-    | _, Delim ":" -> Continue (Colon, current_selectors, acc)
-    | Dot, Ident s ->
-      Continue (Other, Identifier (Css_identifier.Class s) :: current_selectors, acc)
-    | _, Hash s ->
-      Continue (Other, Identifier (Css_identifier.Id s) :: current_selectors, acc)
-    | Colon, Function ((fn_name, _), (args_with_loc, _)) ->
-      Continue
-        ( Other
-        , Selector_func { name = fn_name; selectors = of_prelude args_with_loc }
-          :: current_selectors
-        , acc )
-    | _ -> Continue (Other, current_selectors, acc)
+  let rec of_selectors ((selector_list, _loc) : Selector_list.t) =
+    (* Process the [complex_selectors] *)
+    List.fold
+      selector_list
+      ~init:[]
+      ~f:(fun acc ((selectors, _selectors_loc), _selector_comments) ->
+        let selector_list_item =
+          (* Process the [compound_selector]s and [combinator]s *)
+          List.fold selectors ~init:[] ~f:(fun acc (selector_combinator, _comments) ->
+            match selector_combinator with
+            | Combinator _ -> acc
+            | Selector (compound_selector, _loc) ->
+              (* Process the individual selectors *)
+              List.fold
+                ~init:acc
+                compound_selector
+                ~f:(fun acc ((selector, _comments), _loc) ->
+                  match selector with
+                  | Selector.Class ident -> Identifier (Class ident) :: acc
+                  | Id (ident, _hash_flag) -> Identifier (Id ident) :: acc
+                  | Ampersand -> Ampersand :: acc
+                  (* We're processing both pseudoclass and pseudoelement selector 
+                     functions that contain selectors here. We'll be checking later on to 
+                     see if they should be included within the graph calculation *)
+                  | Pseudoclass pseudo | Pseudoelement pseudo ->
+                    (match pseudo with
+                     | Function_with_selectors
+                         (((fn_name, _fn_name_loc), _comments), selectors) ->
+                       Selector_func
+                         { name = fn_name; selectors = of_selectors selectors }
+                       :: acc
+                     | Ident _ | Function _ -> acc)
+                  | _ -> acc))
+        in
+        selector_list_item :: acc)
   ;;
 
   (* Retrieves all utilized identifiers within [t] as a list *)
@@ -401,42 +373,47 @@ end
 
    When [read_contents_of_functions] is [true], the function will retrieve all identifiers
    regardless of if they are in a selector function or in a selector list.
-  
 *)
-let rec get_identifiers_for_block ~read_contents_of_functions = function
+let rec get_identifiers_for_style_block ~read_contents_of_functions = function
   | `Declaration_list (declarations, _loc) ->
     List.fold declarations ~init:Css_identifier.Set.empty ~f:(fun acc -> function
-      | Declaration_list.Declaration _declaration -> acc
-      | At_rule rule ->
+      | Declaration_list.Element.At_rule (rule, _loc) ->
         Set.union
           acc
-          (get_identifiers_for_rule ~read_contents_of_functions (Rule.At_rule rule))
-      | Style_rule rule ->
+          (get_identifiers_for_style_rule ~read_contents_of_functions (Rule.At_rule rule))
+      | Declaration _ | Qualified_rule _ | Comment _ -> acc)
+  | `Style_block (block_elements, _loc) ->
+    List.fold ~init:Css_identifier.Set.empty block_elements ~f:(fun acc -> function
+      | Style_block.Block_element.Rule (rule, _rule_loc) ->
+        Set.union acc (get_identifiers_for_style_rule ~read_contents_of_functions rule)
+      | Declaration (decl, decl_loc) ->
         Set.union
           acc
-          (get_identifiers_for_rule ~read_contents_of_functions (Rule.Style_rule rule)))
-  | `Brace_block block ->
-    (match block with
-     | Brace_block.Empty -> Css_identifier.Set.empty
-     | Declaration_list declarations ->
-       get_identifiers_for_block
-         ~read_contents_of_functions
-         (`Declaration_list declarations)
-     | Stylesheet (sheet, _loc) ->
-       List.fold ~init:Css_identifier.Set.empty sheet ~f:(fun acc rule ->
-         Set.union acc (get_identifiers_for_rule ~read_contents_of_functions rule)))
+          (get_identifiers_for_style_block
+             ~read_contents_of_functions
+             (`Declaration_list
+               ([ Declaration_list.Element.Declaration (decl, decl_loc) ], decl_loc)))
+      | Comment _ -> acc)
 
-and get_identifiers_for_rule ~read_contents_of_functions = function
-  | Style_rule { prelude = prelude, _loc; block; _ } ->
+and get_identifiers_for_style_rule ~read_contents_of_functions = function
+  | Qualified_rule _ | Comment _ -> Css_identifier.Set.empty
+  | Style_rule { selectors; block; _ } ->
     let prelude_identifiers =
-      Css_prelude_identifiers.of_prelude prelude
-      |> Css_prelude_identifiers.to_set ~read_contents_of_functions
+      Graph_node_identifiers.of_selectors selectors
+      |> Graph_node_identifiers.to_set ~read_contents_of_functions
     in
     Set.union
       prelude_identifiers
-      (get_identifiers_for_block ~read_contents_of_functions (`Declaration_list block))
+      (get_identifiers_for_style_block ~read_contents_of_functions (`Style_block block))
   | At_rule { prelude = _; block; _ } ->
-    get_identifiers_for_block ~read_contents_of_functions (`Brace_block block)
+    (match block with
+     | None -> Css_identifier.Set.empty
+     | Some (At_rule.Declaration_list decl_list) ->
+       get_identifiers_for_style_block
+         ~read_contents_of_functions
+         (`Declaration_list decl_list)
+     | Some (Style_block block) ->
+       get_identifiers_for_style_block ~read_contents_of_functions (`Style_block block))
 ;;
 
 (* Checks to make sure all selectors in child rules do not have to be autoforced. This
@@ -445,20 +422,20 @@ and get_identifiers_for_rule ~read_contents_of_functions = function
 *)
 let rec check_child_style_rules_for_autoforcing
   ~is_unhashed_identifier
-  ({ Style_rule.prelude = prelude, _; _ } as rule)
+  ({ Style_rule.selectors; _ } as rule)
   =
-  let identifiers = Css_prelude_identifiers.of_prelude prelude in
+  let identifiers = Graph_node_identifiers.of_selectors selectors in
   let should_prelude_be_autoforced =
     List.exists
       ~f:(fun selector ->
-        match Css_prelude_identifiers.contains_ampersand selector with
+        match Graph_node_identifiers.contains_ampersand selector with
         (* If this selector does not contain an ampersand, it has an implicit
            ampersand + descendant selector, which makes it so that it will not
            be autoforced so long as the parent isn't
         *)
         | false -> false
         | true ->
-          Css_prelude_identifiers.should_selector_be_autoforced
+          Graph_node_identifiers.should_selector_be_autoforced
             ~is_top_level:false
             ~is_unhashed_identifier
             selector)
@@ -472,30 +449,36 @@ and check_should_style_rule_children_be_autoforced
   { Style_rule.block = block, _; _ }
   =
   List.exists block ~f:(function
-    | Declaration_list.Style_rule rule ->
-      check_child_style_rules_for_autoforcing ~is_unhashed_identifier rule
-    (* If there's an at-rule nested within this style rule, we're going to eagerly force
+    | Rule (rule, _rule_loc) ->
+      (match rule with
+       | Style_rule rule ->
+         check_child_style_rules_for_autoforcing ~is_unhashed_identifier rule
+       (* If there's an at-rule nested within this style rule, we're going to eagerly force
        the parent rule. This is because there are several different ways that nested
        at-rules can interact with the parent style rule, and codifying all of those 
        interactions does not seem to be worth it. I doubt at-rules nested inside style
        rules will occur very frequently, either
-    *)
-    | At_rule _ -> true
-    | Declaration _ -> false)
+       *)
+       | At_rule _ -> true
+       | Qualified_rule _ | Comment _ -> false)
+    | Declaration _ | Comment _ -> false)
 ;;
 
-let rec get_inner_rule rule =
+let rec get_inner_rule (rule : Rule.t) =
   match rule with
   (* Processed [At_rule]s should only have a single element within their
-       [Brace_block.Stylesheet] block. That will act as the top-level rule
-       for this [At_rule]. Recursively extract the inner rule for use as
-       the top-level identifiers *)
-  | Rule.At_rule
-      { name = name, _; block = Brace_block.Stylesheet (inner_rule :: [], _); _ }
-    when Set.mem processable_at_rules name -> get_inner_rule inner_rule
+     [Style_block]. It __must__ be a [Rule]. The rule will act as the top-level rule
+     for this [At_rule]. Recursively extract the inner rule for use as
+     the top-level identifiers *)
+  | At_rule
+      { name
+      ; block = Some (Style_block (Rule (inner_rule, _inner_rule_loc) :: [], _))
+      ; _
+      }
+    when Set.mem splittable_at_rules name -> get_inner_rule inner_rule
   (* All other [At_rule]s, including ones that were supposed to be processed but
-       were seemingly processed incorrectly, will do the default *)
-  | Rule.At_rule _ | Rule.Style_rule _ -> rule
+     were seemingly processed incorrectly, will do the default *)
+  | At_rule _ | Style_rule _ | Comment _ | Qualified_rule _ -> rule
 ;;
 
 let retrieve_all_utilized_identifiers ~is_hashed_identifier rule =
@@ -503,16 +486,16 @@ let retrieve_all_utilized_identifiers ~is_hashed_identifier rule =
   match rule with
   (* [At_rule]s that were not processed will have no utilized identifiers as
      they are currently eagerly forced *)
-  | Rule.At_rule _ -> Css_identifier.Set.empty
-  | Rule.Style_rule ({ prelude = prelude, _; _ } as style_rule) as rule ->
+  | At_rule _ | Comment _ | Qualified_rule _ -> Css_identifier.Set.empty
+  | Style_rule ({ selectors; _ } as style_rule) as rule ->
     let is_unhashed_identifier identifier = not (is_hashed_identifier identifier) in
     (* These are the identifiers from the top-level declaration/rule before
        traversing child rules. These are necessary because we need to know if
        the rule needs to be eagerly forced. If no identifiers are utilized
        at the top level, the entire rule needs to be eagerly forced *)
     let should_autoforce =
-      Css_prelude_identifiers.of_prelude prelude
-      |> Css_prelude_identifiers.should_be_autoforced
+      Graph_node_identifiers.of_selectors selectors
+      |> Graph_node_identifiers.should_be_autoforced
            ~is_top_level:true
            ~is_unhashed_identifier
     in
@@ -522,7 +505,7 @@ let retrieve_all_utilized_identifiers ~is_hashed_identifier rule =
     (match should_autoforce || should_children_autoforce_parent with
      | true -> Css_identifier.Set.empty
      | false ->
-       get_identifiers_for_rule ~read_contents_of_functions:false rule
+       get_identifiers_for_style_rule ~read_contents_of_functions:false rule
        (* Utilized identifiers have to have the unhashed identifiers removed *)
        |> remove_unhashed_identifiers ~is_hashed_identifier)
 ;;
@@ -566,7 +549,7 @@ module Graph = struct
           ~init:Css_identifier.Set.empty
           stylesheet
           ~f:(fun ~key:_ ~data:rule acc ->
-            get_identifiers_for_rule ~read_contents_of_functions:true rule
+            get_identifiers_for_style_rule ~read_contents_of_functions:true rule
             |> Set.union acc)
       in
       let utilized_identifiers_by_rule =
@@ -810,7 +793,7 @@ let raise_if_identifier_collides_with_existing
       css_identifier_to_ocaml_identifier
       ~key:css_identifier
       ~data:ocaml_identifier
-  | _, `Check_css_identifier (Some other_matching_css_identifier)
+  | `Check_ocaml_identifier _, `Check_css_identifier (Some other_matching_css_identifier)
     when not (String.equal other_matching_css_identifier css_identifier) ->
     (* If previously a different [css_identifier] mapped to this [ocaml_identifier], we 
        will raise
@@ -822,7 +805,7 @@ let raise_if_identifier_collides_with_existing
       ~ocaml_identifier
   (* Otherwise, the same [css_identifier] is mapping to this [ocaml_identifier] so we
      don't need to raise *)
-  | _, `Check_css_identifier _ -> ()
+  | `Check_ocaml_identifier _, `Check_css_identifier _ -> ()
 ;;
 
 let string_constant ~loc l =
@@ -921,22 +904,36 @@ module Transform = struct
   type result =
     { stylesheet : Rule.t Original_and_post_processed.t Rule_id.Map.t * location
     ; identifier_mapping : expression Css_identifier.Table.t
+    ; hash : string
     }
 
-  let generate_hash ~pos (stylesheet, loc) =
+  let generate_hash ~disable_hashing ~pos original_css_string =
     let filename = Ppx_here_expander.expand_filename pos.pos_fname in
     let hash_prefix = 10 in
-    (Map.data stylesheet, loc)
-    |> Stylesheet.sexp_of_t
-    |> Sexp.to_string_mach
-    |> sprintf "%s:%d:%d:%s" filename pos.pos_lnum (pos.pos_cnum - pos.pos_bol)
-    |> Md5.digest_string
-    |> Md5.to_hex
-    |> Fn.flip String.prefix hash_prefix
+    let hash =
+      if disable_hashing
+      then "HASHELIDED"
+      else
+        sprintf
+          "%s:%d:%d:%s"
+          filename
+          pos.pos_lnum
+          (pos.pos_cnum - pos.pos_bol)
+          original_css_string
+        |> Md5.digest_string
+        |> Md5.to_hex
+    in
+    String.prefix hash hash_prefix
   ;;
 
-  let f ~pos ~should_hash_identifier parsed =
-    let hash = generate_hash parsed ~pos in
+  let f
+    ~pos_for_hashing
+    ~original_css_string
+    ~should_hash_identifier
+    ~disable_hashing
+    parsed
+    =
+    let hash = generate_hash ~disable_hashing original_css_string ~pos:pos_for_hashing in
     let identifier_mapping = Css_identifier.Table.create () in
     let stylesheet =
       Tuple2.map_fst parsed ~f:(fun original_stylesheet ->
@@ -959,7 +956,7 @@ module Transform = struct
           ; post_processed = post_processed_rule
           }))
     in
-    { stylesheet; identifier_mapping }
+    { stylesheet; identifier_mapping; hash }
   ;;
 end
 

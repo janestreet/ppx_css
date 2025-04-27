@@ -1,5 +1,5 @@
 include Core
-include Bonsai_web.Proc
+include Bonsai_web_proc
 include Bonsai_web_test
 module Test_fn = Instantiate_dummy_functions
 

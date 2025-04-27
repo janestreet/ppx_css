@@ -3,8 +3,8 @@ open! Core
 (** This module contains the parameters sent in via the jbuild/dune file's [preprocess]
     field.
 
-    The way of interfacing/reading/setting is side-effecty. The arguments 
-    are read at the top-level when the module is loaded, and then read with [get] *)
+    The way of interfacing/reading/setting is side-effecty. The arguments are read at the
+    top-level when the module is loaded, and then read with [get] *)
 
 type lazy_loading_optimization =
   (* Run CSS graph traversal and lazily instantiate the styles *)

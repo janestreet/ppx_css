@@ -1,0 +1,6 @@
+(library
+ (name css_parser_common)
+ (public_name ppx_css.css_parser_common)
+ (libraries core compiler-libs.common ocaml-compiler-libs.common)
+ (preprocess
+  (pps ppx_jane)))

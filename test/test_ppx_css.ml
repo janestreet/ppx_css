@@ -1,10 +1,10 @@
 open Core
 open Ppxlib
 open Ppx_css
-open Css_jane
 open Test_util
 
-let loc = Location.none
+let loc = Test_util.loc_with_mock_name
+let () = Ppx_css_syntax.Preprocess_arguments.set_lazy_loading_optimization (Some true)
 
 let%expect_test "basic class" =
   test_struct
@@ -29,30 +29,30 @@ let%expect_test "basic class" =
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let foo = {|foo_hash_81f5a2c98f|} end
+        module For_referencing = struct let foo = {|foo_hash_48f0d5a990|} end
         let foo =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___81f5a2c98f__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|foo_hash_81f5a2c98f|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___48f0d5a990__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|foo_hash_48f0d5a990|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__001___81f5a2c98f__0 =
+    let sheet_x__001___48f0d5a990__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__001___81f5a2c98f__group_0 =
+    let update_sheet_lazy_fn_x__001___48f0d5a990__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___81f5a2c98f__0
+        (Inline_css.Private.update_stylesheet sheet_x__001___48f0d5a990__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.foo_hash_81f5a2c98f {
-     background-color:red
+    .foo_hash_48f0d5a990 {
+      background-color: red;
     }|})
     |xxx}]
 ;;
@@ -73,15 +73,15 @@ let%expect_test "charset" =
 
     Hoisted module:
 
-    let sheet_x__002___f40c1c678a__0 =
+    let sheet_x__002___ec8e944011__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__002___f40c1c678a__0
+      Inline_css.Private.update_stylesheet sheet_x__002___ec8e944011__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    @charset" UTF-8";|}
+    @charset "UTF-8";|}
     |xxx}]
 ;;
 
@@ -120,38 +120,34 @@ let%expect_test "nested at rule" =
       struct
         module For_referencing =
           struct
-            let bar = {|bar_hash_8397f3ea42|}
-            let my_foo = {|my_foo_hash_8397f3ea42|}
+            let bar = {|bar_hash_47750ccc00|}
+            let my_foo = {|my_foo_hash_47750ccc00|}
           end
-        let bar = Virtual_dom.Vdom.Attr.id {|bar_hash_8397f3ea42|}
-        let my_foo = Virtual_dom.Vdom.Attr.class_ {|my_foo_hash_8397f3ea42|}
+        let bar = Virtual_dom.Vdom.Attr.id {|bar_hash_47750ccc00|}
+        let my_foo = Virtual_dom.Vdom.Attr.class_ {|my_foo_hash_47750ccc00|}
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__003___8397f3ea42__0 =
+    let sheet_x__003___47750ccc00__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__003___8397f3ea42__0
+      Inline_css.Private.update_stylesheet sheet_x__003___47750ccc00__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    @media screen and (min-width:900px){
-     div#bar_hash_8397f3ea42 {
-      color:red
-     }
-
-     @media screen and (min-width:900px){
-      article.my_foo_hash_8397f3ea42 {
-       padding:1rem 3rem
+    @media screen and (min-width: 900px) {
+      div#bar_hash_47750ccc00 {
+        color: red;
       }
-
-     }
-
-
+      @media screen and (min-width: 900px) {
+        article.my_foo_hash_47750ccc00 {
+          padding: 1rem 3rem;
+        }
+      }
     }|}
     |xxx}]
 ;;
@@ -182,27 +178,26 @@ let%expect_test "at rule" =
     module Default : S =
       struct
         module For_referencing =
-          struct let my_foo = {|my_foo_hash_ab8256fa1e|} end
-        let my_foo = Virtual_dom.Vdom.Attr.class_ {|my_foo_hash_ab8256fa1e|}
+          struct let my_foo = {|my_foo_hash_a834a8e1e6|} end
+        let my_foo = Virtual_dom.Vdom.Attr.class_ {|my_foo_hash_a834a8e1e6|}
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__004___ab8256fa1e__0 =
+    let sheet_x__004___a834a8e1e6__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__004___ab8256fa1e__0
+      Inline_css.Private.update_stylesheet sheet_x__004___a834a8e1e6__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    @media screen and (min-width:900px){
-     article.my_foo_hash_ab8256fa1e {
-      padding:1rem 3rem
-     }
-
+    @media screen and (min-width: 900px) {
+      article.my_foo_hash_a834a8e1e6 {
+        padding: 1rem 3rem;
+      }
     }|}
     |xxx}]
 ;;
@@ -242,30 +237,30 @@ let%expect_test "basic id" =
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let foo = {|foo_hash_d6b3bc34a5|} end
+        module For_referencing = struct let foo = {|foo_hash_c4c785a1c3|} end
         let foo =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__005___d6b3bc34a5__group_0;
-                Virtual_dom.Vdom.Attr.id {|foo_hash_d6b3bc34a5|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__005___c4c785a1c3__group_0;
+                Virtual_dom.Vdom.Attr.id {|foo_hash_c4c785a1c3|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__005___d6b3bc34a5__0 =
+    let sheet_x__005___c4c785a1c3__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__005___d6b3bc34a5__group_0 =
+    let update_sheet_lazy_fn_x__005___c4c785a1c3__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__005___d6b3bc34a5__0
+        (Inline_css.Private.update_stylesheet sheet_x__005___c4c785a1c3__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#foo_hash_d6b3bc34a5 {
-     background-color:red
+    #foo_hash_c4c785a1c3 {
+      background-color: red;
     }|})
     |xxx}]
 ;;
@@ -278,7 +273,7 @@ let%expect_test "missing closing brace" =
      #foo {
        background-color: red;
       |}];
-  [%expect {xxx| Parse error while reading token 'EOF' |xxx}]
+  [%expect {xxx| Error while parsing style block. Expected closing right brace |xxx}]
 ;;
 
 let%expect_test "listed identifiers" =
@@ -437,51 +432,49 @@ let%expect_test "animation" =
     module Default : S =
       struct
         module For_referencing =
-          struct let spinner = {|spinner_hash_4f48a20d31|} end
+          struct let spinner = {|spinner_hash_dfd410041d|} end
         let spinner =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__006___4f48a20d31__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|spinner_hash_4f48a20d31|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__006___dfd410041d__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|spinner_hash_dfd410041d|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__006___4f48a20d31__0 =
+    let sheet_x__006___dfd410041d__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__006___4f48a20d31__1 =
+    let sheet_x__006___dfd410041d__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__006___4f48a20d31__1
+      Inline_css.Private.update_stylesheet sheet_x__006___dfd410041d__1
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    @keyframes spin{
-     from {
-      transform:rotate(0deg)
-     }
-
-     to {
-      transform:rotate(360deg)
-     }
-
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
     }|}
-    let update_sheet_lazy_fn_x__006___4f48a20d31__group_0 =
+    let update_sheet_lazy_fn_x__006___dfd410041d__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__006___4f48a20d31__0
+        (Inline_css.Private.update_stylesheet sheet_x__006___dfd410041d__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.spinner_hash_4f48a20d31 {
-     animation-name:spin;
-     animation-duration:5000ms;
-     animation-iteration-count:infinite;
-     animation-timing-function:linear
+    .spinner_hash_dfd410041d {
+      animation-name: spin;
+      animation-duration: 5000ms;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
     }|})
     |xxx}]
 ;;
@@ -535,8 +528,8 @@ let%expect_test "dont hash flag" =
           struct
             let dont_hash_me = {|dont-hash-me|}
             let dont_hash_me_id = {|dont-hash-me-id|}
-            let hash_me = {|hash-me_hash_efbf1b0ed5|}
-            let hash_me_id = {|hash-me-id_hash_efbf1b0ed5|}
+            let hash_me = {|hash-me_hash_151702aef0|}
+            let hash_me_id = {|hash-me-id_hash_151702aef0|}
           end
         let dont_hash_me = Virtual_dom.Vdom.Attr.class_ {|dont-hash-me|}
         let dont_hash_me_id = Virtual_dom.Vdom.Attr.id {|dont-hash-me-id|}
@@ -544,64 +537,64 @@ let%expect_test "dont hash flag" =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___efbf1b0ed5__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|hash-me_hash_efbf1b0ed5|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___151702aef0__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|hash-me_hash_151702aef0|}))
         let hash_me_id =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___efbf1b0ed5__group_0;
-                Virtual_dom.Vdom.Attr.id {|hash-me-id_hash_efbf1b0ed5|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___151702aef0__group_0;
+                Virtual_dom.Vdom.Attr.id {|hash-me-id_hash_151702aef0|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__007___efbf1b0ed5__0 =
+    let sheet_x__007___151702aef0__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__007___efbf1b0ed5__1 =
+    let sheet_x__007___151702aef0__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__007___efbf1b0ed5__2 =
+    let sheet_x__007___151702aef0__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__007___efbf1b0ed5__3 =
+    let sheet_x__007___151702aef0__3 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__007___efbf1b0ed5__1
+      Inline_css.Private.update_stylesheet sheet_x__007___151702aef0__1
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.dont-hash-me {
-     color:green
+    .dont-hash-me {
+      color: green;
     }|};
-      Inline_css.Private.update_stylesheet sheet_x__007___efbf1b0ed5__3
+      Inline_css.Private.update_stylesheet sheet_x__007___151702aef0__3
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#dont-hash-me-id {
-     color:white
+    #dont-hash-me-id {
+      color: white;
     }|}
-    let update_sheet_lazy_fn_x__007___efbf1b0ed5__group_0 =
+    let update_sheet_lazy_fn_x__007___151702aef0__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__007___efbf1b0ed5__2
+        (Inline_css.Private.update_stylesheet sheet_x__007___151702aef0__2
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#hash-me-id_hash_efbf1b0ed5 {
-     color:red
+    #hash-me-id_hash_151702aef0 {
+      color: red;
     }|})
-    let update_sheet_lazy_fn_x__007___efbf1b0ed5__group_1 =
+    let update_sheet_lazy_fn_x__007___151702aef0__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__007___efbf1b0ed5__0
+        (Inline_css.Private.update_stylesheet sheet_x__007___151702aef0__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.hash-me_hash_efbf1b0ed5 {
-     color:black
+    .hash-me_hash_151702aef0 {
+      color: black;
     }|})
     |xxx}]
 ;;
@@ -784,7 +777,11 @@ let%test_unit "ordering of mapping iteration is the same as the css string." =
         (List.map ids ~f:(fun identifier -> [%string ".%{identifier} {  }"]))
     in
     let style_sheet =
-      Stylesheet.of_string css_string |> Ppx_css.Stable_stylesheet.of_stylesheet
+      Css_parser.(
+        parse_stylesheet
+          ~parsing_config:Parsing_config.raise_on_recoverable_errors
+          css_string)
+      |> Ppx_css.Stable_stylesheet.of_stylesheet
     in
     let traversed_ids = ref Reversed_list.[] in
     Ppx_css.For_testing.map_style_sheet
@@ -817,15 +814,16 @@ let%expect_test "unused [~dont_hash] target warning" =
 
 module%test [@name "css_inliner_tests"] _ = struct
   let test_sig_and_struct s =
-    let struct_ =
+    let%tydi { ml_file = struct_; css_string_for_testing = _ } =
       For_css_inliner.gen_struct
         ~dont_hash:String.Set.empty
         ~css_string:s
         ~dont_hash_prefixes:[]
-        ~stylesheet_location:Location.none
+        ~stylesheet_location:loc
         ~lazy_loading_optimization:Ppx_css_syntax.Preprocess_arguments.Lazy_graph
+        ~disable_hashing:false
     in
-    let sig_ = For_css_inliner.gen_sig s in
+    let sig_ = For_css_inliner.gen_sig ~stylesheet_location:loc s in
     print_endline "==struct==";
     print_endline struct_;
     print_endline "==sig==";
@@ -851,31 +849,31 @@ module%test [@name "css_inliner_tests"] _ = struct
             [@@@ocaml.warning "-60"]
             module Ppx_css_hoister_do_not_collide =
               struct
-                let sheet_x__008___6f26622dd7__0 =
+                let sheet_x__008___414385fefe__0 =
                   let sheet = Inline_css.Private.create_stylesheet () in
                   Inline_css.Private.append_stylesheet sheet; sheet
-                let sheet_x__008___6f26622dd7__1 =
+                let sheet_x__008___414385fefe__1 =
                   let sheet = Inline_css.Private.create_stylesheet () in
                   Inline_css.Private.append_stylesheet sheet; sheet
-                let update_sheet_lazy_fn_x__008___6f26622dd7__group_0 =
+                let update_sheet_lazy_fn_x__008___414385fefe__group_0 =
                   lazy
                     (Inline_css.Private.update_stylesheet
-                       sheet_x__008___6f26622dd7__0
+                       sheet_x__008___414385fefe__0
                        {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_6f26622dd7 {
-       color:green
+      .a_hash_414385fefe {
+        color: green;
       }|})
-                let update_sheet_lazy_fn_x__008___6f26622dd7__group_1 =
+                let update_sheet_lazy_fn_x__008___414385fefe__group_1 =
                   lazy
                     (Inline_css.Private.update_stylesheet
-                       sheet_x__008___6f26622dd7__1
+                       sheet_x__008___414385fefe__1
                        {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.b_hash_6f26622dd7 {
-       color:white
+      .b_hash_414385fefe {
+        color: white;
       }|})
               end
           end
@@ -894,20 +892,20 @@ module%test [@name "css_inliner_tests"] _ = struct
         module Default : S =
           struct
             module For_referencing =
-              struct let a = {|a_hash_6f26622dd7|}
-                     let b = {|b_hash_6f26622dd7|} end
+              struct let a = {|a_hash_414385fefe|}
+                     let b = {|b_hash_414385fefe|} end
             let a =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___6f26622dd7__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|a_hash_6f26622dd7|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___414385fefe__group_0;
+                    Virtual_dom.Vdom.Attr.class_ {|a_hash_414385fefe|}))
             let b =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___6f26622dd7__group_1;
-                    Virtual_dom.Vdom.Attr.class_ {|b_hash_6f26622dd7|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___414385fefe__group_1;
+                    Virtual_dom.Vdom.Attr.class_ {|b_hash_414385fefe|}))
           end
         include Default
         let default : t = (module Default)
@@ -947,55 +945,55 @@ module%test [@name "css_inliner_tests"] _ = struct
             [@@@ocaml.warning "-60"]
             module Ppx_css_hoister_do_not_collide =
               struct
-                let sheet_x__008___6f26622dd7__0 =
+                let sheet_x__008___414385fefe__0 =
                   let sheet = Inline_css.Private.create_stylesheet () in
                   Inline_css.Private.append_stylesheet sheet; sheet
-                let sheet_x__008___6f26622dd7__1 =
+                let sheet_x__008___414385fefe__1 =
                   let sheet = Inline_css.Private.create_stylesheet () in
                   Inline_css.Private.append_stylesheet sheet; sheet
-                let update_sheet_lazy_fn_x__008___6f26622dd7__group_0 =
+                let update_sheet_lazy_fn_x__008___414385fefe__group_0 =
                   lazy
                     (Inline_css.Private.update_stylesheet
-                       sheet_x__008___6f26622dd7__0
+                       sheet_x__008___414385fefe__0
                        {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_6f26622dd7 {
-       color:green
+      .a_hash_414385fefe {
+        color: green;
       }|})
-                let update_sheet_lazy_fn_x__008___6f26622dd7__group_1 =
+                let update_sheet_lazy_fn_x__008___414385fefe__group_1 =
                   lazy
                     (Inline_css.Private.update_stylesheet
-                       sheet_x__008___6f26622dd7__1
+                       sheet_x__008___414385fefe__1
                        {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.b_hash_6f26622dd7 {
-       color:white
+      .b_hash_414385fefe {
+        color: white;
       }|})
-                let sheet_x__009___7087cb1e7f__0 =
+                let sheet_x__009___c9570a2a37__0 =
                   let sheet = Inline_css.Private.create_stylesheet () in
                   Inline_css.Private.append_stylesheet sheet; sheet
-                let sheet_x__009___7087cb1e7f__1 =
+                let sheet_x__009___c9570a2a37__1 =
                   let sheet = Inline_css.Private.create_stylesheet () in
                   Inline_css.Private.append_stylesheet sheet; sheet
-                let update_sheet_lazy_fn_x__009___7087cb1e7f__group_0 =
+                let update_sheet_lazy_fn_x__009___c9570a2a37__group_0 =
                   lazy
                     (Inline_css.Private.update_stylesheet
-                       sheet_x__009___7087cb1e7f__0
+                       sheet_x__009___c9570a2a37__0
                        {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_7087cb1e7f {
-       color:green
+      .a_hash_c9570a2a37 {
+        color: green;
       }|};
                      Inline_css.Private.update_stylesheet
-                       sheet_x__009___7087cb1e7f__1
+                       sheet_x__009___c9570a2a37__1
                        {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_7087cb1e7f {
-       color:white
+      .a_hash_c9570a2a37 {
+        color: white;
       }|})
               end
           end
@@ -1012,13 +1010,13 @@ module%test [@name "css_inliner_tests"] _ = struct
         type t = (module S)
         module Default : S =
           struct
-            module For_referencing = struct let a = {|a_hash_7087cb1e7f|} end
+            module For_referencing = struct let a = {|a_hash_c9570a2a37|} end
             let a =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__009___7087cb1e7f__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|a_hash_7087cb1e7f|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__009___c9570a2a37__group_0;
+                    Virtual_dom.Vdom.Attr.class_ {|a_hash_c9570a2a37|}))
           end
         include Default
         let default : t = (module Default)
@@ -1043,7 +1041,7 @@ module%test [@name "Variable setter creation"] _ = struct
       {|
 .a-class {
   --bg-color: white;
-  --fg-color: black
+  --fg-color: black;
 }
         |};
     [%expect
@@ -1126,7 +1124,7 @@ let%expect_test "apostrophe syntax" =
             let a = {|a|}
             let aa = {|aa|}
             let b = {|b|}
-            let bb = {|bb_hash_695293f60c|}
+            let bb = {|bb_hash_70849e24af|}
           end
         let a = Virtual_dom.Vdom.Attr.class_ {|a|}
         let aa = Virtual_dom.Vdom.Attr.class_ {|aa|}
@@ -1135,56 +1133,52 @@ let%expect_test "apostrophe syntax" =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__010___695293f60c__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|bb_hash_695293f60c|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__010___70849e24af__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|bb_hash_70849e24af|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__010___695293f60c__0 =
+    let sheet_x__010___70849e24af__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__010___695293f60c__1 =
+    let sheet_x__010___70849e24af__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__010___695293f60c__2 =
+    let sheet_x__010___70849e24af__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__010___695293f60c__3 =
+    let sheet_x__010___70849e24af__3 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      (Inline_css.Private.update_stylesheet sheet_x__010___695293f60c__0
+      (Inline_css.Private.update_stylesheet sheet_x__010___70849e24af__0
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.b {
-
+    .b {
     }|};
-       Inline_css.Private.update_stylesheet sheet_x__010___695293f60c__2
+       Inline_css.Private.update_stylesheet sheet_x__010___70849e24af__2
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a {
-
+    .a {
     }|});
-      Inline_css.Private.update_stylesheet sheet_x__010___695293f60c__3
+      Inline_css.Private.update_stylesheet sheet_x__010___70849e24af__3
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.aa {
-
+    .aa {
     }|}
-    let update_sheet_lazy_fn_x__010___695293f60c__group_0 =
+    let update_sheet_lazy_fn_x__010___70849e24af__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__010___695293f60c__1
+        (Inline_css.Private.update_stylesheet sheet_x__010___70849e24af__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.bb_hash_695293f60c {
-
+    .bb_hash_70849e24af {
     }|})
     |xxx}]
 ;;
@@ -1211,7 +1205,7 @@ let%expect_test "ppx_css hashes variables" =
    }
 
     .a {
-      background-color: var(--my-variable, default)
+      background-color: var(--my-variable, default);
 
     }
   |}];
@@ -1242,7 +1236,7 @@ let%expect_test "ppx_css hashes variables" =
                 match my_variable with
                 | None -> ppx_css_acc__012_
                 | Some ppx_css_value__013_ ->
-                    ({|--my-variable_hash_5e98bc0535|}, ppx_css_value__013_) ::
+                    ({|--my-variable_hash_66b0c989aa|}, ppx_css_value__013_) ::
                     ppx_css_acc__012_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__012_
             let set = ppx_css_variable_set__014_
@@ -1250,43 +1244,43 @@ let%expect_test "ppx_css hashes variables" =
           end
         module For_referencing =
           struct
-            let a = {|a_hash_5e98bc0535|}
-            let my_variable = {|--my-variable_hash_5e98bc0535|}
+            let a = {|a_hash_66b0c989aa|}
+            let my_variable = {|--my-variable_hash_66b0c989aa|}
           end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__011___5e98bc0535__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_5e98bc0535|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__011___66b0c989aa__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_66b0c989aa|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__011___5e98bc0535__0 =
+    let sheet_x__011___66b0c989aa__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__011___5e98bc0535__1 =
+    let sheet_x__011___66b0c989aa__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__011___5e98bc0535__0
+      Inline_css.Private.update_stylesheet sheet_x__011___66b0c989aa__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:root {
-     --my-variable_hash_5e98bc0535:green
+    :root {
+      --my-variable_hash_66b0c989aa: green;
     }|}
-    let update_sheet_lazy_fn_x__011___5e98bc0535__group_0 =
+    let update_sheet_lazy_fn_x__011___66b0c989aa__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__011___5e98bc0535__1
+        (Inline_css.Private.update_stylesheet sheet_x__011___66b0c989aa__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_5e98bc0535 {
-     background-color:var(--my-variable_hash_5e98bc0535,default)
+    .a_hash_66b0c989aa {
+      background-color: var(--my-variable_hash_66b0c989aa, default);
     }|})
     |xxx}]
 ;;
@@ -1302,7 +1296,7 @@ let%expect_test "nested variables" =
    }
 
     .navbar {
-      background-color: var(--a, var(--b, (var(--c))))
+      background-color: var(--a, var(--b, (var(--c))));
     }
   |}];
   [%expect
@@ -1336,19 +1330,19 @@ let%expect_test "nested variables" =
                 match a with
                 | None -> ppx_css_acc__016_
                 | Some ppx_css_value__017_ ->
-                    ({|--a_hash_cce96b76a8|}, ppx_css_value__017_) ::
+                    ({|--a_hash_577da54a4b|}, ppx_css_value__017_) ::
                     ppx_css_acc__016_ in
               let ppx_css_acc__016_ =
                 match b with
                 | None -> ppx_css_acc__016_
                 | Some ppx_css_value__017_ ->
-                    ({|--b_hash_cce96b76a8|}, ppx_css_value__017_) ::
+                    ({|--b_hash_577da54a4b|}, ppx_css_value__017_) ::
                     ppx_css_acc__016_ in
               let ppx_css_acc__016_ =
                 match c with
                 | None -> ppx_css_acc__016_
                 | Some ppx_css_value__017_ ->
-                    ({|--c_hash_cce96b76a8|}, ppx_css_value__017_) ::
+                    ({|--c_hash_577da54a4b|}, ppx_css_value__017_) ::
                     ppx_css_acc__016_ in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__016_
             let set = ppx_css_variable_set__018_
@@ -1356,47 +1350,47 @@ let%expect_test "nested variables" =
           end
         module For_referencing =
           struct
-            let a = {|--a_hash_cce96b76a8|}
-            let b = {|--b_hash_cce96b76a8|}
-            let c = {|--c_hash_cce96b76a8|}
-            let navbar = {|navbar_hash_cce96b76a8|}
+            let a = {|--a_hash_577da54a4b|}
+            let b = {|--b_hash_577da54a4b|}
+            let c = {|--c_hash_577da54a4b|}
+            let navbar = {|navbar_hash_577da54a4b|}
           end
         let navbar =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__015___cce96b76a8__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|navbar_hash_cce96b76a8|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__015___577da54a4b__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|navbar_hash_577da54a4b|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__015___cce96b76a8__0 =
+    let sheet_x__015___577da54a4b__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__015___cce96b76a8__1 =
+    let sheet_x__015___577da54a4b__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__015___cce96b76a8__0
+      Inline_css.Private.update_stylesheet sheet_x__015___577da54a4b__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:root {
-     --a_hash_cce96b76a8:green;
-     --b_hash_cce96b76a8:green;
-     --c_hash_cce96b76a8:green
+    :root {
+      --a_hash_577da54a4b: green;
+      --b_hash_577da54a4b: green;
+      --c_hash_577da54a4b: green;
     }|}
-    let update_sheet_lazy_fn_x__015___cce96b76a8__group_0 =
+    let update_sheet_lazy_fn_x__015___577da54a4b__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__015___cce96b76a8__1
+        (Inline_css.Private.update_stylesheet sheet_x__015___577da54a4b__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.navbar_hash_cce96b76a8 {
-     background-color:var(--a_hash_cce96b76a8,var(--b_hash_cce96b76a8,(var(--c_hash_cce96b76a8))))
+    .navbar_hash_577da54a4b {
+      background-color: var(--a_hash_577da54a4b, var(--b_hash_577da54a4b, (var(--c_hash_577da54a4b))));
     }|})
     |xxx}]
 ;;
@@ -1412,32 +1406,7 @@ let%expect_test "Does not hash invalid places for selectors." =
     }
   |}];
   [%expect
-    {xxx|
-    [@@@ocaml.warning "-32"]
-    let __type_info_for_ppx_css :
-      ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
-    module type S  = sig module For_referencing : sig  end end
-    type t = (module S)
-    module Default : S = struct module For_referencing = struct  end end
-    include Default
-    let default : t = (module Default)
-
-    Hoisted module:
-
-    let sheet_x__019___e11edcd4a7__0 =
-      let sheet = Inline_css.Private.create_stylesheet () in
-      Inline_css.Private.append_stylesheet sheet; sheet
-    let () =
-      Inline_css.Private.update_stylesheet sheet_x__019___e11edcd4a7__0
-        {|
-    /* _none_ */
-
-    has(.a) {
-     background-color::has(.a);
-     background-color:has(.a)
-    }|}
-    |xxx}]
+    {xxx| Error while parsing selector. Expected start of type selector but got FUNCTION(has) |xxx}]
 ;;
 
 let%expect_test "collision of names between ids and classes results in an alert." =
@@ -1466,49 +1435,47 @@ let%expect_test "collision of names between ids and classes results in an alert.
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let foo = {|foo_hash_ea252eb70b|} end
+        module For_referencing = struct let foo = {|foo_hash_b313a0854a|} end
         let foo = Virtual_dom.Vdom.Attr.empty
         let foo_class =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__020___ea252eb70b__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|foo_hash_ea252eb70b|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__019___b313a0854a__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|foo_hash_b313a0854a|}))
         let foo_id =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__020___ea252eb70b__group_0;
-                Virtual_dom.Vdom.Attr.id {|foo_hash_ea252eb70b|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__019___b313a0854a__group_0;
+                Virtual_dom.Vdom.Attr.id {|foo_hash_b313a0854a|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__020___ea252eb70b__0 =
+    let sheet_x__019___b313a0854a__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__020___ea252eb70b__1 =
+    let sheet_x__019___b313a0854a__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__020___ea252eb70b__group_0 =
+    let update_sheet_lazy_fn_x__019___b313a0854a__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__020___ea252eb70b__0
+        (Inline_css.Private.update_stylesheet sheet_x__019___b313a0854a__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#foo_hash_ea252eb70b {
-
+    #foo_hash_b313a0854a {
     }|})
-    let update_sheet_lazy_fn_x__020___ea252eb70b__group_1 =
+    let update_sheet_lazy_fn_x__019___b313a0854a__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__020___ea252eb70b__1
+        (Inline_css.Private.update_stylesheet sheet_x__019___b313a0854a__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.foo_hash_ea252eb70b {
-
+    .foo_hash_b313a0854a {
     }|})
     |xxx}]
 ;;
@@ -1555,49 +1522,47 @@ let%expect_test "behavior on sharing of id and class names" =
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let a = {|a_hash_c775f164d0|} end
+        module For_referencing = struct let a = {|a_hash_ff77223dd5|} end
         let a = Virtual_dom.Vdom.Attr.empty
         let a_class =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__022___c775f164d0__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_c775f164d0|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__021___ff77223dd5__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_ff77223dd5|}))
         let a_id =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__022___c775f164d0__group_0;
-                Virtual_dom.Vdom.Attr.id {|a_hash_c775f164d0|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__021___ff77223dd5__group_0;
+                Virtual_dom.Vdom.Attr.id {|a_hash_ff77223dd5|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__022___c775f164d0__0 =
+    let sheet_x__021___ff77223dd5__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__022___c775f164d0__1 =
+    let sheet_x__021___ff77223dd5__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__022___c775f164d0__group_0 =
+    let update_sheet_lazy_fn_x__021___ff77223dd5__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__022___c775f164d0__1
+        (Inline_css.Private.update_stylesheet sheet_x__021___ff77223dd5__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#a_hash_c775f164d0 {
-
+    #a_hash_ff77223dd5 {
     }|})
-    let update_sheet_lazy_fn_x__022___c775f164d0__group_1 =
+    let update_sheet_lazy_fn_x__021___ff77223dd5__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__022___c775f164d0__0
+        (Inline_css.Private.update_stylesheet sheet_x__021___ff77223dd5__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_c775f164d0 {
-
+    .a_hash_ff77223dd5 {
     }|})
     |xxx}];
   test_sig
@@ -1663,16 +1628,16 @@ let%expect_test "dont_hash" =
       struct
         module Variables =
           struct
-            let ppx_css_variable_set__026_ ?a_variable () =
-              let ppx_css_acc__024_ = [] in
-              let ppx_css_acc__024_ =
+            let ppx_css_variable_set__025_ ?a_variable () =
+              let ppx_css_acc__023_ = [] in
+              let ppx_css_acc__023_ =
                 match a_variable with
-                | None -> ppx_css_acc__024_
-                | Some ppx_css_value__025_ ->
-                    ({|--a-variable|}, ppx_css_value__025_) :: ppx_css_acc__024_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__024_
-            let set = ppx_css_variable_set__026_
-            let set_all ~a_variable = ppx_css_variable_set__026_ () ~a_variable
+                | None -> ppx_css_acc__023_
+                | Some ppx_css_value__024_ ->
+                    ({|--a-variable|}, ppx_css_value__024_) :: ppx_css_acc__023_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__023_
+            let set = ppx_css_variable_set__025_
+            let set_all ~a_variable = ppx_css_variable_set__025_ () ~a_variable
           end
         module For_referencing =
           struct
@@ -1688,26 +1653,25 @@ let%expect_test "dont_hash" =
 
     Hoisted module:
 
-    let sheet_x__023___8aa77c6364__0 =
+    let sheet_x__022___a5675496ea__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__023___8aa77c6364__1 =
+    let sheet_x__022___a5675496ea__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__023___8aa77c6364__0
+      Inline_css.Private.update_stylesheet sheet_x__022___a5675496ea__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a-class {
-     --a-variable:red
+    .a-class {
+      --a-variable: red;
     }|};
-      Inline_css.Private.update_stylesheet sheet_x__023___8aa77c6364__1
+      Inline_css.Private.update_stylesheet sheet_x__022___a5675496ea__1
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#an_id {
-
+    #an_id {
     }|}
     |xxx}]
 ;;
@@ -1790,54 +1754,54 @@ let%expect_test "dont_hash_prefixes" =
       struct
         module Variables =
           struct
-            let ppx_css_variable_set__030_ ?bg_color ?fg_color () =
-              let ppx_css_acc__028_ = [] in
-              let ppx_css_acc__028_ =
+            let ppx_css_variable_set__029_ ?bg_color ?fg_color () =
+              let ppx_css_acc__027_ = [] in
+              let ppx_css_acc__027_ =
                 match bg_color with
-                | None -> ppx_css_acc__028_
-                | Some ppx_css_value__029_ ->
-                    ({|--bg-color|}, ppx_css_value__029_) :: ppx_css_acc__028_ in
-              let ppx_css_acc__028_ =
+                | None -> ppx_css_acc__027_
+                | Some ppx_css_value__028_ ->
+                    ({|--bg-color|}, ppx_css_value__028_) :: ppx_css_acc__027_ in
+              let ppx_css_acc__027_ =
                 match fg_color with
-                | None -> ppx_css_acc__028_
-                | Some ppx_css_value__029_ ->
-                    ({|--fg-color_hash_9ac909b280|}, ppx_css_value__029_) ::
-                    ppx_css_acc__028_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__028_
-            let set = ppx_css_variable_set__030_
+                | None -> ppx_css_acc__027_
+                | Some ppx_css_value__028_ ->
+                    ({|--fg-color_hash_853e9b013a|}, ppx_css_value__028_) ::
+                    ppx_css_acc__027_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__027_
+            let set = ppx_css_variable_set__029_
             let set_all ~bg_color ~fg_color =
-              ppx_css_variable_set__030_ () ~bg_color ~fg_color
+              ppx_css_variable_set__029_ () ~bg_color ~fg_color
           end
         module For_referencing =
           struct
-            let a = {|a_hash_9ac909b280|}
+            let a = {|a_hash_853e9b013a|}
             let bg_color = {|--bg-color|}
-            let fg_color = {|--fg-color_hash_9ac909b280|}
+            let fg_color = {|--fg-color_hash_853e9b013a|}
           end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__027___9ac909b280__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_9ac909b280|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__026___853e9b013a__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_853e9b013a|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__027___9ac909b280__0 =
+    let sheet_x__026___853e9b013a__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__027___9ac909b280__group_0 =
+    let update_sheet_lazy_fn_x__026___853e9b013a__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__027___9ac909b280__0
+        (Inline_css.Private.update_stylesheet sheet_x__026___853e9b013a__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_9ac909b280 {
-     --bg-color:red;
-     --fg-color_hash_9ac909b280:blue
+    .a_hash_853e9b013a {
+      --bg-color: red;
+      --fg-color_hash_853e9b013a: blue;
     }|})
     |xxx}]
 ;;
@@ -1906,70 +1870,70 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
       struct
         module Variables =
           struct
-            let ppx_css_variable_set__034_ ?aa ?bb () =
-              let ppx_css_acc__032_ = [] in
-              let ppx_css_acc__032_ =
+            let ppx_css_variable_set__033_ ?aa ?bb () =
+              let ppx_css_acc__031_ = [] in
+              let ppx_css_acc__031_ =
                 match aa with
-                | None -> ppx_css_acc__032_
-                | Some ppx_css_value__033_ -> ({|--aa|}, ppx_css_value__033_) ::
-                    ppx_css_acc__032_ in
-              let ppx_css_acc__032_ =
+                | None -> ppx_css_acc__031_
+                | Some ppx_css_value__032_ -> ({|--aa|}, ppx_css_value__032_) ::
+                    ppx_css_acc__031_ in
+              let ppx_css_acc__031_ =
                 match bb with
-                | None -> ppx_css_acc__032_
-                | Some ppx_css_value__033_ -> ({|--bb|}, ppx_css_value__033_) ::
-                    ppx_css_acc__032_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__032_
-            let set = ppx_css_variable_set__034_
-            let set_all ~aa ~bb = ppx_css_variable_set__034_ () ~aa ~bb
+                | None -> ppx_css_acc__031_
+                | Some ppx_css_value__032_ -> ({|--bb|}, ppx_css_value__032_) ::
+                    ppx_css_acc__031_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__031_
+            let set = ppx_css_variable_set__033_
+            let set_all ~aa ~bb = ppx_css_variable_set__033_ () ~aa ~bb
           end
         module For_referencing =
           struct
-            let a = {|a_hash_d0050e0025|}
+            let a = {|a_hash_908634fc45|}
             let aa = {|--aa|}
-            let b = {|b_hash_d0050e0025|}
+            let b = {|b_hash_908634fc45|}
             let bb = {|--bb|}
           end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__031___d0050e0025__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_d0050e0025|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__030___908634fc45__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_908634fc45|}))
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__031___d0050e0025__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_d0050e0025|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__030___908634fc45__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_908634fc45|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__031___d0050e0025__0 =
+    let sheet_x__030___908634fc45__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__031___d0050e0025__1 =
+    let sheet_x__030___908634fc45__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__031___d0050e0025__group_0 =
+    let update_sheet_lazy_fn_x__030___908634fc45__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__031___d0050e0025__0
+        (Inline_css.Private.update_stylesheet sheet_x__030___908634fc45__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_d0050e0025 {
-     --aa:red
+    .a_hash_908634fc45 {
+      --aa: red;
     }|})
-    let update_sheet_lazy_fn_x__031___d0050e0025__group_1 =
+    let update_sheet_lazy_fn_x__030___908634fc45__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__031___d0050e0025__1
+        (Inline_css.Private.update_stylesheet sheet_x__030___908634fc45__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.b_hash_d0050e0025 {
-     --bb:blue
+    .b_hash_908634fc45 {
+      --bb: blue;
     }|})
     |xxx}]
 ;;
@@ -2029,16 +1993,16 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
       struct
         module Variables =
           struct
-            let ppx_css_variable_set__038_ ?cm_bg_color () =
-              let ppx_css_acc__036_ = [] in
-              let ppx_css_acc__036_ =
+            let ppx_css_variable_set__037_ ?cm_bg_color () =
+              let ppx_css_acc__035_ = [] in
+              let ppx_css_acc__035_ =
                 match cm_bg_color with
-                | None -> ppx_css_acc__036_
-                | Some ppx_css_value__037_ ->
-                    ({|--cm-bg-color|}, ppx_css_value__037_) :: ppx_css_acc__036_ in
-              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__036_
-            let set = ppx_css_variable_set__038_
-            let set_all ~cm_bg_color = ppx_css_variable_set__038_ () ~cm_bg_color
+                | None -> ppx_css_acc__035_
+                | Some ppx_css_value__036_ ->
+                    ({|--cm-bg-color|}, ppx_css_value__036_) :: ppx_css_acc__035_ in
+              Virtual_dom.Vdom.Attr.__css_vars_no_kebabs ppx_css_acc__035_
+            let set = ppx_css_variable_set__037_
+            let set_all ~cm_bg_color = ppx_css_variable_set__037_ () ~cm_bg_color
           end
         module For_referencing = struct let cm_bg_color = {|--cm-bg-color|} end
       end
@@ -2047,21 +2011,21 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
 
     Hoisted module:
 
-    let sheet_x__035___4c842aeb2d__0 =
+    let sheet_x__034___d115ed8389__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__035___4c842aeb2d__0
+      Inline_css.Private.update_stylesheet sheet_x__034___d115ed8389__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:root {
-     color:var(--cm-bg-color)
+    :root {
+      color: var(--cm-bg-color);
     }|}
     |xxx}]
 ;;
 
-let%expect_test "Scary attributes shouldn't be hashed and should throw" =
+let%expect_test "Scary attributes shouldn't be hashed even if they look like selectors" =
   test_struct
     [%expr
       stylesheet
@@ -2071,7 +2035,48 @@ let%expect_test "Scary attributes shouldn't be hashed and should throw" =
         div:qwerty(.t .q .r) {}
        |}];
   [%expect
-    {xxx| Unsafe use of classes or ids ["d"; "e"; "f"] within unknown function 'asdf'. Please contact the owners of [ppx_css] so that this CSS function can be audited and added to the allow list in order to resolve this bug. |xxx}]
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+    module type S  = sig module For_referencing : sig  end end
+    type t = (module S)
+    module Default : S = struct module For_referencing = struct  end end
+    include Default
+    let default : t = (module Default)
+
+    Hoisted module:
+
+    let sheet_x__038___2e70e65706__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__038___2e70e65706__1 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__038___2e70e65706__2 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let () =
+      (Inline_css.Private.update_stylesheet sheet_x__038___2e70e65706__0
+         {|
+    /* app/foo/foo.ml */
+
+    div:asdf(".m .n .o") {
+    }|};
+       Inline_css.Private.update_stylesheet sheet_x__038___2e70e65706__1
+         {|
+    /* app/foo/foo.ml */
+
+    div:asdf(.d .e .f) {
+    }|});
+      Inline_css.Private.update_stylesheet sheet_x__038___2e70e65706__2
+        {|
+    /* app/foo/foo.ml */
+
+    div:qwerty(.t .q .r) {
+    }|}
+    |xxx}]
 ;;
 
 let%expect_test "Scary attributes shouldn't be hashed" =
@@ -2097,36 +2102,33 @@ let%expect_test "Scary attributes shouldn't be hashed" =
 
     Hoisted module:
 
-    let sheet_x__039___d08c354fd0__0 =
+    let sheet_x__039___30526555a5__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__039___d08c354fd0__1 =
+    let sheet_x__039___30526555a5__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__039___d08c354fd0__2 =
+    let sheet_x__039___30526555a5__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      (Inline_css.Private.update_stylesheet sheet_x__039___d08c354fd0__0
+      (Inline_css.Private.update_stylesheet sheet_x__039___30526555a5__0
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
     div[has=".x .y .z"] {
-
     }|};
-       Inline_css.Private.update_stylesheet sheet_x__039___d08c354fd0__1
+       Inline_css.Private.update_stylesheet sheet_x__039___30526555a5__1
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div[attr=".a .b .c"] {
-
+    div[attr='.a .b .c'] {
     }|});
-      Inline_css.Private.update_stylesheet sheet_x__039___d08c354fd0__2
+      Inline_css.Private.update_stylesheet sheet_x__039___30526555a5__2
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
     div[href=#] {
-
     }|}
     |xxx}]
 ;;
@@ -2167,74 +2169,70 @@ let%expect_test "classname and id's with the same name, but different auto-forci
     module Default : S =
       struct
         module For_referencing =
-          struct let a = {|a_hash_14cc7e76e2|}
-                 let b = {|b_hash_14cc7e76e2|} end
+          struct let a = {|a_hash_34f4bb1372|}
+                 let b = {|b_hash_34f4bb1372|} end
         let a = Virtual_dom.Vdom.Attr.empty
         let a_class =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__040___14cc7e76e2__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_14cc7e76e2|}))
-        let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_14cc7e76e2|}
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__040___34f4bb1372__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_34f4bb1372|}))
+        let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_34f4bb1372|}
         let b = Virtual_dom.Vdom.Attr.empty
-        let b_class = Virtual_dom.Vdom.Attr.class_ {|b_hash_14cc7e76e2|}
+        let b_class = Virtual_dom.Vdom.Attr.class_ {|b_hash_34f4bb1372|}
         let b_id =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__040___14cc7e76e2__group_0;
-                Virtual_dom.Vdom.Attr.id {|b_hash_14cc7e76e2|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__040___34f4bb1372__group_0;
+                Virtual_dom.Vdom.Attr.id {|b_hash_34f4bb1372|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__040___14cc7e76e2__0 =
+    let sheet_x__040___34f4bb1372__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__040___14cc7e76e2__1 =
+    let sheet_x__040___34f4bb1372__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__040___14cc7e76e2__2 =
+    let sheet_x__040___34f4bb1372__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__040___14cc7e76e2__3 =
+    let sheet_x__040___34f4bb1372__3 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__040___14cc7e76e2__0
+      Inline_css.Private.update_stylesheet sheet_x__040___34f4bb1372__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:not(#a_hash_14cc7e76e2) {
-
+    :not(#a_hash_34f4bb1372) {
     }|};
-      Inline_css.Private.update_stylesheet sheet_x__040___14cc7e76e2__2
+      Inline_css.Private.update_stylesheet sheet_x__040___34f4bb1372__2
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:not(.b_hash_14cc7e76e2) {
-
+    :not(.b_hash_34f4bb1372) {
     }|}
-    let update_sheet_lazy_fn_x__040___14cc7e76e2__group_0 =
+    let update_sheet_lazy_fn_x__040___34f4bb1372__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__040___14cc7e76e2__3
+        (Inline_css.Private.update_stylesheet sheet_x__040___34f4bb1372__3
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *#b_hash_14cc7e76e2 {
-
+    #b_hash_34f4bb1372 {
     }|})
-    let update_sheet_lazy_fn_x__040___14cc7e76e2__group_1 =
+    let update_sheet_lazy_fn_x__040___34f4bb1372__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__040___14cc7e76e2__1
+        (Inline_css.Private.update_stylesheet sheet_x__040___34f4bb1372__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_14cc7e76e2 {
-
+    .a_hash_34f4bb1372 {
     }|})
     |xxx}]
 ;;
@@ -2272,68 +2270,65 @@ let%expect_test "classnames and items - transitive" =
     module Default : S =
       struct
         module For_referencing =
-          struct let a = {|a_hash_c14da1c08e|}
-                 let b = {|b_hash_c14da1c08e|} end
+          struct let a = {|a_hash_dba1924c19|}
+                 let b = {|b_hash_dba1924c19|} end
         let a = Virtual_dom.Vdom.Attr.empty
         let a_class =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__041___c14da1c08e__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_c14da1c08e|}))
-        let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_c14da1c08e|}
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__041___dba1924c19__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_dba1924c19|}))
+        let a_id = Virtual_dom.Vdom.Attr.id {|a_hash_dba1924c19|}
         let b = Virtual_dom.Vdom.Attr.empty
         let b_class =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__041___c14da1c08e__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_c14da1c08e|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__041___dba1924c19__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_dba1924c19|}))
         let b_id =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__041___c14da1c08e__group_0;
-                Virtual_dom.Vdom.Attr.id {|b_hash_c14da1c08e|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__041___dba1924c19__group_0;
+                Virtual_dom.Vdom.Attr.id {|b_hash_dba1924c19|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__041___c14da1c08e__0 =
+    let sheet_x__041___dba1924c19__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__041___c14da1c08e__1 =
+    let sheet_x__041___dba1924c19__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__041___c14da1c08e__2 =
+    let sheet_x__041___dba1924c19__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__041___c14da1c08e__group_0 =
+    let update_sheet_lazy_fn_x__041___dba1924c19__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__041___c14da1c08e__2
+        (Inline_css.Private.update_stylesheet sheet_x__041___dba1924c19__2
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:not(#a_hash_c14da1c08e) *#b_hash_c14da1c08e {
-
+    :not(#a_hash_dba1924c19) #b_hash_dba1924c19 {
     }|})
-    let update_sheet_lazy_fn_x__041___c14da1c08e__group_1 =
+    let update_sheet_lazy_fn_x__041___dba1924c19__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__041___c14da1c08e__0
+        (Inline_css.Private.update_stylesheet sheet_x__041___dba1924c19__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_c14da1c08e *.b_hash_c14da1c08e {
-
+    .a_hash_dba1924c19 .b_hash_dba1924c19 {
     }|};
-         Inline_css.Private.update_stylesheet sheet_x__041___c14da1c08e__1
+         Inline_css.Private.update_stylesheet sheet_x__041___dba1924c19__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:not(.a_hash_c14da1c08e) *.b_hash_c14da1c08e {
-
+    :not(.a_hash_dba1924c19) .b_hash_dba1924c19 {
     }|})
     |xxx}]
 ;;
@@ -2345,8 +2340,6 @@ let%expect_test "String attrs with identifiers should not be hashed" =
         {|
                 div:asdf('.a .b .c') { }
                 div:asdf(".a .b .c") { }
-                div:has('.a .b .c') { }
-                div:has(".a .b .c") { }
                 div[foo=".a .b .c"] { }
                 div[bar='.a .b .c'] { }
        |}];
@@ -2364,66 +2357,42 @@ let%expect_test "String attrs with identifiers should not be hashed" =
 
     Hoisted module:
 
-    let sheet_x__042___b64b2242d6__0 =
+    let sheet_x__042___d29657b04e__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__042___b64b2242d6__1 =
+    let sheet_x__042___d29657b04e__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__042___b64b2242d6__2 =
+    let sheet_x__042___d29657b04e__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__042___b64b2242d6__3 =
-      let sheet = Inline_css.Private.create_stylesheet () in
-      Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__042___b64b2242d6__4 =
-      let sheet = Inline_css.Private.create_stylesheet () in
-      Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__042___b64b2242d6__5 =
+    let sheet_x__042___d29657b04e__3 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      ((((Inline_css.Private.update_stylesheet sheet_x__042___b64b2242d6__0
-            {|
-    /* _none_ */
-
-    div:asdf(".a .b .c") {
-
-    }|};
-          Inline_css.Private.update_stylesheet sheet_x__042___b64b2242d6__1
-            {|
-    /* _none_ */
-
-    div:asdf(".a .b .c") {
-
-    }|});
-         Inline_css.Private.update_stylesheet sheet_x__042___b64b2242d6__2
-           {|
-    /* _none_ */
-
-    div:has(".a .b .c") {
-
-    }|});
-        Inline_css.Private.update_stylesheet sheet_x__042___b64b2242d6__3
+      ((Inline_css.Private.update_stylesheet sheet_x__042___d29657b04e__0
           {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div:has(".a .b .c") {
+    div:asdf('.a .b .c') {
+    }|};
+        Inline_css.Private.update_stylesheet sheet_x__042___d29657b04e__1
+          {|
+    /* app/foo/foo.ml */
 
+    div:asdf(".a .b .c") {
     }|});
-       Inline_css.Private.update_stylesheet sheet_x__042___b64b2242d6__4
+       Inline_css.Private.update_stylesheet sheet_x__042___d29657b04e__2
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
     div[foo=".a .b .c"] {
-
     }|});
-      Inline_css.Private.update_stylesheet sheet_x__042___b64b2242d6__5
+      Inline_css.Private.update_stylesheet sheet_x__042___d29657b04e__3
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div[bar=".a .b .c"] {
-
+    div[bar='.a .b .c'] {
     }|}
     |xxx}]
 ;;
@@ -2479,81 +2448,77 @@ let%expect_test "Known  css functions with identifiers should hash" =
       struct
         module For_referencing =
           struct
-            let a = {|a_hash_b185384f4b|}
-            let b = {|b_hash_b185384f4b|}
-            let c = {|c_hash_b185384f4b|}
-            let d = {|d_hash_b185384f4b|}
-            let e = {|e_hash_b185384f4b|}
-            let f = {|f_hash_b185384f4b|}
-            let g = {|g_hash_b185384f4b|}
-            let h = {|h_hash_b185384f4b|}
+            let a = {|a_hash_686651dd8b|}
+            let b = {|b_hash_686651dd8b|}
+            let c = {|c_hash_686651dd8b|}
+            let d = {|d_hash_686651dd8b|}
+            let e = {|e_hash_686651dd8b|}
+            let f = {|f_hash_686651dd8b|}
+            let g = {|g_hash_686651dd8b|}
+            let h = {|h_hash_686651dd8b|}
           end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__043___b185384f4b__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_b185384f4b|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__043___686651dd8b__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_686651dd8b|}))
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__043___b185384f4b__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_b185384f4b|}))
-        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_b185384f4b|}
-        let d = Virtual_dom.Vdom.Attr.class_ {|d_hash_b185384f4b|}
-        let e = Virtual_dom.Vdom.Attr.class_ {|e_hash_b185384f4b|}
-        let f = Virtual_dom.Vdom.Attr.class_ {|f_hash_b185384f4b|}
-        let g = Virtual_dom.Vdom.Attr.class_ {|g_hash_b185384f4b|}
-        let h = Virtual_dom.Vdom.Attr.class_ {|h_hash_b185384f4b|}
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__043___686651dd8b__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_686651dd8b|}))
+        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_686651dd8b|}
+        let d = Virtual_dom.Vdom.Attr.class_ {|d_hash_686651dd8b|}
+        let e = Virtual_dom.Vdom.Attr.class_ {|e_hash_686651dd8b|}
+        let f = Virtual_dom.Vdom.Attr.class_ {|f_hash_686651dd8b|}
+        let g = Virtual_dom.Vdom.Attr.class_ {|g_hash_686651dd8b|}
+        let h = Virtual_dom.Vdom.Attr.class_ {|h_hash_686651dd8b|}
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__043___b185384f4b__0 =
+    let sheet_x__043___686651dd8b__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__043___b185384f4b__1 =
+    let sheet_x__043___686651dd8b__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__043___b185384f4b__2 =
+    let sheet_x__043___686651dd8b__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__043___b185384f4b__3 =
+    let sheet_x__043___686651dd8b__3 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      (Inline_css.Private.update_stylesheet sheet_x__043___b185384f4b__1
+      (Inline_css.Private.update_stylesheet sheet_x__043___686651dd8b__1
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div:not(.c_hash_b185384f4b+*.d_hash_b185384f4b) {
-
+    div:not(.c_hash_686651dd8b + .d_hash_686651dd8b) {
     }|};
-       Inline_css.Private.update_stylesheet sheet_x__043___b185384f4b__2
+       Inline_css.Private.update_stylesheet sheet_x__043___686651dd8b__2
          {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div:where(.e_hash_b185384f4b~*.f_hash_b185384f4b) {
-
+    div:where(.e_hash_686651dd8b ~ .f_hash_686651dd8b) {
     }|});
-      Inline_css.Private.update_stylesheet sheet_x__043___b185384f4b__3
+      Inline_css.Private.update_stylesheet sheet_x__043___686651dd8b__3
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div:is(.g_hash_b185384f4b>*.h_hash_b185384f4b) {
-
+    div:is(.g_hash_686651dd8b > .h_hash_686651dd8b) {
     }|}
-    let update_sheet_lazy_fn_x__043___b185384f4b__group_0 =
+    let update_sheet_lazy_fn_x__043___686651dd8b__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__043___b185384f4b__0
+        (Inline_css.Private.update_stylesheet sheet_x__043___686651dd8b__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    div:has(.a_hash_b185384f4b *.b_hash_b185384f4b) {
-
+    div:has(.a_hash_686651dd8b .b_hash_686651dd8b) {
     }|})
     |xxx}]
 ;;
@@ -2580,38 +2545,24 @@ let%expect_test "Doesn't throw on pseudoclasses without selectors" =
 
     Hoisted module:
 
-    let sheet_x__044___04bf3bff1c__0 =
+    let sheet_x__044___60b0c55bdb__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__044___04bf3bff1c__1 =
+    let sheet_x__044___60b0c55bdb__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__044___04bf3bff1c__0
+      Inline_css.Private.update_stylesheet sheet_x__044___60b0c55bdb__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
     div:asdf() {
-
     }|};
-      Inline_css.Private.update_stylesheet sheet_x__044___04bf3bff1c__1
+      Inline_css.Private.update_stylesheet sheet_x__044___60b0c55bdb__1
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
     div:bar {
-
     }|}
     |xxx}]
-;;
-
-let%expect_test "Unknown css functions with identifiers should error out" =
-  test_struct
-    [%expr
-      stylesheet
-        {|
-                div:asdf(.a .b .c) {
-                }
-       |}];
-  [%expect
-    {xxx| Unsafe use of classes or ids ["a"; "b"; "c"] within unknown function 'asdf'. Please contact the owners of [ppx_css] so that this CSS function can be audited and added to the allow list in order to resolve this bug. |xxx}]
 ;;

@@ -7,7 +7,11 @@ open! Inline_css
 
    In a real application, you wouldn't need to do this, because you'd
    be using the components in your app. *)
-let () = Callback.register "keeping this value alive" Inline_css_example_lib.app
+let () =
+  (Callback.register [@ocaml.alert "-unsafe_multidomain"])
+    "keeping this value alive"
+    Inline_css_example_lib.app
+;;
 
 let to_string () =
   Js_of_ocaml.Js.Unsafe.js_expr

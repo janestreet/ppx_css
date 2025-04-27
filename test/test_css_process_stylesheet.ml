@@ -7,9 +7,12 @@ module%test Process_stylesheet = struct
   open Ppx_css.For_testing.Traverse_css
 
   let test (s : string) =
-    let stylesheet = Css_jane.Stylesheet.of_string s in
+    let stylesheet =
+      Css_parser.(
+        parse_stylesheet ~parsing_config:Parsing_config.raise_on_recoverable_errors s)
+    in
     let processed_stylesheet = split_layers stylesheet in
-    Css_jane.Stylesheet.to_string_hum processed_stylesheet |> print_endline
+    Css_parser.stylesheet_to_string processed_stylesheet |> print_endline
   ;;
 
   let%expect_test "Splits layer [At_rule]s and maintains order" =
@@ -53,70 +56,39 @@ module%test Process_stylesheet = struct
     |};
     [%expect
       {|
-      @layer test-layer{
-       *.inside-layer1 {
-
-       }
-
-      }
-
-
-      @layer test-layer{
-       *.inside-layer2 {
-
-       }
-
-      }
-
-
-      @layer test-layer{
-       *.inside-layer3 {
-
-       }
-
-      }
-
-
-      @layer test-layer{
-       *.inside-layer4 {
-
-       }
-
-      }
-
-
-      @layer test-layer{
-       *.inside-layer5 {
-        *.nested-layer-1 {
-
+      @layer test-layer {
+        .inside-layer1 {
         }
-
-       }
-
       }
-
-
-      @layer test-layer{
-       *.inside-layer5+*.a {
-
-       }
-
+      @layer test-layer {
+        .inside-layer2 {
+        }
       }
-
-
-      @layer another-layer{
-       *.class2 {
-
-       }
-
+      @layer test-layer {
+        .inside-layer3 {
+        }
       }
-
-
-      @layer another-layer{
-       *#id-inside {
-
-       }
-
+      @layer test-layer {
+        .inside-layer4 {
+        }
+      }
+      @layer test-layer {
+        .inside-layer5 {
+          .nested-layer-1 {
+          }
+        }
+      }
+      @layer test-layer {
+        .inside-layer5 + .a {
+        }
+      }
+      @layer another-layer {
+        .class2 {
+        }
+      }
+      @layer another-layer {
+        #id-inside {
+        }
       }
       |}]
   ;;
@@ -141,43 +113,25 @@ module%test Process_stylesheet = struct
     |};
     [%expect
       {|
-      @layer another-layer{
-       @layer nested-layer{
-        *.class2 {
-
+      @layer another-layer {
+        @layer nested-layer {
+          .class2 {
+          }
         }
-
-       }
-
-
       }
-
-
-      @layer another-layer{
-       @layer nested-layer{
-        *#id-inside {
-
+      @layer another-layer {
+        @layer nested-layer {
+          #id-inside {
+          }
         }
-
-       }
-
-
       }
-
-
-      @layer another-layer{
-       *.a {
-
-       }
-
+      @layer another-layer {
+        .a {
+        }
       }
-
-
-      @layer another-layer{
-       *.b {
-
-       }
-
+      @layer another-layer {
+        .b {
+        }
       }
       |}]
   ;;
@@ -223,50 +177,29 @@ module%test Process_stylesheet = struct
     |};
     [%expect
       {|
-      @media print{
-       *.inside-layer1 {
-
-       }
-
-       *.inside-layer2 {
-
-       }
-
-       *.inside-layer3 {
-
-       }
-
-       *.inside-layer4 {
-
-       }
-
-       *.inside-layer5 {
-        *.nested-layer-1 {
-
+      @media print {
+        .inside-layer1 {
         }
-
-       }
-
-       *.inside-layer5+*.a {
-
-       }
-
+        .inside-layer2 {
+        }
+        .inside-layer3 {
+        }
+        .inside-layer4 {
+        }
+        .inside-layer5 {
+          .nested-layer-1 {
+          }
+        }
+        .inside-layer5 + .a {
+        }
       }
-
-
-      @layer another-layer{
-       *.class2 {
-
-       }
-
+      @layer another-layer {
+        .class2 {
+        }
       }
-
-
-      @layer another-layer{
-       *#id-inside {
-
-       }
-
+      @layer another-layer {
+        #id-inside {
+        }
       }
       |}]
   ;;
@@ -307,49 +240,29 @@ module%test Process_stylesheet = struct
     |};
     [%expect
       {|
-      @layer test-layer{
-       *.inside-layer {
-
-       }
-
+      @layer test-layer {
+        .inside-layer {
+        }
       }
-
-
-      *.class {
-       *.inner_class {
-
-       }
-       ;
-       *.inner_class_2 {
-
-       }
-
+      .class {
+        .inner_class {
+        }
+        .inner_class_2 {
+        }
       }
-
       div {
-
       }
-
-      *.class *#id {
-
+      .class #id {
       }
-
-      *.class *.class2 {
-
+      .class .class2 {
       }
-
-      *.class *.class {
-       *.class2 {
-        *#id-inside {
-
+      .class .class {
+        .class2 {
+          #id-inside {
+          }
+          #inner-class {
+          }
         }
-        ;
-        *#inner-class {
-
-        }
-
-       }
-
       }
       |}]
   ;;

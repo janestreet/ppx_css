@@ -1,7 +1,8 @@
 open! Core
 open Ppxlib
 
-let loc = Location.none
+let loc = Test_util.loc_with_mock_name
+let () = Ppx_css_syntax.Preprocess_arguments.set_lazy_loading_optimization (Some true)
 
 (* This is a test case showing that PPX_CSS behaves correctly when there are many
    selectors attached to the same block of properties and that ppx_css hands off any
@@ -83,124 +84,124 @@ let%expect_test "Duplicated version" =
       struct
         module For_referencing =
           struct
-            let a = {|a_hash_5975ba6d79|}
-            let b = {|b_hash_5975ba6d79|}
-            let c = {|c_hash_5975ba6d79|}
-            let d = {|d_hash_5975ba6d79|}
+            let a = {|a_hash_1b742bd012|}
+            let b = {|b_hash_1b742bd012|}
+            let c = {|c_hash_1b742bd012|}
+            let d = {|d_hash_1b742bd012|}
           end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_2;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_5975ba6d79|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___1b742bd012__group_2;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_1b742bd012|}))
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_3;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_5975ba6d79|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___1b742bd012__group_3;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_1b742bd012|}))
         let c =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|c_hash_5975ba6d79|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___1b742bd012__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|c_hash_1b742bd012|}))
         let d =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___5975ba6d79__group_1;
-                Virtual_dom.Vdom.Attr.class_ {|d_hash_5975ba6d79|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___1b742bd012__group_1;
+                Virtual_dom.Vdom.Attr.class_ {|d_hash_1b742bd012|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__001___5975ba6d79__0 =
+    let sheet_x__001___1b742bd012__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__001___5975ba6d79__1 =
+    let sheet_x__001___1b742bd012__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__001___5975ba6d79__2 =
+    let sheet_x__001___1b742bd012__2 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__001___5975ba6d79__3 =
+    let sheet_x__001___1b742bd012__3 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__001___5975ba6d79__group_0 =
+    let update_sheet_lazy_fn_x__001___1b742bd012__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__2
+        (Inline_css.Private.update_stylesheet sheet_x__001___1b742bd012__2
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.c_hash_5975ba6d79:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:3%;
-     left:3%;
-     width:44%;
-     height:94%
+    .c_hash_1b742bd012:hover::after {
+      content: "";
+      background: tomato;
+      position: absolute;
+      border: 3px solid grey;
+      border-radius: 10px;
+      pointer-events: none;
+      top: 3%;
+      left: 3%;
+      width: 44%;
+      height: 94%;
     }|})
-    let update_sheet_lazy_fn_x__001___5975ba6d79__group_1 =
+    let update_sheet_lazy_fn_x__001___1b742bd012__group_1 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__3
+        (Inline_css.Private.update_stylesheet sheet_x__001___1b742bd012__3
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.d_hash_5975ba6d79:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:3%;
-     left:53%;
-     width:44%;
-     height:94%
+    .d_hash_1b742bd012:hover::after {
+      content: "";
+      background: tomato;
+      position: absolute;
+      border: 3px solid grey;
+      border-radius: 10px;
+      pointer-events: none;
+      top: 3%;
+      left: 53%;
+      width: 44%;
+      height: 94%;
     }|})
-    let update_sheet_lazy_fn_x__001___5975ba6d79__group_2 =
+    let update_sheet_lazy_fn_x__001___1b742bd012__group_2 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__0
+        (Inline_css.Private.update_stylesheet sheet_x__001___1b742bd012__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_5975ba6d79:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:3%;
-     left:3%;
-     width:94%;
-     height:44%
+    .a_hash_1b742bd012:hover::after {
+      content: "";
+      background: tomato;
+      position: absolute;
+      border: 3px solid grey;
+      border-radius: 10px;
+      pointer-events: none;
+      top: 3%;
+      left: 3%;
+      width: 94%;
+      height: 44%;
     }|})
-    let update_sheet_lazy_fn_x__001___5975ba6d79__group_3 =
+    let update_sheet_lazy_fn_x__001___1b742bd012__group_3 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___5975ba6d79__1
+        (Inline_css.Private.update_stylesheet sheet_x__001___1b742bd012__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.b_hash_5975ba6d79:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:53%;
-     left:3%;
-     width:94%;
-     height:44%
+    .b_hash_1b742bd012:hover::after {
+      content: "";
+      background: tomato;
+      position: absolute;
+      border: 3px solid grey;
+      border-radius: 10px;
+      pointer-events: none;
+      top: 53%;
+      left: 3%;
+      width: 94%;
+      height: 44%;
     }|})
     |xxx}]
 ;;
@@ -252,71 +253,71 @@ let%expect_test "Merged version - with a specificity battle later" =
       struct
         module For_referencing =
           struct
-            let a = {|a_hash_02042c0574|}
-            let b = {|b_hash_02042c0574|}
-            let c = {|c_hash_02042c0574|}
-            let d = {|d_hash_02042c0574|}
+            let a = {|a_hash_2cacf009b1|}
+            let b = {|b_hash_2cacf009b1|}
+            let c = {|c_hash_2cacf009b1|}
+            let d = {|d_hash_2cacf009b1|}
           end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_02042c0574|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___2cacf009b1__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_2cacf009b1|}))
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_02042c0574|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___2cacf009b1__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_2cacf009b1|}))
         let c =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|c_hash_02042c0574|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___2cacf009b1__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|c_hash_2cacf009b1|}))
         let d =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___02042c0574__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|d_hash_02042c0574|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__002___2cacf009b1__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|d_hash_2cacf009b1|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__002___02042c0574__0 =
+    let sheet_x__002___2cacf009b1__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let sheet_x__002___02042c0574__1 =
+    let sheet_x__002___2cacf009b1__1 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__002___02042c0574__group_0 =
+    let update_sheet_lazy_fn_x__002___2cacf009b1__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__002___02042c0574__0
+        (Inline_css.Private.update_stylesheet sheet_x__002___2cacf009b1__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_02042c0574:hover::after,*.b_hash_02042c0574:hover::after,*.c_hash_02042c0574:hover::after,*.d_hash_02042c0574:hover::after {
-     content:"";
-     background:tomato;
-     position:absolute;
-     border:3px solid grey;
-     border-radius:10px;
-     pointer-events:none;
-     top:3%;
-     left:53%;
-     width:44%;
-     height:94%
+    .a_hash_2cacf009b1:hover::after, .b_hash_2cacf009b1:hover::after, .c_hash_2cacf009b1:hover::after, .d_hash_2cacf009b1:hover::after {
+      content: "";
+      background: tomato;
+      position: absolute;
+      border: 3px solid grey;
+      border-radius: 10px;
+      pointer-events: none;
+      top: 3%;
+      left: 53%;
+      width: 44%;
+      height: 94%;
     }|};
-         Inline_css.Private.update_stylesheet sheet_x__002___02042c0574__1
+         Inline_css.Private.update_stylesheet sheet_x__002___2cacf009b1__1
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_02042c0574:hover::after {
-     top:100%
+    .a_hash_2cacf009b1:hover::after {
+      top: 100%;
     }|})
     |xxx}]
 ;;

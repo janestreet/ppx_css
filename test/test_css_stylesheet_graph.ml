@@ -20,7 +20,11 @@ module%test Traverse_graph = struct
         ~always_hash
       |> Staged.unstage
     in
-    let stylesheet = Css_jane.Stylesheet.of_string s |> Stable_stylesheet.of_stylesheet in
+    let stylesheet =
+      Css_parser.(
+        parse_stylesheet ~parsing_config:Parsing_config.raise_on_recoverable_errors s)
+      |> Stable_stylesheet.of_stylesheet
+    in
     Graph.map_stylesheet_for_graph
       ~lazy_loading_optimization:Ppx_css_syntax.Preprocess_arguments.Lazy_graph
       ~should_hash_identifier
@@ -66,9 +70,8 @@ module%test Traverse_graph = struct
   ;;
 
   (** Removes an identifier from the set of total identifiers. If the identifier did not
-        exist in the hash set, we assume that it has either already been removed or that 
-        the identifier was not utilized at all.
-    *)
+      exist in the hash set, we assume that it has either already been removed or that the
+      identifier was not utilized at all. *)
   let remove_identifier_from_hash_set_and_check
     ~here
     ~utilized_identifiers
@@ -76,8 +79,8 @@ module%test Traverse_graph = struct
     identifier
     =
     match Hash_set.strict_remove hash_set identifier with
-    | Ok () -> ()
-    | Error _ ->
+    | Ok -> ()
+    | Absent ->
       let is_utilized_identifier = Set.mem utilized_identifiers identifier in
       if is_utilized_identifier
       then
@@ -94,13 +97,14 @@ module%test Traverse_graph = struct
               (identifier : Css_identifier.t)]
   ;;
 
-  (** Strictly adds to the list of seen groups and prints a CR if we've already added 
-        this group. This function should not be called within a list of identifiers and
-        should only be called once per list of identifiers after all identifiers in the 
-        expected group are processed
-    *)
+  (** Strictly adds to the list of seen groups and prints a CR if we've already added this
+      group. This function should not be called within a list of identifiers and should
+      only be called once per list of identifiers after all identifiers in the expected
+      group are processed *)
   let add_to_seen_groups_and_check ~seen_groups ~here group =
-    let have_not_seen = Hash_set.strict_add seen_groups group |> Or_error.is_ok in
+    let have_not_seen =
+      Hash_set.strict_add seen_groups group |> Hash_set.Ok_or_duplicate.is_ok
+    in
     Expect_test_helpers_base.require
       ~here
       ~hide_positions:true
@@ -153,8 +157,8 @@ module%test Traverse_graph = struct
     let missing_identifiers = Css_identifier.Hash_set.of_list (Set.to_list identifiers) in
     let original_identifiers = identifiers in
     let seen_groups = Graph.Group_type.Hash_set.create () in
-    (* Checks to make sure all identifiers grouped together in the input are in the 
-       same group when passed to the [get_group_for_identifier] function. The specific 
+    (* Checks to make sure all identifiers grouped together in the input are in the
+       same group when passed to the [get_group_for_identifier] function. The specific
        group number doesn't really matter.
     *)
     List.iter groups ~f:(fun identifiers ->
@@ -201,7 +205,7 @@ module%test Traverse_graph = struct
     in
     Map.iteri group_to_rules ~f:(fun ~key:group ~data:rules ->
       let loc = Ppxlib.Location.none in
-      let sheet_as_string = Css_jane.Stylesheet.to_string_hum (rules, loc) in
+      let sheet_as_string = Css_parser.stylesheet_to_string (rules, loc) in
       let identifiers_for_group = Map.find_exn identifiers_by_group group in
       print_endline "\n";
       print_s
@@ -222,7 +226,7 @@ module%test Traverse_graph = struct
     ~(groups : Css_identifier.t list list)
     (s : string)
     =
-    let result = gen_result ~dont_hash ~dont_hash_prefixes ~always_hash s in
+    let%tydi result = gen_result ~dont_hash ~dont_hash_prefixes ~always_hash s in
     assert_test ~autoforced ~here ~groups result;
     expect_test result
   ;;
@@ -247,7 +251,7 @@ module%test Traverse_graph = struct
         .both {}
 
         #both {}
-        
+
         div {
         }
 
@@ -260,7 +264,7 @@ module%test Traverse_graph = struct
         .class .class {
           .class2 {
             #id-inside {}
-          } 
+          }
         }
 
         #id #id {}
@@ -284,32 +288,23 @@ module%test Traverse_graph = struct
 
 
       div {
-
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class with-kebab-case))))
 
 
-      *.with-kebab-case {
-
+      .with-kebab-case {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Id an_id))))
 
 
-      *#an_id {
-
+      #an_id {
       }
-
-
       ==================================================
 
 
@@ -317,92 +312,59 @@ module%test Traverse_graph = struct
 
 
       div.class {
-
       }
-
-      div *.class {
-
+      div .class {
       }
-
-      div>*.class {
-
+      div > .class {
       }
-
-      *#id *#id {
-
+      #id #id {
       }
-
-      *.class *.class {
-       *.class2 {
-        *#id-inside {
-
+      .class .class {
+        .class2 {
+          #id-inside {
+          }
         }
-
-       }
-
       }
-
-      *.class *.class2 {
-
+      .class .class2 {
       }
-
-      *.class *#id {
-
+      .class #id {
       }
-
-      *.class {
-
+      .class {
       }
-
-
       ==================================================
 
 
       (group_3 (identifiers ((Class a-b_c))))
 
 
-      *.a-b_c {
-
+      .a-b_c {
       }
-
-
       ==================================================
 
 
       (group_4 (identifiers ((Class inside-layer))))
 
 
-      @layer test-layer{
-       *.inside-layer {
-
-       }
-
+      @layer test-layer {
+        .inside-layer {
+        }
       }
-
-
-
       ==================================================
 
 
       (group_5 (identifiers ((Id both))))
 
 
-      *#both {
-
+      #both {
       }
-
-
       ==================================================
 
 
       (group_6 (identifiers ((Class both))))
 
 
-      *.both {
-
+      .both {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -418,11 +380,11 @@ module%test Traverse_graph = struct
       {|
         :root {
            --with-kebab: 100px;
-           --with_snakecase: 100px
+           --with_snakecase: 100px;
         }
 
         html {
-           color: var(--inside-a-var)
+           color: var(--inside-a-var);
         }
 
         .c1 {
@@ -452,70 +414,48 @@ module%test Traverse_graph = struct
 
 
       html {
-       color:var(--inside-a-var)
+        color: var(--inside-a-var);
       }
-
-      *:root {
-       --with-kebab:100px;
-       --with_snakecase:100px
+      :root {
+        --with-kebab: 100px;
+        --with_snakecase: 100px;
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class c1) (Class c2) (Class c3))))
 
 
-      *.c3 {
-       *.c1 {
-
-       }
-
+      .c3 {
+        .c1 {
+        }
       }
-
-      *.c1+*.c2 {
-
+      .c1 + .c2 {
       }
-
-      *.c2 {
-
+      .c2 {
       }
-
-      *.c1 {
-
+      .c1 {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class c4) (Class c5) (Class c6))))
 
 
-      *.c6:hover+*.c5 {
-
+      .c6:hover + .c5 {
       }
-
-      *.c4 {
-       *.c5 {
-
-       }
-
+      .c4 {
+        .c5 {
+        }
       }
-
-
       ==================================================
 
 
       (group_2 (identifiers ((Class c7))))
 
 
-      *.c7 {
-
+      .c7 {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -551,57 +491,37 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      @layer top-level{
-       div {
-
-       }
-
+      @layer top-level {
+        div {
+        }
       }
-
-
       html {
-       color:var(--inside-a-var);
-       *.a {
-
-       }
-       ;
-       *.b {
-
-       }
-
+        color: var(--inside-a-var);
+        .a {
+        }
+        .b {
+        }
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class a))))
 
 
-      *.a {
-
+      .a {
       }
-
-      @layer not-top-level{
-       *.a {
-
-       }
-
+      @layer not-top-level {
+        .a {
+        }
       }
-
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class b))))
 
 
-      *.b {
-
+      .b {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -644,56 +564,34 @@ module%test Traverse_graph = struct
        (identifiers ((Id f) (Class a) (Class b) (Class c) (Class d) (Class e))))
 
 
-      *.b+*.d {
-
+      .b + .d {
       }
-
-      *.e+*#f {
-
+      .e + #f {
       }
-
-      @layer layer-2{
-       *.d {
-        *.e {
-
+      @layer layer-2 {
+        .d {
+          .e {
+          }
         }
-
-       }
-
       }
-
-
-      @layer layer-1{
-       *.c+*.a {
-        *.b {
-
+      @layer layer-1 {
+        .c + .a {
+          .b {
+          }
         }
-
-       }
-
       }
-
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Id h) (Class g))))
 
 
-      *#h {
-
+      #h {
       }
-
-      @layer layer-3{
-       *.g+*#h {
-
-       }
-
+      @layer layer-3 {
+        .g + #h {
+        }
       }
-
-
-
       ==================================================
       |}]
   ;;
@@ -723,53 +621,34 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      @media print{
-       *.a {
-
-       }
-
+      @media print {
+        .a {
+        }
       }
-
-
-      @layer not-properly-processed{
-       *.a {
-
-       }
-
-       *.b {
-
-       }
-
-       *.c {
-
-       }
-
+      @layer not-properly-processed {
+        .a {
+        }
+        .b {
+        }
+        .c {
+        }
       }
-
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class a))))
 
 
-      *.a {
-
+      .a {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class b))))
 
 
-      *.b {
-
+      .b {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -806,60 +685,40 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      *:not(:has(.j)) {
-
+      :not(:has(.j)) {
       }
-
-      *:has(div,*.x,*.y) {
-
+      :has(div, .x, .y) {
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class e) (Class f) (Class g) (Class h))))
 
 
-      *.g+*.h {
-
+      .g + .h {
       }
-
-      *.e,*.f,*.g {
-
+      .e, .f, .g {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class q) (Class z))))
 
 
-      *:has(div,*.z) *:has(.q) {
-
+      :has(div, .z) :has(.q) {
       }
-
-      *.q {
-
+      .q {
       }
-
-      *.z {
-
+      .z {
       }
-
-
       ==================================================
 
 
       (group_2 (identifiers ((Class a) (Class b) (Class c))))
 
 
-      *:has(.a,*.b+*.c) {
-
+      :has(.a, .b + .c) {
       }
-
-
       ==================================================
 
 
@@ -867,10 +726,7 @@ module%test Traverse_graph = struct
 
 
       div:has(.i) {
-
       }
-
-
       ==================================================
       |}]
   ;;
@@ -892,26 +748,18 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      div,*.a,*.b+*.c {
-
+      div, .a, .b + .c {
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class e) (Class f) (Class g) (Class h))))
 
 
-      *.g+*.h {
-
+      .g + .h {
       }
-
-      *.e,*.f,*.g {
-
+      .e, .f, .g {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -924,11 +772,11 @@ module%test Traverse_graph = struct
       {|
         :root {
            --with-kebab: 100px;
-           --with_snakecase: 100px
+           --with_snakecase: 100px;
         }
 
         html {
-           color: var(--inside-a-var)
+           color: var(--inside-a-var);
         }
 
         .c1 {
@@ -961,54 +809,33 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      *.c7 {
-
+      .c7 {
       }
-
-      *.c6+*.c5 {
-
+      .c6 + .c5 {
       }
-
-      *.c40 {
-
+      .c40 {
       }
-
-      *.c4 {
-       *.c5 {
-
-       }
-
+      .c4 {
+        .c5 {
+        }
       }
-
-      *.c3 {
-       *.c1 {
-
-       }
-
+      .c3 {
+        .c1 {
+        }
       }
-
-      *.c1+*.c2 {
-
+      .c1 + .c2 {
       }
-
-      *.c2 {
-
+      .c2 {
       }
-
-      *.c1 {
-
+      .c1 {
       }
-
       html {
-       color:var(--inside-a-var)
+        color: var(--inside-a-var);
       }
-
-      *:root {
-       --with-kebab:100px;
-       --with_snakecase:100px
+      :root {
+        --with-kebab: 100px;
+        --with_snakecase: 100px;
       }
-
-
       ==================================================
       |}];
     test
@@ -1019,11 +846,11 @@ module%test Traverse_graph = struct
       {|
         :root {
            --with-kebab: 100px;
-           --with_snakecase: 100px
+           --with_snakecase: 100px;
         }
 
         html {
-           color: var(--inside-a-var)
+           color: var(--inside-a-var);
         }
 
         .c1 {
@@ -1056,68 +883,45 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      *.c40 {
-
+      .c40 {
       }
-
-      *.c4 {
-       *.c5 {
-
-       }
-
+      .c4 {
+        .c5 {
+        }
       }
-
-      *.c3 {
-       *.c1 {
-
-       }
-
+      .c3 {
+        .c1 {
+        }
       }
-
-      *.c1+*.c2 {
-
+      .c1 + .c2 {
       }
-
-      *.c2 {
-
+      .c2 {
       }
-
-      *.c1 {
-
+      .c1 {
       }
-
       html {
-       color:var(--inside-a-var)
+        color: var(--inside-a-var);
       }
-
-      *:root {
-       --with-kebab:100px;
-       --with_snakecase:100px
+      :root {
+        --with-kebab: 100px;
+        --with_snakecase: 100px;
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class c7))))
 
 
-      *.c7 {
-
+      .c7 {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class c5) (Class c6))))
 
 
-      *.c6+*.c5 {
-
+      .c6 + .c5 {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1141,31 +945,18 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
+      *[bar='--something'] {
+      }
       *[bar="--something"] {
-
       }
-
-      *[bar="--something"] {
-
-      }
-
       html[foo="#d"] {
-
       }
-
-      html[foo="#d"] {
-
+      html[foo='#d'] {
       }
-
+      a[asdf='.a'] {
+      }
       a[asdf=".a"] {
-
       }
-
-      a[asdf=".a"] {
-
-      }
-
-
       ==================================================
       |}]
   ;;
@@ -1182,11 +973,8 @@ module%test Traverse_graph = struct
       (group_0 (identifiers ((Class a) (Class b) (Class c))))
 
 
-      div:has(.a,*.b,*.c) {
-
+      div:has(.a, .b, .c) {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1195,7 +983,9 @@ module%test Traverse_graph = struct
                    CSS functions that accept strings"
     =
     test
-      ~autoforced:[ 0; 1; 2; 3; 4; 5; 6; 7; 8 ]
+    (* The comment within the CSS now counts as a "rule" so we need to include it in
+       these indices *)
+      ~autoforced:[ 0; 1; 2; 3; 4; 5; 6; 7; 8; 9 ]
       ~groups:[]
       {|
         div:where(.a, .b, .c) { }
@@ -1207,10 +997,10 @@ module%test Traverse_graph = struct
         div:test(.a + .b) { }
         div:unsupported(.a + .b) { }
 
-        /* This one specifically is a known selector that should parse the identifiers. 
-           Checking to make sure that if we pass a string that it does not actually 
+        /* This one specifically is a known selector that should parse the identifiers.
+           Checking to make sure that if we pass a string that it does not actually
            parse the identifiers */
-        div:has(".a + .b") { }
+        div:string(".a + .b") { }
 
         |};
     [%expect
@@ -1218,43 +1008,27 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      div:has(".a + .b") {
-
+      div:string(".a + .b") {
       }
-
-      div:unsupported(.a+.b) {
-
+      /* This one specifically is a known selector that should parse the identifiers.
+                 Checking to make sure that if we pass a string that it does not actually
+                 parse the identifiers */
+      div:unsupported(.a + .b) {
       }
-
-      div:test(.a+.b) {
-
+      div:test(.a + .b) {
       }
-
-      div:is(.a+*.b) {
-
+      div:is(.a + .b) {
       }
-
       div:is(.a) {
-
       }
-
-      div:is(.a,*.b,*.c) {
-
+      div:is(.a, .b, .c) {
       }
-
-      div:where(.a+*.b) {
-
+      div:where(.a + .b) {
       }
-
       div:where(.a) {
-
       }
-
-      div:where(.a,*.b,*.c) {
-
+      div:where(.a, .b, .c) {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1274,18 +1048,11 @@ module%test Traverse_graph = struct
 
 
       q123 {
-
       }
-
       basdf {
-
       }
-
       weird {
-
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1315,33 +1082,27 @@ module%test Traverse_graph = struct
       (group_0 (identifiers ((Class c))))
 
 
-      *.c {
-       padding:var(--some-padding)
+      .c {
+        padding: var(--some-padding);
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class a))))
 
 
-      *.a {
-       background-color:var(--some-var)
+      .a {
+        background-color: var(--some-var);
       }
-
-
       ==================================================
 
 
       (group_2 (identifiers ((Class b))))
 
 
-      *.b {
-       width:var(--some-width)
+      .b {
+        width: var(--some-width);
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1363,33 +1124,24 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      *.b1 {
-
+      .b1 {
       }
-
-
       ==================================================
 
 
       (group_0 (identifiers ((Class a))))
 
 
-      *.a {
-
+      .a {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class b))))
 
 
-      *.b {
-
+      .b {
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1412,30 +1164,17 @@ module%test Traverse_graph = struct
 
 
       div[href=#] {
-
       }
-
-      div:qwerty(.t.q.r) {
-
+      div:qwerty(.t .q .r) {
       }
-
-      div:asdf(.t.q.r) {
-
+      div:asdf(.t .q .r) {
       }
-
       div:asdf(".t .q .r") {
-
       }
-
-      div[attr=".t .q .r"] {
-
+      div[attr='.t .q .r'] {
       }
-
       div[has=".t .q .r"] {
-
       }
-
-
       ==================================================
       |}]
   ;;
@@ -1454,26 +1193,18 @@ module%test Traverse_graph = struct
       (group_0 (identifiers ((Id b))))
 
 
-      *:not(#a) *#b {
-
+      :not(#a) #b {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class a) (Class b))))
 
 
-      *:not(.a) *.b {
-
+      :not(.a) .b {
       }
-
-      *.a *.b {
-
+      .a .b {
       }
-
-
       ==================================================
       |}];
     test
@@ -1489,26 +1220,18 @@ module%test Traverse_graph = struct
       (group_0 (identifiers ((Id d))))
 
 
-      *:not(#c) *#d {
-
+      :not(#c) #d {
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class a) (Class b))))
 
 
-      *:not(.a) *.b {
-
+      :not(.a) .b {
       }
-
-      *.a *.b {
-
+      .a .b {
       }
-
-
       ==================================================
       |}];
     test
@@ -1529,7 +1252,7 @@ module%test Traverse_graph = struct
         }
       }
       .autoforce-due-to-nested-at-rule {
-        #id {} 
+        #id {}
         @layer test {
           .x {}
         }
@@ -1550,48 +1273,30 @@ module%test Traverse_graph = struct
       (Autoforced (identifiers ()))
 
 
-      *.z {
-       *.b+*.d>*.g {
-        *.k {
-         *.x {
-
-         }
-         ;
-         *:not(&,*&>*.a) {
-
-         }
-
+      .z {
+        .b + .d > .g {
+          .k {
+            .x {
+            }
+            :not(&, & > .a) {
+            }
+          }
+          background-color: red;
         }
-        ;
-        background-color:red
-       }
-       ;
-       background-color:tomato
+        background-color: tomato;
       }
-
-      *.autoforce-due-to-nested-at-rule {
-       *#id {
-
-       }
-       ;
-       @layer test{
-        *.x {
-
+      .autoforce-due-to-nested-at-rule {
+        #id {
         }
-
-       }
-
-
+        @layer test {
+          .x {
+          }
+        }
       }
-
-      *.a {
-       *:not(&) {
-
-       }
-
+      .a {
+        :not(&) {
+        }
       }
-
-
       ==================================================
 
 
@@ -1599,28 +1304,20 @@ module%test Traverse_graph = struct
        (identifiers ((Class ba) (Class ca) (Class da) (Class not-autoforced))))
 
 
-      *.not-autoforced {
-       *& *.ba,*.ca,*.da *& {
-
-       }
-
+      .not-autoforced {
+        & .ba, .ca, .da & {
+        }
       }
-
-
       ==================================================
 
 
       (group_1 (identifiers ((Class b) (Class c))))
 
 
-      *.b {
-       *:has(.c,*&) {
-
-       }
-
+      .b {
+        :has(.c, &) {
+        }
       }
-
-
       ==================================================
       |}]
   ;;
