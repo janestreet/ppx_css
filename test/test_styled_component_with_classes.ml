@@ -2,7 +2,8 @@ open! Core
 open Ppxlib
 
 let test = Test_util.test_expression
-let loc = Location.none
+let loc = Test_util.loc_with_mock_name
+let () = Ppx_css_syntax.Preprocess_arguments.set_lazy_loading_optimization (Some true)
 
 let%expect_test "with classes" =
   test
@@ -20,30 +21,30 @@ let%expect_test "with classes" =
       struct
         include
           struct
-            let inline_class =
+            let foo__inline_class =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___f4478b7634__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_f4478b7634|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___bfaee5db74__group_0;
+                    Virtual_dom.Vdom.Attr.class_
+                      {|foo__inline_class_hash_bfaee5db74|}))
           end
-      end in Ppx_css_anonymous_style__002_.inline_class
+      end in Ppx_css_anonymous_style__002_.foo__inline_class
     Hoisted context:
     ----------------
-    let sheet_x__001___f4478b7634__0 =
+    let sheet_x__001___bfaee5db74__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__001___f4478b7634__group_0 =
+    let update_sheet_lazy_fn_x__001___bfaee5db74__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__001___f4478b7634__0
+        (Inline_css.Private.update_stylesheet sheet_x__001___bfaee5db74__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.inline_class_hash_f4478b7634 {
-     *&.foo {
-      background-color:tomato
-     }
-
+    .foo__inline_class_hash_bfaee5db74 {
+      &.foo {
+        background-color: tomato;
+      }
     }|})
     |xxx}]
 ;;
@@ -92,30 +93,30 @@ let%expect_test "with ids" =
       struct
         include
           struct
-            let inline_class =
+            let foo__inline_class =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___dfcdc41e57__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_dfcdc41e57|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___1e7f0d9be6__group_0;
+                    Virtual_dom.Vdom.Attr.class_
+                      {|foo__inline_class_hash_1e7f0d9be6|}))
           end
-      end in Ppx_css_anonymous_style__004_.inline_class
+      end in Ppx_css_anonymous_style__004_.foo__inline_class
     Hoisted context:
     ----------------
-    let sheet_x__003___dfcdc41e57__0 =
+    let sheet_x__003___1e7f0d9be6__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__003___dfcdc41e57__group_0 =
+    let update_sheet_lazy_fn_x__003___1e7f0d9be6__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__003___dfcdc41e57__0
+        (Inline_css.Private.update_stylesheet sheet_x__003___1e7f0d9be6__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.inline_class_hash_dfcdc41e57 {
-     *&#foo {
-      background-color:tomato
-     }
-
+    .foo__inline_class_hash_1e7f0d9be6 {
+      &#foo {
+        background-color: tomato;
+      }
     }|})
     |xxx}]
 ;;
@@ -137,30 +138,30 @@ let%expect_test "with variables" =
       struct
         include
           struct
-            let inline_class =
+            let foo__inline_class =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__005___35ceafd5a7__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_35ceafd5a7|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__005___6895ae2863__group_0;
+                    Virtual_dom.Vdom.Attr.class_
+                      {|foo__inline_class_hash_6895ae2863|}))
           end
-      end in Ppx_css_anonymous_style__006_.inline_class
+      end in Ppx_css_anonymous_style__006_.foo__inline_class
     Hoisted context:
     ----------------
-    let sheet_x__005___35ceafd5a7__0 =
+    let sheet_x__005___6895ae2863__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__005___35ceafd5a7__group_0 =
+    let update_sheet_lazy_fn_x__005___6895ae2863__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__005___35ceafd5a7__0
+        (Inline_css.Private.update_stylesheet sheet_x__005___6895ae2863__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.inline_class_hash_35ceafd5a7 {
-     *& {
-      background-color:var(--foo)
-     }
-
+    .foo__inline_class_hash_6895ae2863 {
+      & {
+        background-color: var(--foo);
+      }
     }|})
     |xxx}]
 ;;
@@ -183,31 +184,31 @@ let%expect_test {|ppx css does structure item generation check does not work wit
       struct
         include
           struct
-            let inline_class =
+            let foo__inline_class =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___acd9311382__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_acd9311382|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___c455637f30__group_0;
+                    Virtual_dom.Vdom.Attr.class_
+                      {|foo__inline_class_hash_c455637f30|}))
           end
-      end in Ppx_css_anonymous_style__008_.inline_class
+      end in Ppx_css_anonymous_style__008_.foo__inline_class
     Hoisted context:
     ----------------
-    let sheet_x__007___acd9311382__0 =
+    let sheet_x__007___c455637f30__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__007___acd9311382__group_0 =
+    let update_sheet_lazy_fn_x__007___c455637f30__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__007___acd9311382__0
+        (Inline_css.Private.update_stylesheet sheet_x__007___c455637f30__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.inline_class_hash_acd9311382 {
-     *.cm-editor {
-      overflow:auto;
-      max-height:90vh
-     }
-
+    .foo__inline_class_hash_c455637f30 {
+      .cm-editor {
+        overflow: auto;
+        max-height: 90vh;
+      }
     }|})
     |xxx}]
 ;;
@@ -229,31 +230,31 @@ let%expect_test {|Sanitizing hyphens vs underscores are respected.|} =
       struct
         include
           struct
-            let inline_class =
+            let foo__inline_class =
               Virtual_dom.Vdom.Attr.lazy_
                 (lazy
                    (Inline_css.Ppx_css_runtime.force
-                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__009___0a2848787d__group_0;
-                    Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_0a2848787d|}))
+                      Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__009___64fffabf77__group_0;
+                    Virtual_dom.Vdom.Attr.class_
+                      {|foo__inline_class_hash_64fffabf77|}))
           end
-      end in Ppx_css_anonymous_style__010_.inline_class
+      end in Ppx_css_anonymous_style__010_.foo__inline_class
     Hoisted context:
     ----------------
-    let sheet_x__009___0a2848787d__0 =
+    let sheet_x__009___64fffabf77__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__009___0a2848787d__group_0 =
+    let update_sheet_lazy_fn_x__009___64fffabf77__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__009___0a2848787d__0
+        (Inline_css.Private.update_stylesheet sheet_x__009___64fffabf77__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.inline_class_hash_0a2848787d {
-     *.a-b_c-d {
-      overflow:auto;
-      max-height:90vh
-     }
-
+    .foo__inline_class_hash_64fffabf77 {
+      .a-b_c-d {
+        overflow: auto;
+        max-height: 90vh;
+      }
     }|})
     |xxx}]
 ;;

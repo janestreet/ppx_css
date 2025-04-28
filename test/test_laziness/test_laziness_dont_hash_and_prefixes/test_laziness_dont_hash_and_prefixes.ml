@@ -81,7 +81,7 @@ module Style =
           text-align: center;
         }
       }
-      |}
+    |}
     ~dont_hash:[ "q"; "c" ]
     ~dont_hash_prefixes:[ "dont" ]]
 
@@ -91,92 +91,70 @@ let%expect_test "groups are forced properly" =
   (* All auto-forced styles should be here *)
   [%expect
     {xxx|
-    -1,0 +1,100
+    -1,0 +1,77
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
     +|body {
-    +| background-color:tomato
+    +|  background-color: tomato;
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|@layer test{
-    +| *.dont-a {
-    +|  *.b_hash_16e3b6ad26 {
-    +|
+    +|@layer test {
+    +|  .dont-a {
+    +|    .b_hash_2f088d952d {
+    +|    }
+    +|    .e_hash_2f088d952d {
+    +|    }
     +|  }
-    +|  ;
-    +|  *.e_hash_16e3b6ad26 {
+    +|}
     +|
+    +|
+    +|
+    +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
+    +|
+    +|@layer test {
+    +|  @layer nested-layer {
+    +|    .c {
+    +|      grid-template-rows: 1fr;
+    +|      .d_hash_2f088d952d {
+    +|      }
+    +|      .e_hash_2f088d952d {
+    +|      }
+    +|      .d_hash_2f088d952d + .f_hash_2f088d952d {
+    +|      }
+    +|    }
     +|  }
-    +|
-    +| }
-    +|
     +|}
-    +|
-    +|
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|@layer test{
-    +| @layer nested-layer{
-    +|  *.c {
-    +|   grid-template-rows:1fr;
-    +|   *.d_hash_16e3b6ad26 {
-    +|
-    +|   }
-    +|   ;
-    +|   *.e_hash_16e3b6ad26 {
-    +|
-    +|   }
-    +|   ;
-    +|   *.d_hash_16e3b6ad26+*.f_hash_16e3b6ad26 {
-    +|
-    +|   }
-    +|
+    +|@layer test {
+    +|  .q {
     +|  }
-    +|
-    +| }
-    +|
-    +|
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|@layer test{
-    +| *.q {
-    +|
-    +| }
-    +|
+    +|@layer test {
+    +|  div {
+    +|  }
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|@layer test{
-    +| div {
-    +|
-    +| }
-    +|
-    +|}
-    +|
-    +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
-    +|
-    +|*.dont-b {
-    +| *.b_hash_16e3b6ad26 {
-    +|
-    +| }
-    +| ;
-    +| *.c {
-    +|
-    +| }
-    +|
+    +|.dont-b {
+    +|  .b_hash_2f088d952d {
+    +|  }
+    +|  .c {
+    +|  }
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
     +|body div {
-    +| display:flex
+    +|  display: flex;
     +|}
     +|
     +|
@@ -185,12 +163,11 @@ let%expect_test "groups are forced properly" =
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|*.c {
-    +| display:table;
-    +| *&.d_hash_16e3b6ad26 {
-    +|  text-align:center
-    +| }
-    +|
+    +|.c {
+    +|  display: table;
+    +|  &.d_hash_2f088d952d {
+    +|    text-align: center;
+    +|  }
     +|}
     |xxx}];
   let handle = css_attr_handle Style.a in
@@ -203,110 +180,103 @@ let%expect_test "groups are forced properly" =
   (* .a and .b should also show up here *)
   [%expect
     {xxx|
-    -8,33 +8,57
+    -3,33 +3,51
+
+      body {
+        background-color: tomato;
+      }
+
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      @layer test{
-       *.dont-a {
-        *.b_hash_16e3b6ad26 {
-
+      @layer test {
+        .dont-a {
+          .b_hash_2f088d952d {
+          }
+          .e_hash_2f088d952d {
+          }
         }
-        ;
-        *.e_hash_16e3b6ad26 {
-
-        }
-
-       }
-
       }
 
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-    +|@layer test{
-    +| @layer nested-layer{
-    +|  *.b_hash_16e3b6ad26 {
-    +|   grid-template-columns:1fr
+    +|@layer test {
+    +|  @layer nested-layer {
+    +|    .b_hash_2f088d952d {
+    +|      grid-template-columns: 1fr;
+    +|    }
     +|  }
-    +|
-    +| }
-    +|
-    +|
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|@layer test{
-    +| @layer nested-layer{
-    +|  *.a_hash_16e3b6ad26 {
-    +|   display:flex
+    +|@layer test {
+    +|  @layer nested-layer {
+    +|    .a_hash_2f088d952d {
+    +|      display: flex;
+    +|    }
     +|  }
-    +|
-    +| }
-    +|
-    +|
     +|}
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      @layer test{
-       @layer nested-layer{
-        *.c {
-         grid-template-rows:1fr;
-         *.d_hash_16e3b6ad26 {
+      @layer test {
+        @layer nested-layer {
+          .c {
+            grid-template-rows: 1fr;
+            .d_hash_2f088d952d {
+            }
+            .e_hash_2f088d952d {
+            }
+            .d_hash_2f088d952d + .f_hash_2f088d952d {
+            }
+          }
+        }
+      }
+    -50,28 +68,43
 
-         }
-         ;
-         *.e_hash_16e3b6ad26 {
+      /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-         }
-         ;
-         *.d_hash_16e3b6ad26+*.f_hash_16e3b6ad26 {
-    -72,29 +96,44
-       *.b_hash_16e3b6ad26 {
-
-       }
-       ;
-       *.c {
-
-       }
-
+      .dont-b {
+        .b_hash_2f088d952d {
+        }
+        .c {
+        }
       }
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
       body div {
-       display:flex
+        display: flex;
       }
 
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
     -|
     -|
-    +|div>*.a_hash_16e3b6ad26 {
-    +| pointer:cursor
+    +|div > .a_hash_2f088d952d {
+    +|  pointer: cursor;
     +|}
     +|
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|*.a_hash_16e3b6ad26 *.b_hash_16e3b6ad26 {
-    +| display:inline-flex
+    +|.a_hash_2f088d952d .b_hash_2f088d952d {
+    +|  display: inline-flex;
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|*.b_hash_16e3b6ad26 {
-    +| flex-direction:column
+    +|.b_hash_2f088d952d {
+    +|  flex-direction: column;
     +|}
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      *.c {
-       display:table;
-       *&.d_hash_16e3b6ad26 {
-        text-align:center
-       }
-
+      .c {
+        display: table;
+        &.d_hash_2f088d952d {
+          text-align: center;
+        }
       }
     |xxx}];
   let handle = css_attr_handle Style.b in
@@ -322,51 +292,49 @@ let%expect_test "groups are forced properly" =
   compare_against_prev ();
   [%expect
     {xxx|
-    -102,32 +102,45
-       }
-
+    -74,32 +74,43
+        .c {
+        }
       }
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
       body div {
-       display:flex
+        display: flex;
       }
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      div>*.a_hash_16e3b6ad26 {
-       pointer:cursor
+      div > .a_hash_2f088d952d {
+        pointer: cursor;
       }
 
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|*.d_hash_16e3b6ad26 {
-    +| color:green;
-    +| *&:hover {
-    +|  outline:blue
-    +| }
-    +| ;
-    +| *.e_hash_16e3b6ad26 {
-    +|  font-size:14px
-    +| }
-    +|
+    +|.d_hash_2f088d952d {
+    +|  color: green;
+    +|  &:hover {
+    +|    outline: blue;
+    +|  }
+    +|  .e_hash_2f088d952d {
+    +|    font-size: 14px;
+    +|  }
     +|}
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      *.a_hash_16e3b6ad26 *.b_hash_16e3b6ad26 {
-       display:inline-flex
+      .a_hash_2f088d952d .b_hash_2f088d952d {
+        display: inline-flex;
       }
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      *.b_hash_16e3b6ad26 {
-       flex-direction:column
+      .b_hash_2f088d952d {
+        flex-direction: column;
       }
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      *.c {
+      .c {
     |xxx}]
 ;;

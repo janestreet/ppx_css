@@ -2,4 +2,23 @@
  (name test_ppx_css_builds)
  (preprocess
   (pps ppx_css))
- (libraries core))
+ (libraries core virtual_dom.css_gen virtual_dom))
+
+(rule
+ (targets test_ppx_css_builds.ml.pp-output-for-review)
+ (deps
+  (:first_dep test_ppx_css_builds.ml.pp))
+ (action
+  (bash "cp %{first_dep} %{targets}")))
+
+(rule
+ (targets test_ppx_css_inline_builds.ml.pp-output-for-review)
+ (deps
+  (:first_dep test_ppx_css_inline_builds.ml.pp))
+ (action
+  (bash "cp %{first_dep} %{targets}")))
+
+(alias
+ (name DEFAULT)
+ (deps test_ppx_css_builds.ml.pp-output-for-review
+   test_ppx_css_inline_builds.ml.pp-output-for-review))

@@ -1,7 +1,7 @@
 open! Core
 open Ppxlib
 
-(** This module represens an "anonymous variable"  that encode the interpolation
+(** This module represens an "anonymous variable" that encode the interpolation
     replacements that [%css] performs.
 
     for instance, the declarations:
@@ -20,8 +20,7 @@ open Ppxlib
       |}
     ]}
 
-    this module contains functions that abstract away anonymous variables.
-*)
+    this module contains functions that abstract away anonymous variables. *)
 module Name : sig
   type t
 

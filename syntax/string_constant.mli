@@ -9,11 +9,8 @@ open Ppxlib
        Constant string such as ["constant"]
        [{delim|other constant|delim}].
 
-       The location span the content of the string, without the delimiters. 
-    v}
-
-
-*)
+       The location span the content of the string, without the delimiters.
+    v} *)
 type t =
   { css_string : string
   ; string_loc : location

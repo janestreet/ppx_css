@@ -2,6 +2,7 @@ open! Core
 open Ppxlib
 
 let loc = Test_util.loc_with_mock_name
+let () = Ppx_css_syntax.Preprocess_arguments.set_lazy_loading_optimization (Some true)
 
 module%test [@name "basic"] _ = struct
   let test = Test_util.test_expression
@@ -24,24 +25,24 @@ module%test [@name "basic"] _ = struct
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___a9ee0785b4__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___bfdd4b7d69__group_0;
                       Virtual_dom.Vdom.Attr.class_
-                        {|foo__inline_class_hash_a9ee0785b4|}))
+                        {|foo__inline_class_hash_bfdd4b7d69|}))
             end
-        end in Ppx_css_anonymous_style__002_.inline_class
+        end in Ppx_css_anonymous_style__002_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__001___a9ee0785b4__0 =
+      let sheet_x__001___bfdd4b7d69__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__001___a9ee0785b4__group_0 =
+      let update_sheet_lazy_fn_x__001___bfdd4b7d69__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__001___a9ee0785b4__0
+          (Inline_css.Private.update_stylesheet sheet_x__001___bfdd4b7d69__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_a9ee0785b4 {
-       background-color:tomato
+      .foo__inline_class_hash_bfdd4b7d69 {
+        background-color: tomato;
       }|})
       |xxx}]
   ;;
@@ -64,33 +65,33 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__005_ = (((color)
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_1_hash_a70fca0095|},
+                  [({|--ppx_css_anonymous_var_1_hash_6b357a741b|},
                      ppx_css_temp_variable__005_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__004___a70fca0095__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__004___6b357a741b__group_0;
                       ((Virtual_dom.Vdom.Attr.combine
                           (Virtual_dom.Vdom.Attr.class_
-                             {|foo__inline_class_hash_a70fca0095|})
+                             {|foo__inline_class_hash_6b357a741b|})
                           ppx_css__internal_anonymous_variables__003_)
                       [@merlin.focus ])))
             end
-        end in Ppx_css_anonymous_style__006_.inline_class
+        end in Ppx_css_anonymous_style__006_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__004___a70fca0095__0 =
+      let sheet_x__004___6b357a741b__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__004___a70fca0095__group_0 =
+      let update_sheet_lazy_fn_x__004___6b357a741b__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__004___a70fca0095__0
+          (Inline_css.Private.update_stylesheet sheet_x__004___6b357a741b__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_a70fca0095 {
-       background-color:var(--ppx_css_anonymous_var_1_hash_a70fca0095)
+      .foo__inline_class_hash_6b357a741b {
+        background-color: var(--ppx_css_anonymous_var_1_hash_6b357a741b);
       }|})
       |xxx}]
   ;;
@@ -113,33 +114,33 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__009_ = (((Mod.Foo.to_string_css color)
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_2_hash_e1cd772732|},
+                  [({|--ppx_css_anonymous_var_2_hash_18eb8b8bc0|},
                      ppx_css_temp_variable__009_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___e1cd772732__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___18eb8b8bc0__group_0;
                       ((Virtual_dom.Vdom.Attr.combine
                           (Virtual_dom.Vdom.Attr.class_
-                             {|foo__inline_class_hash_e1cd772732|})
+                             {|foo__inline_class_hash_18eb8b8bc0|})
                           ppx_css__internal_anonymous_variables__007_)
                       [@merlin.focus ])))
             end
-        end in Ppx_css_anonymous_style__010_.inline_class
+        end in Ppx_css_anonymous_style__010_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__008___e1cd772732__0 =
+      let sheet_x__008___18eb8b8bc0__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__008___e1cd772732__group_0 =
+      let update_sheet_lazy_fn_x__008___18eb8b8bc0__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__008___e1cd772732__0
+          (Inline_css.Private.update_stylesheet sheet_x__008___18eb8b8bc0__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_e1cd772732 {
-       background-color:var(--ppx_css_anonymous_var_2_hash_e1cd772732)
+      .foo__inline_class_hash_18eb8b8bc0 {
+        background-color: var(--ppx_css_anonymous_var_2_hash_18eb8b8bc0);
       }|})
       |xxx}]
   ;;
@@ -168,39 +169,39 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__015_ = (((color3)
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_3_hash_6b28424761|},
+                  [({|--ppx_css_anonymous_var_3_hash_9e12f590b9|},
                      ppx_css_temp_variable__013_);
-                  ({|--ppx_css_anonymous_var_4_hash_6b28424761|},
+                  ({|--ppx_css_anonymous_var_4_hash_9e12f590b9|},
                     ppx_css_temp_variable__014_);
-                  ({|--ppx_css_anonymous_var_5_hash_6b28424761|},
+                  ({|--ppx_css_anonymous_var_5_hash_9e12f590b9|},
                     ppx_css_temp_variable__015_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__012___6b28424761__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__012___9e12f590b9__group_0;
                       ((Virtual_dom.Vdom.Attr.combine
                           (Virtual_dom.Vdom.Attr.class_
-                             {|foo__inline_class_hash_6b28424761|})
+                             {|foo__inline_class_hash_9e12f590b9|})
                           ppx_css__internal_anonymous_variables__011_)
                       [@merlin.focus ])))
             end
-        end in Ppx_css_anonymous_style__016_.inline_class
+        end in Ppx_css_anonymous_style__016_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__012___6b28424761__0 =
+      let sheet_x__012___9e12f590b9__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__012___6b28424761__group_0 =
+      let update_sheet_lazy_fn_x__012___9e12f590b9__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__012___6b28424761__0
+          (Inline_css.Private.update_stylesheet sheet_x__012___9e12f590b9__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_6b28424761 {
-       background-color:var(--ppx_css_anonymous_var_3_hash_6b28424761);
-       background:var(--ppx_css_anonymous_var_4_hash_6b28424761);
-       background-color:var(--ppx_css_anonymous_var_5_hash_6b28424761)
+      .foo__inline_class_hash_9e12f590b9 {
+        background-color: var(--ppx_css_anonymous_var_3_hash_9e12f590b9);
+        background: var(--ppx_css_anonymous_var_4_hash_9e12f590b9);
+        background-color: var(--ppx_css_anonymous_var_5_hash_9e12f590b9);
       }|})
       |xxx}]
   ;;
@@ -229,39 +230,39 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__021_ = (((f ())
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_6_hash_f092e8fa9d|},
+                  [({|--ppx_css_anonymous_var_6_hash_f3ab95e4a3|},
                      ppx_css_temp_variable__019_);
-                  ({|--ppx_css_anonymous_var_7_hash_f092e8fa9d|},
+                  ({|--ppx_css_anonymous_var_7_hash_f3ab95e4a3|},
                     ppx_css_temp_variable__020_);
-                  ({|--ppx_css_anonymous_var_8_hash_f092e8fa9d|},
+                  ({|--ppx_css_anonymous_var_8_hash_f3ab95e4a3|},
                     ppx_css_temp_variable__021_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__018___f092e8fa9d__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__018___f3ab95e4a3__group_0;
                       ((Virtual_dom.Vdom.Attr.combine
                           (Virtual_dom.Vdom.Attr.class_
-                             {|foo__inline_class_hash_f092e8fa9d|})
+                             {|foo__inline_class_hash_f3ab95e4a3|})
                           ppx_css__internal_anonymous_variables__017_)
                       [@merlin.focus ])))
             end
-        end in Ppx_css_anonymous_style__022_.inline_class
+        end in Ppx_css_anonymous_style__022_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__018___f092e8fa9d__0 =
+      let sheet_x__018___f3ab95e4a3__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__018___f092e8fa9d__group_0 =
+      let update_sheet_lazy_fn_x__018___f3ab95e4a3__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__018___f092e8fa9d__0
+          (Inline_css.Private.update_stylesheet sheet_x__018___f3ab95e4a3__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_f092e8fa9d {
-       background-color:var(--ppx_css_anonymous_var_6_hash_f092e8fa9d);
-       background:var(--ppx_css_anonymous_var_7_hash_f092e8fa9d);
-       background-color:var(--ppx_css_anonymous_var_8_hash_f092e8fa9d)
+      .foo__inline_class_hash_f3ab95e4a3 {
+        background-color: var(--ppx_css_anonymous_var_6_hash_f3ab95e4a3);
+        background: var(--ppx_css_anonymous_var_7_hash_f3ab95e4a3);
+        background-color: var(--ppx_css_anonymous_var_8_hash_f3ab95e4a3);
       }|})
       |xxx}]
   ;;
@@ -295,42 +296,42 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__028_ = (((fourth ())
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_9_hash_2d2b734001|},
+                  [({|--ppx_css_anonymous_var_9_hash_3f252dc622|},
                      ppx_css_temp_variable__025_);
-                  ({|--ppx_css_anonymous_var_10_hash_2d2b734001|},
+                  ({|--ppx_css_anonymous_var_10_hash_3f252dc622|},
                     ppx_css_temp_variable__026_);
-                  ({|--ppx_css_anonymous_var_11_hash_2d2b734001|},
+                  ({|--ppx_css_anonymous_var_11_hash_3f252dc622|},
                     ppx_css_temp_variable__027_);
-                  ({|--ppx_css_anonymous_var_12_hash_2d2b734001|},
+                  ({|--ppx_css_anonymous_var_12_hash_3f252dc622|},
                     ppx_css_temp_variable__028_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__024___2d2b734001__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__024___3f252dc622__group_0;
                       ((Virtual_dom.Vdom.Attr.combine
                           (Virtual_dom.Vdom.Attr.class_
-                             {|foo__inline_class_hash_2d2b734001|})
+                             {|foo__inline_class_hash_3f252dc622|})
                           ppx_css__internal_anonymous_variables__023_)
                       [@merlin.focus ])))
             end
-        end in Ppx_css_anonymous_style__029_.inline_class
+        end in Ppx_css_anonymous_style__029_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__024___2d2b734001__0 =
+      let sheet_x__024___3f252dc622__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__024___2d2b734001__group_0 =
+      let update_sheet_lazy_fn_x__024___3f252dc622__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__024___2d2b734001__0
+          (Inline_css.Private.update_stylesheet sheet_x__024___3f252dc622__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_2d2b734001 {
-       background-color:var(--ppx_css_anonymous_var_9_hash_2d2b734001);
-       background:var(--ppx_css_anonymous_var_10_hash_2d2b734001);
-       background-color:var(--ppx_css_anonymous_var_11_hash_2d2b734001);
-       background-color:var(--ppx_css_anonymous_var_12_hash_2d2b734001)
+      .foo__inline_class_hash_3f252dc622 {
+        background-color: var(--ppx_css_anonymous_var_9_hash_3f252dc622);
+        background: var(--ppx_css_anonymous_var_10_hash_3f252dc622);
+        background-color: var(--ppx_css_anonymous_var_11_hash_3f252dc622);
+        background-color: var(--ppx_css_anonymous_var_12_hash_3f252dc622);
       }|})
       |xxx}]
   ;;
@@ -354,24 +355,24 @@ module%test [@name "basic"] _ = struct
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__030___eb0a44be26__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__030___f633c2c4ea__group_0;
                       Virtual_dom.Vdom.Attr.class_
-                        {|foo__inline_class_hash_eb0a44be26|}))
+                        {|foo__inline_class_hash_f633c2c4ea|}))
             end
-        end in Ppx_css_anonymous_style__031_.inline_class
+        end in Ppx_css_anonymous_style__031_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__030___eb0a44be26__0 =
+      let sheet_x__030___f633c2c4ea__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__030___eb0a44be26__group_0 =
+      let update_sheet_lazy_fn_x__030___f633c2c4ea__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__030___eb0a44be26__0
+          (Inline_css.Private.update_stylesheet sheet_x__030___f633c2c4ea__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_eb0a44be26 {
-       background-color:var(--foo)
+      .foo__inline_class_hash_f633c2c4ea {
+        background-color: var(--foo);
       }|})
       |xxx}]
   ;;
@@ -484,34 +485,34 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__034_ =
                   (((Css_gen.Color.to_string_css foo)[@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_13_hash_032677e5e6|},
+                  [({|--ppx_css_anonymous_var_13_hash_7669ac6eee|},
                      ppx_css_temp_variable__034_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__033___032677e5e6__group_0;
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__033___7669ac6eee__group_0;
                       ((Virtual_dom.Vdom.Attr.combine
                           (Virtual_dom.Vdom.Attr.class_
-                             {|foo__inline_class_hash_032677e5e6|})
+                             {|foo__inline_class_hash_7669ac6eee|})
                           ppx_css__internal_anonymous_variables__032_)
                       [@merlin.focus ])))
             end
-        end in Ppx_css_anonymous_style__035_.inline_class
+        end in Ppx_css_anonymous_style__035_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__033___032677e5e6__0 =
+      let sheet_x__033___7669ac6eee__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__033___032677e5e6__group_0 =
+      let update_sheet_lazy_fn_x__033___7669ac6eee__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__033___032677e5e6__0
+          (Inline_css.Private.update_stylesheet sheet_x__033___7669ac6eee__0
              {|
       /* app/foo/foo.ml */
 
-      *.foo__inline_class_hash_032677e5e6 {
-       background-color:var(--ppx_css_anonymous_var_13_hash_032677e5e6);
-       color:var(--background-color1)
+      .foo__inline_class_hash_7669ac6eee {
+        background-color: var(--ppx_css_anonymous_var_13_hash_7669ac6eee);
+        color: var(--background-color1);
       }|})
       |xxx}]
   ;;

@@ -10,7 +10,7 @@ module Stylesheet_syntax =
   [%css
   stylesheet
     {|
-      @charset "utf-8";
+      @charset " utf-8";
 
       .foo,
       div {
@@ -19,7 +19,7 @@ module Stylesheet_syntax =
            syntax highting to have the right context is important here. */
         flex: flex-end;
       }
-      |}]
+    |}]
 
 module Foo = struct
   include String
@@ -54,16 +54,16 @@ let styled_component_syntax : Virtual_dom.Vdom.Attr.t list =
         flex: flex-end;
       |}]
   ; {%css|
+      background-color: tomato;
+      flex: flex-end;
+
+      .foo {
         background-color: tomato;
         flex: flex-end;
+      }
 
-        .foo {
-          background-color: tomato;
-          flex: flex-end;
-        }
-
-        flex: flex-end;
-      |}
+      flex: flex-end;
+    |}
   ; [%css {|flex: flex-end;|}]
   ; {%css|flex: flex-end;|}
   ; (* Ampersand. *)
@@ -76,12 +76,12 @@ let styled_component_syntax : Virtual_dom.Vdom.Attr.t list =
         }
       |}]
   ; {%css|
-        & {
-          background-color: tomato;
-          flex: flex-end;
-        }
-        content: %{message#Foo};
-      |}
+      & {
+        background-color: tomato;
+        flex: flex-end;
+      }
+      content: %{message#Foo};
+    |}
   ]
 ;;
 
@@ -102,7 +102,7 @@ let make_icon ~primary_color ~background_color =
           justify-content: center;
           align-items: center;
         }
-        |}]
+      |}]
   in
   Vdom.Node.div ~attrs:[ Style.icon_wrapper ] []
 ;;
@@ -125,7 +125,7 @@ module Style =
         text-align: center;
         cursor: pointer;
       }
-      |}]
+    |}]
 
 let interpolated_ocaml =
   [%css

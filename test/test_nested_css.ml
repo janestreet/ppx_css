@@ -2,7 +2,8 @@ open! Core
 open! Ppxlib
 open! Ppx_css
 
-let loc = Location.none
+let loc = Test_util.loc_with_mock_name
+let () = Ppx_css_syntax.Preprocess_arguments.set_lazy_loading_optimization (Some true)
 
 module%test [@name "styled components tests"] _ = struct
   let test = Test_util.test_expression
@@ -26,31 +27,30 @@ module%test [@name "styled components tests"] _ = struct
         struct
           include
             struct
-              let inline_class =
+              let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
                   (lazy
                      (Inline_css.Ppx_css_runtime.force
-                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___61f7aae6af__group_0;
-                      Virtual_dom.Vdom.Attr.class_ {|inline_class_hash_61f7aae6af|}))
+                        Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__001___d1eeb90a40__group_0;
+                      Virtual_dom.Vdom.Attr.class_
+                        {|foo__inline_class_hash_d1eeb90a40|}))
             end
-        end in Ppx_css_anonymous_style__002_.inline_class
+        end in Ppx_css_anonymous_style__002_.foo__inline_class
       Hoisted context:
       ----------------
-      let sheet_x__001___61f7aae6af__0 =
+      let sheet_x__001___d1eeb90a40__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__001___61f7aae6af__group_0 =
+      let update_sheet_lazy_fn_x__001___d1eeb90a40__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__001___61f7aae6af__0
+          (Inline_css.Private.update_stylesheet sheet_x__001___d1eeb90a40__0
              {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.inline_class_hash_61f7aae6af {
-       background-color:tomato;
-       *.foo {
-
-       }
-
+      .foo__inline_class_hash_d1eeb90a40 {
+        background-color: tomato;
+        .foo {
+        }
       }|})
       |xxx}]
   ;;
@@ -150,42 +150,40 @@ module%test [@name "stylesheet components tests"] _ = struct
         struct
           module For_referencing =
             struct
-              let a = {|a_hash_898b2963c5|}
-              let foo = {|foo_hash_898b2963c5|}
+              let a = {|a_hash_48837b6400|}
+              let foo = {|foo_hash_48837b6400|}
             end
           let a =
             Virtual_dom.Vdom.Attr.lazy_
               (lazy
                  (Inline_css.Ppx_css_runtime.force
-                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___898b2963c5__group_0;
-                  Virtual_dom.Vdom.Attr.class_ {|a_hash_898b2963c5|}))
+                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___48837b6400__group_0;
+                  Virtual_dom.Vdom.Attr.class_ {|a_hash_48837b6400|}))
           let foo =
             Virtual_dom.Vdom.Attr.lazy_
               (lazy
                  (Inline_css.Ppx_css_runtime.force
-                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___898b2963c5__group_0;
-                  Virtual_dom.Vdom.Attr.class_ {|foo_hash_898b2963c5|}))
+                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__003___48837b6400__group_0;
+                  Virtual_dom.Vdom.Attr.class_ {|foo_hash_48837b6400|}))
         end
       include Default
       let default : t = (module Default)
 
       Hoisted module:
 
-      let sheet_x__003___898b2963c5__0 =
+      let sheet_x__003___48837b6400__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__003___898b2963c5__group_0 =
+      let update_sheet_lazy_fn_x__003___48837b6400__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__003___898b2963c5__0
+          (Inline_css.Private.update_stylesheet sheet_x__003___48837b6400__0
              {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_898b2963c5 {
-       background-color:tomato;
-       *.foo_hash_898b2963c5 {
-
-       }
-
+      .a_hash_48837b6400 {
+        background-color: tomato;
+        .foo_hash_48837b6400 {
+        }
       }|})
       |xxx}]
   ;;
@@ -244,14 +242,14 @@ module%test [@name "stylesheet components tests"] _ = struct
       module Default : S =
         struct
           module For_referencing =
-            struct let a = {|a_hash_898b2963c5|}
+            struct let a = {|a_hash_a954182249|}
                    let foo = {|foo|} end
           let a =
             Virtual_dom.Vdom.Attr.lazy_
               (lazy
                  (Inline_css.Ppx_css_runtime.force
-                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__004___898b2963c5__group_0;
-                  Virtual_dom.Vdom.Attr.class_ {|a_hash_898b2963c5|}))
+                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__004___a954182249__group_0;
+                  Virtual_dom.Vdom.Attr.class_ {|a_hash_a954182249|}))
           let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
         end
       include Default
@@ -259,21 +257,19 @@ module%test [@name "stylesheet components tests"] _ = struct
 
       Hoisted module:
 
-      let sheet_x__004___898b2963c5__0 =
+      let sheet_x__004___a954182249__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__004___898b2963c5__group_0 =
+      let update_sheet_lazy_fn_x__004___a954182249__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__004___898b2963c5__0
+          (Inline_css.Private.update_stylesheet sheet_x__004___a954182249__0
              {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_898b2963c5 {
-       background-color:tomato;
-       *.foo {
-
-       }
-
+      .a_hash_a954182249 {
+        background-color: tomato;
+        .foo {
+        }
       }|})
       |xxx}]
   ;;
@@ -308,14 +304,14 @@ module%test [@name "stylesheet components tests"] _ = struct
       module Default : S =
         struct
           module For_referencing =
-            struct let a = {|a_hash_898b2963c5|}
+            struct let a = {|a_hash_d505e893c7|}
                    let foo = {|foo|} end
           let a =
             Virtual_dom.Vdom.Attr.lazy_
               (lazy
                  (Inline_css.Ppx_css_runtime.force
-                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__005___898b2963c5__group_0;
-                  Virtual_dom.Vdom.Attr.class_ {|a_hash_898b2963c5|}))
+                    Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__005___d505e893c7__group_0;
+                  Virtual_dom.Vdom.Attr.class_ {|a_hash_d505e893c7|}))
           let foo = Virtual_dom.Vdom.Attr.class_ {|foo|}
         end
       include Default
@@ -323,21 +319,19 @@ module%test [@name "stylesheet components tests"] _ = struct
 
       Hoisted module:
 
-      let sheet_x__005___898b2963c5__0 =
+      let sheet_x__005___d505e893c7__0 =
         let sheet = Inline_css.Private.create_stylesheet () in
         Inline_css.Private.append_stylesheet sheet; sheet
-      let update_sheet_lazy_fn_x__005___898b2963c5__group_0 =
+      let update_sheet_lazy_fn_x__005___d505e893c7__group_0 =
         lazy
-          (Inline_css.Private.update_stylesheet sheet_x__005___898b2963c5__0
+          (Inline_css.Private.update_stylesheet sheet_x__005___d505e893c7__0
              {|
-      /* _none_ */
+      /* app/foo/foo.ml */
 
-      *.a_hash_898b2963c5 {
-       background-color:tomato;
-       *.foo {
-
-       }
-
+      .a_hash_d505e893c7 {
+        background-color: tomato;
+        .foo {
+        }
       }|})
       |xxx}]
   ;;
@@ -403,29 +397,27 @@ let%expect_test "Hoisting behavior for :not(.a) { .b {} }" =
     module Default : S =
       struct
         module For_referencing =
-          struct let a = {|a_hash_f8a6de5bff|}
-                 let b = {|b_hash_f8a6de5bff|} end
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_f8a6de5bff|}
-        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_f8a6de5bff|}
+          struct let a = {|a_hash_f1b5a8dedb|}
+                 let b = {|b_hash_f1b5a8dedb|} end
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_f1b5a8dedb|}
+        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_f1b5a8dedb|}
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__006___f8a6de5bff__0 =
+    let sheet_x__006___f1b5a8dedb__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__006___f8a6de5bff__0
+      Inline_css.Private.update_stylesheet sheet_x__006___f1b5a8dedb__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:not(.a_hash_f8a6de5bff) {
-     *.b_hash_f8a6de5bff {
-
-     }
-
+    :not(.a_hash_f1b5a8dedb) {
+      .b_hash_f1b5a8dedb {
+      }
     }|}
     |xxx}]
 ;;
@@ -454,32 +446,31 @@ let%expect_test "Hoisting behavior for :not(.a) .b { }" =
     module Default : S =
       struct
         module For_referencing =
-          struct let a = {|a_hash_5c5f4e9512|}
-                 let b = {|b_hash_5c5f4e9512|} end
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_5c5f4e9512|}
+          struct let a = {|a_hash_8926a2bb59|}
+                 let b = {|b_hash_8926a2bb59|} end
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_8926a2bb59|}
         let b =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___5c5f4e9512__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|b_hash_5c5f4e9512|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__007___8926a2bb59__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|b_hash_8926a2bb59|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__007___5c5f4e9512__0 =
+    let sheet_x__007___8926a2bb59__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__007___5c5f4e9512__group_0 =
+    let update_sheet_lazy_fn_x__007___8926a2bb59__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__007___5c5f4e9512__0
+        (Inline_css.Private.update_stylesheet sheet_x__007___8926a2bb59__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *:not(.a_hash_5c5f4e9512) *.b_hash_5c5f4e9512 {
-
+    :not(.a_hash_8926a2bb59) .b_hash_8926a2bb59 {
     }|})
     |xxx}]
 ;;
@@ -491,7 +482,7 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
         {|
         .a {
           :not(.a) {
-            background-color: tomato
+            background-color: tomato;
           }
         }
        |}];
@@ -509,33 +500,32 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let a = {|a_hash_a2faeb435a|} end
+        module For_referencing = struct let a = {|a_hash_73765a197b|} end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___a2faeb435a__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_a2faeb435a|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__008___73765a197b__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_73765a197b|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__008___a2faeb435a__0 =
+    let sheet_x__008___73765a197b__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__008___a2faeb435a__group_0 =
+    let update_sheet_lazy_fn_x__008___73765a197b__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__008___a2faeb435a__0
+        (Inline_css.Private.update_stylesheet sheet_x__008___73765a197b__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_a2faeb435a {
-     *:not(.a_hash_a2faeb435a) {
-      background-color:tomato
-     }
-
+    .a_hash_73765a197b {
+      :not(.a_hash_73765a197b) {
+        background-color: tomato;
+      }
     }|})
     |xxx}];
   test
@@ -544,7 +534,7 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
         {|
         .a {
           :not(:where(.a)) {
-            background-color: tomato
+            background-color: tomato;
           }
         }
        |}];
@@ -562,33 +552,32 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let a = {|a_hash_d80bf92386|} end
+        module For_referencing = struct let a = {|a_hash_b74f0748da|} end
         let a =
           Virtual_dom.Vdom.Attr.lazy_
             (lazy
                (Inline_css.Ppx_css_runtime.force
-                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__009___d80bf92386__group_0;
-                Virtual_dom.Vdom.Attr.class_ {|a_hash_d80bf92386|}))
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__009___b74f0748da__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_b74f0748da|}))
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__009___d80bf92386__0 =
+    let sheet_x__009___b74f0748da__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
-    let update_sheet_lazy_fn_x__009___d80bf92386__group_0 =
+    let update_sheet_lazy_fn_x__009___b74f0748da__group_0 =
       lazy
-        (Inline_css.Private.update_stylesheet sheet_x__009___d80bf92386__0
+        (Inline_css.Private.update_stylesheet sheet_x__009___b74f0748da__0
            {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_d80bf92386 {
-     *:not(:where(.a_hash_d80bf92386)) {
-      background-color:tomato
-     }
-
+    .a_hash_b74f0748da {
+      :not(:where(.a_hash_b74f0748da)) {
+        background-color: tomato;
+      }
     }|})
     |xxx}];
   test
@@ -597,7 +586,7 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
         {|
         .a {
           :not(:where(&)) {
-            background-color: tomato
+            background-color: tomato;
           }
         }
        |}];
@@ -615,27 +604,26 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
     type t = (module S)
     module Default : S =
       struct
-        module For_referencing = struct let a = {|a_hash_30b6699210|} end
-        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_30b6699210|}
+        module For_referencing = struct let a = {|a_hash_3764702bf9|} end
+        let a = Virtual_dom.Vdom.Attr.class_ {|a_hash_3764702bf9|}
       end
     include Default
     let default : t = (module Default)
 
     Hoisted module:
 
-    let sheet_x__010___30b6699210__0 =
+    let sheet_x__010___3764702bf9__0 =
       let sheet = Inline_css.Private.create_stylesheet () in
       Inline_css.Private.append_stylesheet sheet; sheet
     let () =
-      Inline_css.Private.update_stylesheet sheet_x__010___30b6699210__0
+      Inline_css.Private.update_stylesheet sheet_x__010___3764702bf9__0
         {|
-    /* _none_ */
+    /* app/foo/foo.ml */
 
-    *.a_hash_30b6699210 {
-     *:not(:where(&)) {
-      background-color:tomato
-     }
-
+    .a_hash_3764702bf9 {
+      :not(:where(&)) {
+        background-color: tomato;
+      }
     }|}
     |xxx}]
 ;;

@@ -6,7 +6,7 @@ module Normal =
       }
       .a_class {
       }
-      |}]
+    |}]
 
 module With_variables =
   [%css
@@ -19,7 +19,7 @@ module With_variables =
       .a_class #an_id {
         color: var(--fg-color);
       }
-      |}]
+    |}]
 
 module Clashing_id_and_class =
   [%css
@@ -27,7 +27,7 @@ module Clashing_id_and_class =
     {|
       .a #a {
       }
-      |}]
+    |}]
 
 module Variable_clashes_called_set =
   [%css
@@ -37,7 +37,7 @@ module Variable_clashes_called_set =
         color: var(--set);
         width: var(--width);
       }
-      |}]
+    |}]
 
 module _ = Normal
 module _ = With_variables

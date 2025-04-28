@@ -15,7 +15,7 @@ module _ =
           }
         }
       }
-      |}]
+    |}]
 
 let%expect_test "sheet should exist and be auto-forced" =
   clear_before_test ();
@@ -25,24 +25,18 @@ let%expect_test "sheet should exist and be auto-forced" =
     {xxx|
     /* ppx/ppx_css/test/test_laziness/test_turn_off_laziness_no_argument/test_turn_off_laziness_no_argument.ml */
 
-    *.a_hash_7d10aed61b {
-     *.b_hash_7d10aed61b {
-
-     }
-
+    .a_hash_a8eb8e2ea9 {
+      .b_hash_a8eb8e2ea9 {
+      }
     }
 
     /* ppx/ppx_css/test/test_laziness/test_turn_off_laziness_no_argument/test_turn_off_laziness_no_argument.ml */
 
-    @layer test{
-     @layer test-2{
-      *.c_hash_7d10aed61b {
-
+    @layer test {
+      @layer test-2 {
+        .c_hash_a8eb8e2ea9 {
+        }
       }
-
-     }
-
-
     }
     |xxx}]
 ;;
