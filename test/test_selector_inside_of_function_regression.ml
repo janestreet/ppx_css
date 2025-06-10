@@ -16,7 +16,7 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string val b : string end
@@ -66,7 +66,7 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string val b : string end

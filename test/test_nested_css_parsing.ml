@@ -724,7 +724,7 @@ module%test [@name "stylesheet parsing tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  = sig module For_referencing : sig  end end
       type t = (module S)
       module Default : S = struct module For_referencing = struct  end end
@@ -750,7 +750,7 @@ module%test [@name "stylesheet parsing tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  =
         sig
           module For_referencing : sig val foo : string end
@@ -792,7 +792,7 @@ module%test [@name "stylesheet parsing tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  =
         sig
           module For_referencing :
@@ -858,7 +858,7 @@ module%test [@name "stylesheet parsing tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  =
         sig
           module For_referencing :

@@ -69,7 +69,7 @@ let%expect_test "Duplicated version" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing :
@@ -238,7 +238,7 @@ let%expect_test "Merged version - with a specificity battle later" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing :

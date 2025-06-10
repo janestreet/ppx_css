@@ -34,7 +34,7 @@ let%expect_test "basic" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val hello : string end
@@ -89,7 +89,7 @@ let%expect_test "basic with many variables" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val hello : string end
@@ -148,7 +148,7 @@ let%expect_test "basic with modules" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val hello : string end
@@ -211,7 +211,7 @@ let%expect_test "Evaluation order matters" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val hello : string end
@@ -286,7 +286,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -389,7 +389,7 @@ let%expect_test "dont hash" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -468,7 +468,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -547,7 +547,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -638,7 +638,7 @@ let%expect_test "duplicate classes, many classes" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing :
