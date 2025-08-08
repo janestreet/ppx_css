@@ -5,5 +5,5 @@
   (pps ppx_css ppx_jane)))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps inline_css_example_lib.ml.pp inline_css_example_lib.mli.pp))

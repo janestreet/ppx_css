@@ -1,6 +1,7 @@
 open! Core
 module Lexer = Css_parser_lexer
 module Recoverable_error = Recoverable_error
+module Partial_parsing_behavior = Partial_parsing_behavior
 module Parsing_config = Parsing_config
 include Types
 module Traverse = Traverse

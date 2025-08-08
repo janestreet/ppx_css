@@ -12,5 +12,5 @@
   (bash "cp %{first_dep} %{targets}")))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps test_moves_module_timer_above.pp-output))

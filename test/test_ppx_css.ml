@@ -20,7 +20,7 @@ let%expect_test "basic class" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val foo : string end
@@ -64,7 +64,7 @@ let%expect_test "charset" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
     module Default : S = struct module For_referencing = struct  end end
@@ -108,7 +108,7 @@ let%expect_test "nested at rule" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val bar : string val my_foo : string end
@@ -168,7 +168,7 @@ let%expect_test "at rule" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val my_foo : string end
@@ -228,7 +228,7 @@ let%expect_test "basic id" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val foo : string end
@@ -422,7 +422,7 @@ let%expect_test "animation" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val spinner : string end
@@ -506,7 +506,7 @@ let%expect_test "dont hash flag" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing :
@@ -881,7 +881,7 @@ module%test [@name "css_inliner_tests"] _ = struct
         let __type_info_for_ppx_css :
           ?dont_hash:string list ->
             ?dont_hash_prefixes:string list -> string -> unit
-          = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+          = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
         module type S  =
           sig
             module For_referencing : sig val a : string val b : string end
@@ -1001,7 +1001,7 @@ module%test [@name "css_inliner_tests"] _ = struct
         let __type_info_for_ppx_css :
           ?dont_hash:string list ->
             ?dont_hash_prefixes:string list -> string -> unit
-          = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+          = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
         module type S  =
           sig
             module For_referencing : sig val a : string end
@@ -1106,7 +1106,7 @@ let%expect_test "apostrophe syntax" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing :
@@ -1214,7 +1214,7 @@ let%expect_test "ppx_css hashes variables" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -1304,7 +1304,7 @@ let%expect_test "nested variables" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -1422,7 +1422,7 @@ let%expect_test "collision of names between ids and classes results in an alert.
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val foo : string end
@@ -1509,7 +1509,7 @@ let%expect_test "behavior on sharing of id and class names" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string end
@@ -1610,7 +1610,7 @@ let%expect_test "dont_hash" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -1734,7 +1734,7 @@ let%expect_test "dont_hash_prefixes" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -1852,7 +1852,7 @@ let%expect_test "dont_hash_prefixes two different prefixes" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -1978,7 +1978,7 @@ let%expect_test "Unsafe hashing warning is also blocked by [~dont_hash_prefixes]
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module Variables :
@@ -2039,7 +2039,7 @@ let%expect_test "Scary attributes shouldn't be hashed even if they look like sel
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
     module Default : S = struct module For_referencing = struct  end end
@@ -2093,7 +2093,7 @@ let%expect_test "Scary attributes shouldn't be hashed" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
     module Default : S = struct module For_referencing = struct  end end
@@ -2150,7 +2150,7 @@ let%expect_test "classname and id's with the same name, but different auto-forci
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string val b : string end
@@ -2251,7 +2251,7 @@ let%expect_test "classnames and items - transitive" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string val b : string end
@@ -2348,7 +2348,7 @@ let%expect_test "String attrs with identifiers should not be hashed" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
     module Default : S = struct module For_referencing = struct  end end
@@ -2420,7 +2420,7 @@ let%expect_test "Known  css functions with identifiers should hash" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing :
@@ -2536,7 +2536,7 @@ let%expect_test "Doesn't throw on pseudoclasses without selectors" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  = sig module For_referencing : sig  end end
     type t = (module S)
     module Default : S = struct module For_referencing = struct  end end

@@ -60,3 +60,16 @@ module Ident_like : sig
 
   type t = ident_like_part list [@@deriving equal, compare, sexp_of, to_string]
 end
+
+(** Semantic CSS context at an arbitrary position in the parse tree *)
+module Context : sig
+  type t =
+    | Interpolation (* Ocaml interpolations like `color: %{<value>}` *)
+    | Declaration of { property_name : string }
+      (* Property value declarations like `color: <value>` *)
+    | Block (* Style blocks like `.div {<value>}` *)
+    | Rules (* Rule lists like the root of a stylesheet *)
+    | Ambiguous of t list
+      (* A combination of multiple contexts when the parsing is ambiguous *)
+  [@@deriving sexp_of]
+end

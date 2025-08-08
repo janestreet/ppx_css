@@ -138,7 +138,7 @@ module%test [@name "stylesheet components tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  =
         sig
           module For_referencing : sig val a : string val foo : string end
@@ -231,7 +231,7 @@ module%test [@name "stylesheet components tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  =
         sig
           module For_referencing : sig val a : string val foo : string end
@@ -293,7 +293,7 @@ module%test [@name "stylesheet components tests"] _ = struct
       [@@@ocaml.warning "-32"]
       let __type_info_for_ppx_css :
         ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-        = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+        = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
       module type S  =
         sig
           module For_referencing : sig val a : string val foo : string end
@@ -386,7 +386,7 @@ let%expect_test "Hoisting behavior for :not(.a) { .b {} }" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string val b : string end
@@ -435,7 +435,7 @@ let%expect_test "Hoisting behavior for :not(.a) .b { }" =
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string val b : string end
@@ -491,7 +491,7 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string end
@@ -543,7 +543,7 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string end
@@ -595,7 +595,7 @@ let%expect_test "Testing nested CSS with more combinations of [:not], and [:wher
     [@@@ocaml.warning "-32"]
     let __type_info_for_ppx_css :
       ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
-      = fun ?dont_hash:_ ?dont_hash_prefixes:_ _ -> ()
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
     module type S  =
       sig
         module For_referencing : sig val a : string end

@@ -10,14 +10,14 @@ module With_hoisted_expression : sig
   type 'a t =
     { txt : 'a
     ; hoisted_structure_items : structure_item list
-    ; css_string_for_testing : string Lazy.t
+    ; css_string_for_testing : (string * Location.t) Lazy.t
     }
 end
 
 module For_css_inliner : sig
   type result =
     { ml_file : string
-    ; css_string_for_testing : string Lazy.t
+    ; css_string_for_testing : (string * Location.t) Lazy.t
     }
 
   val gen_struct
@@ -50,13 +50,13 @@ module For_testing : sig
     :  loc:location
     -> disable_hashing:bool
     -> expression
-    -> string
+    -> string * Location.t
 
   val generate_css_inline_string
     :  loc:location
     -> disable_hashing:bool
     -> expression
-    -> string
+    -> string * Location.t
 
   val create_should_hash_identifier
     :  dont_hash:String.Set.t

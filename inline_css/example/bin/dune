@@ -12,5 +12,5 @@
   (bash "node %{deps} > %{targets}")))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps style.css))

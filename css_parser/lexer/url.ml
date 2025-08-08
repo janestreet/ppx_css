@@ -70,12 +70,8 @@ let tokenize buf =
           STRING { String_token.value = Lex_buffer.utf8 buf; quote_type = Single }
         in
         let _, end_pos = Lex_buffer.lexing_positions buf
-        and message =
-          [%string
-            "Error while attempting to tokenize string. Please contact the maintainers \
-             of the CSS parser. Last char: %{to_string token} "]
-        in
-        raise (Errors.Unknown_error { start_pos; end_pos; message })
+        and message = [%string "Found invalid char in URL: %{to_string token}"] in
+        raise (Errors.Lexing_error { start_pos; end_pos; message })
       | _ -> assert false
     in
     let _, end_pos = Lex_buffer.lexing_positions buf in

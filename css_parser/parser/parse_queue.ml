@@ -59,9 +59,13 @@ end
 type t =
   { queue : token_with_loc Queue.t
   ; parsing_config : Parsing_config.t
+  ; context : Context.t Stack.t
   }
 
-let of_list ~parsing_config items = { queue = Queue.of_list items; parsing_config }
+let of_list ~parsing_config items =
+  { queue = Queue.of_list items; parsing_config; context = Stack.create () }
+;;
+
 let to_list { queue; _ } = Queue.to_list queue
 let peek t = Core.Queue.peek t.queue
 let peek_exn t = Core.Queue.peek_exn t.queue
@@ -74,15 +78,49 @@ let peek_token_exn tokens =
 ;;
 
 let get_nth_token_exn ~n tokens = Queue.get tokens.queue n |> Tuple2.get1
-let dequeue t = Core.Queue.dequeue t.queue
+
+let stop_if_past_end ~(token : token_with_loc) t =
+  match t.parsing_config.partial_parsing_behavior with
+  | No_partial_parsing -> ()
+  | Stop_parsing_after_reaching { pos_cnum; pos_bol; pos_lnum = stop_line; _ } ->
+    let cur_pos = (snd token).loc_end in
+    let context = Stack.top t.context in
+    let cur_char = cur_pos.pos_cnum - cur_pos.pos_bol in
+    let stop_char = pos_cnum - pos_bol in
+    let next_token_is_eof =
+      (* Also stop if we are about to reach the EOF token to prevent parse
+         errors from peeking ahead. *)
+      match peek t with
+      | Some (EOF, _loc) -> true
+      | None | Some _ -> false
+    in
+    let passed_line = cur_pos.pos_lnum > stop_line in
+    let passed_column_on_current_line =
+      cur_pos.pos_lnum = stop_line && cur_char > stop_char
+    in
+    if next_token_is_eof || passed_line || passed_column_on_current_line
+    then Core.raise (Partial_parsing_behavior.Reached_stop_position_with_context context)
+    else ()
+;;
+
+let dequeue t =
+  match Core.Queue.dequeue t.queue with
+  | Some token ->
+    stop_if_past_end ~token t;
+    Some token
+  | None -> None
+;;
 
 let dequeue_exn ?error_msg t =
   let item =
     let token_before_dequeue = peek t in
     match error_msg with
-    | None -> Core.Queue.dequeue_exn t.queue
+    | None ->
+      let token = Core.Queue.dequeue_exn t.queue in
+      stop_if_past_end ~token t;
+      token
     | Some error_msg ->
-      (match Core.Queue.dequeue t.queue with
+      (match dequeue t with
        | None ->
          (match token_before_dequeue with
           | Some token -> throw_error_for_token token ~f:(fun _ -> force error_msg)
@@ -162,7 +200,13 @@ let token v ~error_message tokens =
   require_next_token_to_match ~matches:(Is v) ~error_msg:error_message tokens
 ;;
 
-let drain ~while_ ~f t = Queue.drain ~while_ ~f t.queue
+let drain ~while_ ~f t =
+  let f token =
+    stop_if_past_end ~token t;
+    f token
+  in
+  Queue.drain ~while_ ~f t.queue
+;;
 
 let process ~while_ ~f t =
   let prev_head = ref None in
@@ -273,14 +317,25 @@ let consume_comments_and_ignore_whitespaces tokens =
   consume_comment_and_whitespace tokens |> filter_whitespaces
 ;;
 
+let with_context new_ctx ~f tokens =
+  Stack.push tokens.context new_ctx;
+  let result = f tokens in
+  let _ : Context.t option = Stack.pop tokens.context in
+  result
+;;
+
 (** This function should _never_ mutate [tokens] itself, only [f] should mutate [tokens]. *)
-let with_loc ~f tokens =
+let with_loc ?(context = None) ~f tokens =
   let first_token =
     match peek tokens with
     | None -> raise_no_location "Unable to retrieve location due to unexpected EOF."
     | Some token -> token
   in
-  let val_ = f tokens in
+  let val_ =
+    match context with
+    | Some context -> with_context context ~f tokens
+    | None -> f tokens
+  in
   let loc_1 = Location.from_token first_token in
   let loc_next = peek_exn tokens |> Location.from_token in
   (* Check to see if the next location is the same as the very first location we checked.
@@ -303,9 +358,9 @@ let with_loc ~f tokens =
 ;;
 
 (** Just like [with_loc], this function should __never__ mutate [tokens] *)
-let with_loc_exn ?(here = Stdlib.Lexing.dummy_pos) ~f tokens =
+let with_loc_exn ?(context = None) ?(here = Stdlib.Lexing.dummy_pos) ~f tokens =
   let token_before_dequeue = peek tokens in
-  match with_loc ~f tokens with
+  match with_loc ~context ~f tokens with
   | None ->
     (* This acts as a default error message if we didn't parse anything when something
        was expected. Ideally, [f] will have its own error message

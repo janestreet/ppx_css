@@ -123,3 +123,13 @@ module Ident_like = struct
 
   let to_string t = List.map t ~f:string_of_ident_like_part |> String.concat ~sep:""
 end
+
+module Context = struct
+  type t =
+    | Interpolation
+    | Declaration of { property_name : string }
+    | Block
+    | Rules
+    | Ambiguous of t list
+  [@@deriving sexp_of]
+end
