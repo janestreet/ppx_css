@@ -238,8 +238,7 @@ module%test [@name "styled component parsing tests"] _ = struct
 
         &:bar { }
       |}];
-    [%expect
-      {xxx| Error while parsing pseudoclass selector. Expected an identifier or function but got WHITESPACE |xxx}]
+    [%expect {xxx| Declaration must end with a semicolon. |xxx}]
   ;;
 
   let%expect_test "parsing regression test" =

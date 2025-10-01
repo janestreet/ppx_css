@@ -2,4 +2,4 @@
  (name test_ppx_css_syntax_highlighting)
  (libraries core virtual_dom.css_gen virtual_dom)
  (preprocess
-  (pps ppx_css)))
+  (pps ppx_css -disable-validation)))

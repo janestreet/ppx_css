@@ -11,7 +11,7 @@ module With_hoisted_expression = struct
   type 'a t =
     { txt : 'a
     ; hoisted_structure_items : structure_item list
-    ; css_string_for_testing : string Lazy.t
+    ; css_string_for_testing : (string * Location.t) Lazy.t
     }
 end
 
@@ -47,6 +47,8 @@ let () =
        audit your application's CSS if you turn this on "
     (Bool (fun v -> Preprocess_arguments.set_lazy_loading_optimization (Some v)))
 ;;
+
+let () = ()
 
 let disable_warning_num ~loc num =
   let open (val Ast_builder.make loc) in
@@ -403,7 +405,7 @@ type hoisted_module_struct_result =
   { struct_to_hoist : structure
   ; maybe_generate_lazy_expr : original_expr:expression -> Css_identifier.t -> expression
   ; assert_post_conditions : unit -> unit
-  ; css_string_for_testing : string Lazy.t
+  ; css_string_for_testing : (string * Location.t) Lazy.t
   }
 
 let create_sheet_hash hash =
@@ -514,7 +516,9 @@ let create_hoisted_module_struct
     Identifier_helper.assert_expression_and_pattern_symmetry sheet_name;
     Identifier_helper.assert_expression_and_pattern_symmetry group_lazy_fn_name
   in
-  let css_string_for_testing = lazy (Map.data css_strings |> String.concat_lines) in
+  let css_string_for_testing =
+    lazy (Map.data css_strings |> String.concat_lines, snd stylesheet)
+  in
   let struct_to_hoist =
     generate_struct_to_hoist
       ~sheet_name
@@ -863,6 +867,7 @@ let generate_struct_from_css_string_and_options
     in
     Tuple2.map_fst stylesheet ~f:Rule_id.identify_stylesheet
   in
+  ();
   let should_hash_identifier =
     create_should_hash_identifier ~dont_hash ~dont_hash_prefixes ~always_hash
     |> Staged.unstage
@@ -1075,7 +1080,7 @@ let create_sig_from_idents ~loc ~identifiers =
 module For_css_inliner = struct
   type result =
     { ml_file : string
-    ; css_string_for_testing : string Lazy.t
+    ; css_string_for_testing : (string * Location.t) Lazy.t
     }
 
   let gen_struct
@@ -1177,31 +1182,6 @@ let inline_extension =
     (fun ~loc ~path:_ expression -> inline_extension_fn ~loc expression)
 ;;
 
-let attempt_to_put_structure_item_after_the_ppx_module_timer_start
-  ~structure_item
-  ~structure
-  =
-  (* NOTE: Registering the CSS at the top of files means that the registry happens
-     before the call to Ppx_module_timer_runtime.record_start. This makes us lose
-     profiling information on CSS registration, which unfortunately, has also
-     historically been one of the slowest things that happens on startup (7/8th's worth
-     of time for some apps). This function attempts to put the ppx_css registry after the
-     timer starts so that the work done by ppx_css is timed.
-  *)
-  match structure with
-  | ([%stri
-       let () = Ppx_module_timer_runtime.record_start Ppx_module_timer_runtime.__MODULE__]
-     as first)
-    :: remaining ->
-    first :: structure_item :: remaining
-    (* Conservatively match on ppx_module_timer_runtime being the first item. If it
-       is, we'll place our hoister after it so that we can include the hoister in
-       the module timer *)
-  | _ ->
-    (* Default to putting the hoisted module at the very front of the structure *)
-    structure_item :: structure
-;;
-
 (** We want [ppx_css] to run after [ppx_html] has transformed style nodes into [ppx_css].
     We then want the hoisted module to be inserted at the top of the file so that the
     modules are registered and available to the rest of the file. *)
@@ -1217,9 +1197,17 @@ let register_hoisted_css =
       let hoister_structure_item =
         Hoister.create_hoisted_module ~loc:{ first.pstr_loc with loc_ghost = true }
       in
-      attempt_to_put_structure_item_after_the_ppx_module_timer_start
+      (* NOTE: Registering the CSS at the top of files means that the registry happens
+         before the call to Ppx_module_timer_runtime.record_start. This makes us lose
+         profiling information on CSS registration, which unfortunately, has also
+         historically been one of the slowest things that happens on startup (7/8th's worth
+         of time for some apps). This function attempts to put the ppx_css registry after the
+         timer starts so that the work done by ppx_css is timed.
+      *)
+      Ppx_module_timer_helpers
+      .attempt_to_put_structure_item_after_the_ppx_module_timer_start
         ~structure_item:hoister_structure_item
-        ~structure)
+        structure)
 ;;
 
 let () =

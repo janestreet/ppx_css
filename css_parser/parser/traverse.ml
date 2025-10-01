@@ -148,7 +148,9 @@ and selector_or_combinator = Complex_selector.selector_or_combinator =
 
 and complex_selector = selector_or_combinator with_comments list with_loc
 and for_apply_style = component_value with_loc list with_loc
-and selector_list = complex_selector with_comments list with_loc [@@deriving traverse_map]
+
+and selector_list = complex_selector with_comments list with_loc
+[@@deriving traverse_map, traverse_iter]
 
 class map' =
   object
@@ -161,3 +163,15 @@ class map' =
   end
 
 class map = map'
+
+class iter' =
+  object
+    inherit iter
+    method bool : bool -> unit = Fn.const ()
+    method list : 'a. ('a -> unit) -> 'a list -> unit = fun f -> List.iter ~f
+    method string : string -> unit = Fn.const ()
+    method location__t : Location.t -> unit = Fn.const ()
+    method option : 'a. ('a -> unit) -> 'a option -> unit = fun f -> Option.iter ~f
+  end
+
+class iter = iter'

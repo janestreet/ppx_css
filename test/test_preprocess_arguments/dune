@@ -12,7 +12,7 @@
   (bash "cp %{first_dep} %{targets}")))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps ppx_css_test_preprocess_arguments.pp-output))
 
 (rule
@@ -37,5 +37,5 @@
   (bash "cp %{first_dep} %{targets}")))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps other_module.pp-output))

@@ -19,6 +19,6 @@
   (bash "cp %{first_dep} %{targets}")))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps test_ppx_css_builds.ml.pp-output-for-review
    test_ppx_css_inline_builds.ml.pp-output-for-review))

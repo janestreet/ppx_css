@@ -13,6 +13,10 @@ let not_asterisk = [%sedlex.regexp? Compl "*"]
 let rec consume_comment_body buf =
   match%sedlex buf with
   | "*/" -> ""
+  | "" ->
+    let start_pos, end_pos = Lex_buffer.lexing_positions buf
+    and message = "Unterminated CSS comment" in
+    raise (Errors.Lexing_error { start_pos; end_pos; message })
   | Star not_asterisk ->
     let str = Lex_buffer.utf8 buf in
     str ^ consume_comment_body buf

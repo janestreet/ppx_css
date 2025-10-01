@@ -52,7 +52,7 @@ module Style =
       }
 
       div > .a {
-        pointer: cursor;
+        cursor: pointer;
       }
 
       .d {
@@ -91,7 +91,7 @@ let%expect_test "groups are forced properly" =
   (* All auto-forced styles should be here *)
   [%expect
     {xxx|
-    -1,0 +1,77
+    === DIFF HUNK ===
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
@@ -103,9 +103,9 @@ let%expect_test "groups are forced properly" =
     +|
     +|@layer test {
     +|  .dont-a {
-    +|    .b_hash_2f088d952d {
+    +|    .b_hash_3e1cc80f02 {
     +|    }
-    +|    .e_hash_2f088d952d {
+    +|    .e_hash_3e1cc80f02 {
     +|    }
     +|  }
     +|}
@@ -118,11 +118,11 @@ let%expect_test "groups are forced properly" =
     +|  @layer nested-layer {
     +|    .c {
     +|      grid-template-rows: 1fr;
-    +|      .d_hash_2f088d952d {
+    +|      .d_hash_3e1cc80f02 {
     +|      }
-    +|      .e_hash_2f088d952d {
+    +|      .e_hash_3e1cc80f02 {
     +|      }
-    +|      .d_hash_2f088d952d + .f_hash_2f088d952d {
+    +|      .d_hash_3e1cc80f02 + .f_hash_3e1cc80f02 {
     +|      }
     +|    }
     +|  }
@@ -145,7 +145,7 @@ let%expect_test "groups are forced properly" =
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
     +|.dont-b {
-    +|  .b_hash_2f088d952d {
+    +|  .b_hash_3e1cc80f02 {
     +|  }
     +|  .c {
     +|  }
@@ -165,7 +165,7 @@ let%expect_test "groups are forced properly" =
     +|
     +|.c {
     +|  display: table;
-    +|  &.d_hash_2f088d952d {
+    +|  &.d_hash_3e1cc80f02 {
     +|    text-align: center;
     +|  }
     +|}
@@ -180,7 +180,7 @@ let%expect_test "groups are forced properly" =
   (* .a and .b should also show up here *)
   [%expect
     {xxx|
-    -3,33 +3,51
+    === DIFF HUNK ===
 
       body {
         background-color: tomato;
@@ -190,9 +190,9 @@ let%expect_test "groups are forced properly" =
 
       @layer test {
         .dont-a {
-          .b_hash_2f088d952d {
+          .b_hash_3e1cc80f02 {
           }
-          .e_hash_2f088d952d {
+          .e_hash_3e1cc80f02 {
           }
         }
       }
@@ -201,7 +201,7 @@ let%expect_test "groups are forced properly" =
 
     +|@layer test {
     +|  @layer nested-layer {
-    +|    .b_hash_2f088d952d {
+    +|    .b_hash_3e1cc80f02 {
     +|      grid-template-columns: 1fr;
     +|    }
     +|  }
@@ -211,7 +211,7 @@ let%expect_test "groups are forced properly" =
     +|
     +|@layer test {
     +|  @layer nested-layer {
-    +|    .a_hash_2f088d952d {
+    +|    .a_hash_3e1cc80f02 {
     +|      display: flex;
     +|    }
     +|  }
@@ -223,21 +223,21 @@ let%expect_test "groups are forced properly" =
         @layer nested-layer {
           .c {
             grid-template-rows: 1fr;
-            .d_hash_2f088d952d {
+            .d_hash_3e1cc80f02 {
             }
-            .e_hash_2f088d952d {
+            .e_hash_3e1cc80f02 {
             }
-            .d_hash_2f088d952d + .f_hash_2f088d952d {
+            .d_hash_3e1cc80f02 + .f_hash_3e1cc80f02 {
             }
           }
         }
       }
-    -50,28 +68,43
+    === DIFF HUNK ===
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
       .dont-b {
-        .b_hash_2f088d952d {
+        .b_hash_3e1cc80f02 {
         }
         .c {
         }
@@ -253,20 +253,20 @@ let%expect_test "groups are forced properly" =
 
     -|
     -|
-    +|div > .a_hash_2f088d952d {
-    +|  pointer: cursor;
+    +|div > .a_hash_3e1cc80f02 {
+    +|  cursor: pointer;
     +|}
     +|
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|.a_hash_2f088d952d .b_hash_2f088d952d {
+    +|.a_hash_3e1cc80f02 .b_hash_3e1cc80f02 {
     +|  display: inline-flex;
     +|}
     +|
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|.b_hash_2f088d952d {
+    +|.b_hash_3e1cc80f02 {
     +|  flex-direction: column;
     +|}
 
@@ -274,7 +274,7 @@ let%expect_test "groups are forced properly" =
 
       .c {
         display: table;
-        &.d_hash_2f088d952d {
+        &.d_hash_3e1cc80f02 {
           text-align: center;
         }
       }
@@ -292,7 +292,7 @@ let%expect_test "groups are forced properly" =
   compare_against_prev ();
   [%expect
     {xxx|
-    -74,32 +74,43
+    === DIFF HUNK ===
         .c {
         }
       }
@@ -305,31 +305,31 @@ let%expect_test "groups are forced properly" =
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      div > .a_hash_2f088d952d {
-        pointer: cursor;
+      div > .a_hash_3e1cc80f02 {
+        cursor: pointer;
       }
 
     +|/* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
     +|
-    +|.d_hash_2f088d952d {
+    +|.d_hash_3e1cc80f02 {
     +|  color: green;
     +|  &:hover {
     +|    outline: blue;
     +|  }
-    +|  .e_hash_2f088d952d {
+    +|  .e_hash_3e1cc80f02 {
     +|    font-size: 14px;
     +|  }
     +|}
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      .a_hash_2f088d952d .b_hash_2f088d952d {
+      .a_hash_3e1cc80f02 .b_hash_3e1cc80f02 {
         display: inline-flex;
       }
 
       /* ppx/ppx_css/test/test_laziness/test_laziness_dont_hash_and_prefixes/test_laziness_dont_hash_and_prefixes.ml */
 
-      .b_hash_2f088d952d {
+      .b_hash_3e1cc80f02 {
         flex-direction: column;
       }
 

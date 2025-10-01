@@ -1,5 +1,5 @@
 (alias
- (name DEFAULT)
+ (name default)
  (deps readme-diff.diff))
 
 (rule

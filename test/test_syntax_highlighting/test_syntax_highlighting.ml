@@ -16,7 +16,7 @@ module Stylesheet_syntax =
       div {
         background-color: tomato;
         /* flex and flex-end is interesting because it is both a "property" and an "attribute" so getting the
-           syntax highting to have the right context is important here. */
+                 syntax highting to have the right context is important here. */
         flex: flex-end;
       }
     |}]
@@ -64,8 +64,13 @@ let styled_component_syntax : Virtual_dom.Vdom.Attr.t list =
 
       flex: flex-end;
     |}
-  ; [%css {|flex: flex-end;|}]
-  ; {%css|flex: flex-end;|}
+  ; [%css
+      {|
+        flex: flex-end;
+      |}]
+  ; {%css|
+      flex: flex-end;
+    |}
   ; (* Ampersand. *)
     [%css
       {|

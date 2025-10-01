@@ -55,3 +55,47 @@ class map : object
   method stylesheet : Stylesheet.t -> Stylesheet.t
   method for_apply_style : For_apply_style.t -> For_apply_style.t
 end
+
+class iter : object
+  method bool : bool -> unit
+  method list : 'a. ('a -> unit) -> 'a list -> unit
+  method string : string -> unit
+  method option : 'a. ('a -> unit) -> 'a option -> unit
+  method string_token : String_token.t -> unit
+  method numeric_value : Numeric_value.t -> unit
+  method location : Location.t -> unit
+  method hash_flag : Hash_flag.t -> unit
+  method exponent : Exponent.t -> unit
+  method with_loc : 'a. ('a -> unit) -> 'a with_loc -> unit
+  method num_with_exponent : num_with_exponent -> unit
+  method dimension_with_exponent : dimension_with_exponent -> unit
+  method comment : comment -> unit
+  method with_comments : 'a. ('a -> unit) -> 'a with_comments -> unit
+  method numeric_value : Numeric_value.t -> unit
+  method location : Location.t -> unit
+  method exponent : Exponent.t -> unit
+  method compound_selector : Compound_selector.t -> unit
+  method combinator : Combinator.t -> unit
+  method complex_selector : Complex_selector.t -> unit
+  method selector_with_loc : Selector.t with_loc -> unit
+  method selector : Selector.t -> unit
+  method component_value : Component_value.t -> unit
+  method selector_list : Selector_list.t -> unit
+  method rule : Rule.t -> unit
+  method declaration : Declaration.t -> unit
+  method declaration_list : Declaration_list.t -> unit
+  method at_rule : At_rule.t -> unit
+  method style_rule : Style_rule.t -> unit
+  method qualified_rule : Qualified_rule.t -> unit
+  method string_token_quote_type : String_token.quote_type -> unit
+  method location__t : Location.t -> unit
+  method simple_block : Simple_block.t -> unit
+  method at_rule_block_type : At_rule.block_type -> unit
+  method selector_or_combinator : Complex_selector.selector_or_combinator -> unit
+  method style_block_block_element : Style_block.Block_element.t -> unit
+  method style_block : Style_block.t -> unit
+  method declaration_list_element : Declaration_list.Element.t -> unit
+  method pseudoclass_element_selector : Pseudoclass_element_selector.t -> unit
+  method stylesheet : Stylesheet.t -> unit
+  method for_apply_style : For_apply_style.t -> unit
+end

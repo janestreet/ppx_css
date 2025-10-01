@@ -147,10 +147,19 @@ val consume_comment_and_whitespace
 
 val consume_comments_and_ignore_whitespaces : t -> (string * Location.t) list
 
+(** Wrap [f] by pushing then popping a [Context.t] from the context stack *)
+val with_context : Context.t -> f:(t -> 'a) -> t -> 'a
+
 (** [with_loc] retrieves the location of the next token before [f] is run, and then the
-    location of the last token that was processed after [f] is run
+    location of the last token that was processed after [f] is run. Optionally, wrap the
+    inner call to f with [with_context] if a [Context.t] is provided.
 
     This function should _never_ mutate [tokens] itself, only [f] should mutate [tokens] *)
-val with_loc : f:(t -> 'a) -> t -> ('a * Location.t) option
+val with_loc : ?context:Context.t option -> f:(t -> 'a) -> t -> ('a * Location.t) option
 
-val with_loc_exn : here:[%call_pos] -> f:(t -> 'a) -> t -> 'a * Location.t
+val with_loc_exn
+  :  ?context:Context.t option
+  -> here:[%call_pos]
+  -> f:(t -> 'a)
+  -> t
+  -> 'a * Location.t

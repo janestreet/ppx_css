@@ -6,6 +6,7 @@ open Types
 let rec consume_list_of_rules tokens =
   let rules_with_loc =
     Parse_queue.with_loc
+      ~context:(Some Rules)
       ~f:
         (Parse_queue.process_into_list ~while_:(Not (Is EOF)) ~f:(function
           | WHITESPACE _ | CDO | CDC | SEMICOLON -> None
@@ -50,7 +51,7 @@ and consume_style_rule tokens =
 and is_declaration_or_qualified_rule tokens =
   Parse_queue.fold_until
     ~init:`Neither
-    ~finish:(fun _ -> `Declaration)
+    ~finish:(fun _ -> `Declaration `Definite)
     ~f:(fun seen (token, _) ->
       match seen with
       (* Check if starts with identifier. If it does and the next non-whitespace and
@@ -63,46 +64,60 @@ and is_declaration_or_qualified_rule tokens =
       | `Ident ->
         (match token with
          | WHITESPACE _ | COMMENT _ -> Continue `Ident
-         | COLON -> Continue `Ident_and_colon
+         | COLON -> Continue (`Ident_and_colon `Just_seen)
          | _ -> Stop `Qualified_rule)
-      | `Ident_and_colon ->
+      | `Ident_and_colon processing_state ->
+        let continue = Continue_or_stop.Continue (`Ident_and_colon `Stale) in
         (match token with
+         (* If we see whitespace directly after the first ident-colon pair, we know it
+            must be a declaration.  *)
+         | WHITESPACE _ | COMMENT _ ->
+           (match processing_state with
+            | `Just_seen -> Stop (`Declaration `Definite)
+            | `Stale -> continue)
+         | SEMICOLON -> Stop (`Declaration `Definite)
          (* Including right brace here so that we throw the proper error if the last
          declaration in a block does not end in a semicolon *)
-         | SEMICOLON | RIGHT_BRACE -> Stop `Declaration
+         | RIGHT_BRACE -> Stop (`Declaration `Maybe_selector)
          (* We're making the distinction here that a brace block cannot exist as a
             component value inside a declaration value *)
          | LEFT_BRACE -> Stop `Qualified_rule
-         | _ -> Continue `Ident_and_colon))
+         (* Once we hit EOF, we cannot trivially descern between a (potentially) malformed
+            declaration and a complex selector. *)
+         | EOF -> Stop (`Declaration `Maybe_selector)
+         | _ -> continue))
     tokens
 
 and consume_style_block_contents ~while_ tokens =
-  Parse_queue.process_into_list
-    ~while_
-    ~f:(function
-      | SEMICOLON | WHITESPACE _ -> None
-      | COMMENT comment ->
-        let loc = Parse_queue.dequeue_exn tokens |> Location.from_token in
-        Some (Style_block.Block_element.Comment (comment, loc))
-      | AT_KEYWORD _ ->
-        let at_rule =
-          Parse_queue.with_loc_exn ~f:(fun tokens -> consume_at_rule tokens) tokens
-          |> Tuple2.map_fst ~f:(fun rule -> Rule.At_rule rule)
-        in
-        Some (Rule at_rule)
-      | _ ->
-        (match is_declaration_or_qualified_rule tokens with
-         | `Declaration ->
-           let declaration =
-             Parse_queue.with_loc_exn ~f:(fun tokens -> consume_declaration tokens) tokens
-           in
-           Some (Declaration declaration)
-         | `Qualified_rule ->
-           let rule =
-             Parse_queue.with_loc_exn ~f:consume_style_rule tokens
-             |> Tuple2.map_fst ~f:(fun rule -> Rule.Style_rule rule)
-           in
-           Some (Rule rule)))
+  Parse_queue.with_context
+    Block
+    ~f:(fun tokens ->
+      Parse_queue.process_into_list tokens ~while_ ~f:(function
+        | SEMICOLON | WHITESPACE _ -> None
+        | COMMENT comment ->
+          let loc = Parse_queue.dequeue_exn tokens |> Location.from_token in
+          Some (Style_block.Block_element.Comment (comment, loc))
+        | AT_KEYWORD _ ->
+          let at_rule =
+            Parse_queue.with_loc_exn ~f:(fun tokens -> consume_at_rule tokens) tokens
+            |> Tuple2.map_fst ~f:(fun rule -> Rule.At_rule rule)
+          in
+          Some (Rule at_rule)
+        | _ ->
+          (match is_declaration_or_qualified_rule tokens with
+           | `Declaration ambiguity ->
+             let declaration =
+               Parse_queue.with_loc_exn
+                 ~f:(fun tokens -> consume_declaration ~ambiguity tokens)
+                 tokens
+             in
+             Some (Declaration declaration)
+           | `Qualified_rule ->
+             let rule =
+               Parse_queue.with_loc_exn ~f:consume_style_rule tokens
+               |> Tuple2.map_fst ~f:(fun rule -> Rule.Style_rule rule)
+             in
+             Some (Rule rule))))
     tokens
 
 and consume_style_block tokens =
@@ -405,6 +420,9 @@ and consume_compound_selector_part ~stage tokens =
     in
     Parse_queue.dequeue_exn tokens
     |> Parse_queue.throw_error_for_token ~f:(fun token ->
+      (* Consume remaining tokens. This ensures any stop exceptions have priority over
+         a parse error. *)
+      Parse_queue.consume_and_ignore ~while_matches:(Not (Is EOF)) tokens;
       let stage_name = Option.value ~default:"a" stage_name in
       [%string
         "Error while parsing selector. Expected start of %{stage_name} selector but got \
@@ -771,7 +789,7 @@ and process_important_from_declaration_value declaration_value =
      whitespaces removed from the start of the reversed list *)
   | _ -> Reversed_list.rev component_values, (false, [])
 
-and consume_declaration tokens =
+and consume_declaration ~ambiguity tokens =
   let name, name_loc =
     Parse_queue.require_next_token_to_match
       ~matches:(Is IDENT)
@@ -791,10 +809,24 @@ and consume_declaration tokens =
     *)
     String.is_prefix ~prefix:"--" name && String.length name > 2
   in
+  let context =
+    let decl = Context.Declaration { property_name = name } in
+    match ambiguity with
+    | `Definite ->
+      (* Definite, can use Declaration directly *)
+      decl
+    | `Maybe_selector ->
+      (* Might be a selector, so include the [Rules] context which includes selectors *)
+      Ambiguous [ decl; Rules ]
+  in
   let (), colon_loc =
-    Parse_queue.require_next_token_to_match
-      ~matches:(Is COLON)
-      ~error_msg:(fun _ -> "Declaration name must be followed by a colon.")
+    Parse_queue.with_context
+      context
+      ~f:(fun tokens ->
+        Parse_queue.require_next_token_to_match
+          ~matches:(Is COLON)
+          ~error_msg:(fun _ -> "Declaration name must be followed by a colon.")
+          tokens)
       tokens
   in
   let check_maybe_missing_semicolon =
@@ -823,6 +855,9 @@ and consume_declaration tokens =
               ~default:!previous_token_loc
               !non_whitespace_component_value_before_ident_loc
           in
+          (* Consume remaining tokens. This ensures any stop exceptions have priority over
+             a parse error. *)
+          Parse_queue.consume_and_ignore ~while_matches:(Not (Is EOF)) tokens;
           Parse_queue.raise
             ~loc:(Location.of_positions ~start:name_loc.loc_start ~end_:loc_end.loc_end)
             "Declaration is missing a semicolon"
@@ -849,6 +884,7 @@ and consume_declaration tokens =
   let declaration_value_with_loc =
     let maybe_declaration_value_list =
       Parse_queue.with_loc
+        ~context:(Some context)
         ~f:
           (consume_component_value_list
              ~maybe_throw_error:check_maybe_missing_semicolon
@@ -891,6 +927,13 @@ and consume_declaration tokens =
       (Missing_semicolon_at_end_of_declaration_list { loc }));
   match declaration_value_with_loc with
   | [], loc when not is_custom_property ->
+    (* Consume the closing brace in the case that we are partial-parsing within
+       an incomplete block *)
+    ignore
+    @@ Parse_queue.with_context
+         ~f:(fun tokens -> Parse_queue.dequeue tokens)
+         context
+         tokens;
     Parse_queue.raise ~loc "Declaration value cannot be empty"
   | declaration_value, declaration_value_loc ->
     let component_values, is_important =
@@ -995,23 +1038,29 @@ and consume_at_rule tokens : At_rule.t =
   { At_rule.name = at_rule_name; prelude = prelude_with_loc; block; loc }
 
 and consume_declaration_list tokens ~while_ : Declaration_list.Element.t list =
-  Parse_queue.process_into_list ~while_ tokens ~f:(function
-    | Token.WHITESPACE _ | SEMICOLON -> None
-    | COMMENT comment ->
-      Some
-        (Declaration_list.Element.Comment
-           (comment, Parse_queue.dequeue_exn tokens |> Location.from_token))
-    | AT_KEYWORD _ ->
-      let at_rule = (Parse_queue.with_loc_exn ~f:consume_at_rule) tokens in
-      Some (At_rule at_rule)
-    | _ ->
-      (match is_declaration_or_qualified_rule tokens with
-       | `Declaration ->
-         let decl = Parse_queue.with_loc_exn ~f:consume_declaration tokens in
-         Some (Declaration decl)
-       | `Qualified_rule ->
-         let rule = Parse_queue.with_loc_exn ~f:consume_qualified_rule tokens in
-         Some (Qualified_rule rule)))
+  Parse_queue.with_context
+    Block
+    ~f:(fun tokens ->
+      Parse_queue.process_into_list tokens ~while_ ~f:(function
+        | Token.WHITESPACE _ | SEMICOLON -> None
+        | COMMENT comment ->
+          Some
+            (Declaration_list.Element.Comment
+               (comment, Parse_queue.dequeue_exn tokens |> Location.from_token))
+        | AT_KEYWORD _ ->
+          let at_rule = (Parse_queue.with_loc_exn ~f:consume_at_rule) tokens in
+          Some (At_rule at_rule)
+        | _ ->
+          (match is_declaration_or_qualified_rule tokens with
+           | `Declaration ambiguity ->
+             let decl =
+               Parse_queue.with_loc_exn ~f:(consume_declaration ~ambiguity) tokens
+             in
+             Some (Declaration decl)
+           | `Qualified_rule ->
+             let rule = Parse_queue.with_loc_exn ~f:consume_qualified_rule tokens in
+             Some (Qualified_rule rule))))
+    tokens
 
 and consume_declaration_list_block tokens : Declaration_list.Element.t list =
   Parse_queue.require_next_token_to_match_and_ignore
@@ -1194,7 +1243,17 @@ and consume_component_value
        branches
     *)
     if not allow_ocaml_code then Parse_queue.maybe_throw_ocaml_code_error tokens;
-    let token, token_loc = Parse_queue.dequeue_exn tokens in
+    let token, token_loc =
+      (* Peek first so we can give the interpolation token the proper context *)
+      let token, _ = Parse_queue.peek_exn tokens in
+      match token with
+      | OCAML_CODE _ ->
+        Parse_queue.with_context
+          Interpolation
+          ~f:(fun tokens -> Parse_queue.dequeue_exn tokens)
+          tokens
+      | _ -> Parse_queue.dequeue_exn tokens
+    in
     let component_value =
       match token with
       | Token.WHITESPACE value -> Component_value.Whitespace value

@@ -13,7 +13,7 @@ let _ : Vdom.Attr.t =
       width: %{"2px"};
 
       .i-should-not-be-hashed {
-        background-color: rebaccapurple;
+        background-color: rebeccapurple;
       }
     |}]
 ;;

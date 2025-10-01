@@ -20,6 +20,7 @@ depends: [
   "ppx_here"
   "ppx_jane"
   "ppx_let"
+  "ppx_module_timer"
   "ppx_sexp_conv"
   "ppx_string"
   "ppxlib_jane"
