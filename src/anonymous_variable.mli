@@ -31,7 +31,7 @@ end
 
 type t
 
-val of_expression : expression -> t
+val of_expression : loc:location -> expression -> t
 
 (** The made up name that is minted for the variable. *)
 val name : t -> Name.t

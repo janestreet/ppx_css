@@ -52,6 +52,7 @@ class map : object
   method pseudoclass_element_selector :
     Pseudoclass_element_selector.t -> Pseudoclass_element_selector.t
 
+  method interpolation_sigil : Interpolation_sigil.t -> Interpolation_sigil.t
   method stylesheet : Stylesheet.t -> Stylesheet.t
   method for_apply_style : For_apply_style.t -> For_apply_style.t
 end
@@ -96,6 +97,7 @@ class iter : object
   method style_block : Style_block.t -> unit
   method declaration_list_element : Declaration_list.Element.t -> unit
   method pseudoclass_element_selector : Pseudoclass_element_selector.t -> unit
+  method interpolation_sigil : Interpolation_sigil.t -> unit
   method stylesheet : Stylesheet.t -> unit
   method for_apply_style : For_apply_style.t -> unit
 end

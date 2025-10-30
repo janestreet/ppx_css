@@ -46,7 +46,7 @@ let%expect_test "basic" =
         let ppx_css__internal_anonymous_variables__001_ =
           let ppx_css_temp_variable__003_ = (((color)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_1_hash_1cf8ea41b4|},
+            [({|--ppx_css_foo_anon_variable_1_hash_1cf8ea41b4|},
                ppx_css_temp_variable__003_)]
         module For_referencing = struct let hello = {|hello_hash_1cf8ea41b4|} end
         let hello =
@@ -71,7 +71,7 @@ let%expect_test "basic" =
     /* app/foo/foo.ml */
 
     .hello_hash_1cf8ea41b4 {
-      background-color: var(--ppx_css_anonymous_var_1_hash_1cf8ea41b4);
+      background-color: var(--ppx_css_foo_anon_variable_1_hash_1cf8ea41b4);
     }|})
     |xxx}]
 ;;
@@ -102,9 +102,9 @@ let%expect_test "basic with many variables" =
           let ppx_css_temp_variable__006_ = (((color)[@merlin.focus ]) : string) in
           let ppx_css_temp_variable__007_ = (((color2)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_2_hash_1934b652f4|},
+            [({|--ppx_css_foo_anon_variable_2_hash_1934b652f4|},
                ppx_css_temp_variable__006_);
-            ({|--ppx_css_anonymous_var_3_hash_1934b652f4|},
+            ({|--ppx_css_foo_anon_variable_3_hash_1934b652f4|},
               ppx_css_temp_variable__007_)]
         module For_referencing = struct let hello = {|hello_hash_1934b652f4|} end
         let hello =
@@ -129,8 +129,8 @@ let%expect_test "basic with many variables" =
     /* app/foo/foo.ml */
 
     .hello_hash_1934b652f4 {
-      background-color: var(--ppx_css_anonymous_var_2_hash_1934b652f4);
-      color: var(--ppx_css_anonymous_var_3_hash_1934b652f4);
+      background-color: var(--ppx_css_foo_anon_variable_2_hash_1934b652f4);
+      color: var(--ppx_css_foo_anon_variable_3_hash_1934b652f4);
     }|})
     |xxx}]
 ;;
@@ -163,9 +163,9 @@ let%expect_test "basic with modules" =
           let ppx_css_temp_variable__011_ =
             (((Css_gen.Length.to_string_css width)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_4_hash_58ff4c7f8d|},
+            [({|--ppx_css_foo_anon_variable_4_hash_58ff4c7f8d|},
                ppx_css_temp_variable__010_);
-            ({|--ppx_css_anonymous_var_5_hash_58ff4c7f8d|},
+            ({|--ppx_css_foo_anon_variable_5_hash_58ff4c7f8d|},
               ppx_css_temp_variable__011_)]
         module For_referencing = struct let hello = {|hello_hash_58ff4c7f8d|} end
         let hello =
@@ -190,8 +190,8 @@ let%expect_test "basic with modules" =
     /* app/foo/foo.ml */
 
     .hello_hash_58ff4c7f8d {
-      background-color: var(--ppx_css_anonymous_var_4_hash_58ff4c7f8d);
-      min-width: var(--ppx_css_anonymous_var_5_hash_58ff4c7f8d);
+      background-color: var(--ppx_css_foo_anon_variable_4_hash_58ff4c7f8d);
+      min-width: var(--ppx_css_foo_anon_variable_5_hash_58ff4c7f8d);
     }|})
     |xxx}]
 ;;
@@ -232,13 +232,13 @@ let%expect_test "Evaluation order matters" =
             (((Css_gen.Color.to_string_css (fourth ()))
             [@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_6_hash_3813a8f4d2|},
+            [({|--ppx_css_foo_anon_variable_6_hash_3813a8f4d2|},
                ppx_css_temp_variable__014_);
-            ({|--ppx_css_anonymous_var_7_hash_3813a8f4d2|},
+            ({|--ppx_css_foo_anon_variable_7_hash_3813a8f4d2|},
               ppx_css_temp_variable__015_);
-            ({|--ppx_css_anonymous_var_8_hash_3813a8f4d2|},
+            ({|--ppx_css_foo_anon_variable_8_hash_3813a8f4d2|},
               ppx_css_temp_variable__016_);
-            ({|--ppx_css_anonymous_var_9_hash_3813a8f4d2|},
+            ({|--ppx_css_foo_anon_variable_9_hash_3813a8f4d2|},
               ppx_css_temp_variable__017_)]
         module For_referencing = struct let hello = {|hello_hash_3813a8f4d2|} end
         let hello =
@@ -263,10 +263,10 @@ let%expect_test "Evaluation order matters" =
     /* app/foo/foo.ml */
 
     .hello_hash_3813a8f4d2 {
-      background-color: var(--ppx_css_anonymous_var_6_hash_3813a8f4d2);
-      background-color: var(--ppx_css_anonymous_var_7_hash_3813a8f4d2);
-      background-color: var(--ppx_css_anonymous_var_8_hash_3813a8f4d2);
-      background-color: var(--ppx_css_anonymous_var_9_hash_3813a8f4d2);
+      background-color: var(--ppx_css_foo_anon_variable_6_hash_3813a8f4d2);
+      background-color: var(--ppx_css_foo_anon_variable_7_hash_3813a8f4d2);
+      background-color: var(--ppx_css_foo_anon_variable_8_hash_3813a8f4d2);
+      background-color: var(--ppx_css_foo_anon_variable_9_hash_3813a8f4d2);
     }|})
     |xxx}]
 ;;
@@ -303,7 +303,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
         let ppx_css__internal_anonymous_variables__018_ =
           let ppx_css_temp_variable__020_ = (((color)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_10_hash_a6ac6c0f21|},
+            [({|--ppx_css_foo_anon_variable_10_hash_a6ac6c0f21|},
                ppx_css_temp_variable__020_)]
         module Variables =
           struct
@@ -348,7 +348,7 @@ let%expect_test "Anonymous variable and user defined variable are both hashed (d
     /* app/foo/foo.ml */
 
     .hello_hash_a6ac6c0f21 {
-      background-color: var(--ppx_css_anonymous_var_10_hash_a6ac6c0f21);
+      background-color: var(--ppx_css_foo_anon_variable_10_hash_a6ac6c0f21);
       width: var(--bar_hash_a6ac6c0f21);
     }|})
     |xxx}]
@@ -406,7 +406,7 @@ let%expect_test "dont hash" =
         let ppx_css__internal_anonymous_variables__024_ =
           let ppx_css_temp_variable__026_ = (((color)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_11_hash_a6ac6c0f21|},
+            [({|--ppx_css_foo_anon_variable_11_hash_a6ac6c0f21|},
                ppx_css_temp_variable__026_)]
         module Variables =
           struct
@@ -448,7 +448,7 @@ let%expect_test "dont hash" =
     /* app/foo/foo.ml */
 
     .hello_hash_a6ac6c0f21 {
-      background-color: var(--ppx_css_anonymous_var_11_hash_a6ac6c0f21);
+      background-color: var(--ppx_css_foo_anon_variable_11_hash_a6ac6c0f21);
       width: var(--bar);
     }|})
     |xxx}]
@@ -485,7 +485,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
         let ppx_css__internal_anonymous_variables__030_ =
           let ppx_css_temp_variable__032_ = (((color)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_12_hash_a6ac6c0f21|},
+            [({|--ppx_css_foo_anon_variable_12_hash_a6ac6c0f21|},
                ppx_css_temp_variable__032_)]
         module Variables =
           struct
@@ -527,7 +527,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
     /* app/foo/foo.ml */
 
     .hello_hash_a6ac6c0f21 {
-      background-color: var(--ppx_css_anonymous_var_12_hash_a6ac6c0f21);
+      background-color: var(--ppx_css_foo_anon_variable_12_hash_a6ac6c0f21);
       width: var(--bar);
     }|})
     |xxx}]
@@ -564,7 +564,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
         let ppx_css__internal_anonymous_variables__036_ =
           let ppx_css_temp_variable__038_ = (((color)[@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_13_hash_a6ac6c0f21|},
+            [({|--ppx_css_foo_anon_variable_13_hash_a6ac6c0f21|},
                ppx_css_temp_variable__038_)]
         module Variables =
           struct
@@ -606,7 +606,7 @@ let%expect_test "dont hash prefixes does not affect anonymous variables" =
     /* app/foo/foo.ml */
 
     .hello_hash_a6ac6c0f21 {
-      background-color: var(--ppx_css_anonymous_var_13_hash_a6ac6c0f21);
+      background-color: var(--ppx_css_foo_anon_variable_13_hash_a6ac6c0f21);
       width: var(--bar);
     }|})
     |xxx}]
@@ -656,9 +656,9 @@ let%expect_test "duplicate classes, many classes" =
           let ppx_css_temp_variable__046_ = (((Color.to_string_css (g ()))
             [@merlin.focus ]) : string) in
           Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-            [({|--ppx_css_anonymous_var_15_hash_e9cc665259|},
+            [({|--ppx_css_foo_anon_variable_15_hash_e9cc665259|},
                ppx_css_temp_variable__045_);
-            ({|--ppx_css_anonymous_var_16_hash_e9cc665259|},
+            ({|--ppx_css_foo_anon_variable_16_hash_e9cc665259|},
               ppx_css_temp_variable__046_)]
         module For_referencing =
           struct
@@ -719,14 +719,14 @@ let%expect_test "duplicate classes, many classes" =
     /* app/foo/foo.ml */
 
     .a_hash_e9cc665259, .b_hash_e9cc665259, .c_hash_e9cc665259:not(.d_hash_e9cc665259) {
-      background-color: var(--ppx_css_anonymous_var_15_hash_e9cc665259);
+      background-color: var(--ppx_css_foo_anon_variable_15_hash_e9cc665259);
     }|};
          Inline_css.Private.update_stylesheet sheet_x__044___e9cc665259__1
            {|
     /* app/foo/foo.ml */
 
     .d_hash_e9cc665259:hover .a_hash_e9cc665259 {
-      background-color: var(--ppx_css_anonymous_var_16_hash_e9cc665259);
+      background-color: var(--ppx_css_foo_anon_variable_16_hash_e9cc665259);
     }|})
     |xxx}]
 ;;

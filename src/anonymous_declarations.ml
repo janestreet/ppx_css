@@ -84,7 +84,7 @@ module Find_anonymous_variables = struct
 
   let f (stylesheet : Css_parser.Stylesheet.t) : result =
     let acc = ref Reversed_list.[] in
-    let f (code, string_loc) =
+    let f ((code, sigil), string_loc) =
       let loc =
         let location_modifier =
           (* The ocaml tokenizer parses columns as 0-indexed but the css parser expects
@@ -114,6 +114,18 @@ module Find_anonymous_variables = struct
         | None -> code, None
         | Some (value, module_path) -> value, Some module_path
       in
+      let ( (* Raise if invalid sigil + module path. [ #{<string_literal} ] does not allow 
+              a module path, while [ %{<Css_gen_value>} ] allows for them.
+            *) )
+        =
+        match sigil, module_path with
+        | Interpolation_sigil.Hash, Some _ ->
+          Location.raise_errorf
+            ~loc:string_loc
+            "#{ } interpolation blocks only accept string values and do not accept \
+             module paths to convert to strings"
+        | _ -> ()
+      in
       let expression =
         let expression =
           Merlin_helpers.focus_expression
@@ -131,7 +143,7 @@ module Find_anonymous_variables = struct
         in
         [%expr ([%e expression] : string)]
       in
-      let anonymous_variable = Anonymous_variable.of_expression expression in
+      let anonymous_variable = Anonymous_variable.of_expression ~loc expression in
       acc := anonymous_variable :: !acc;
       let name = Anonymous_variable.name anonymous_variable in
       Anonymous_variable.Name.to_css_variable name
@@ -208,7 +220,7 @@ let%expect_test "[always_hash]" =
   test {|background-color: var(--red);|};
   [%expect {| (inline_class) |}];
   test {|background-color: %{color};|};
-  [%expect {| (--ppx_css_anonymous_var_1 inline_class) |}]
+  [%expect {| (--ppx_css__none__anon_variable_1 inline_class) |}]
 ;;
 
 let%expect_test "[inferred_do_not_hash]" =
@@ -279,14 +291,14 @@ let%expect_test _ =
   [%expect
     {|
     .inline_class {
-      background-color: var(--ppx_css_anonymous_var_1);
+      background-color: var(--ppx_css__none__anon_variable_1);
     }
     |}];
   test {|background-color: %{color#Module.Foo};|};
   [%expect
     {|
     .inline_class {
-      background-color: var(--ppx_css_anonymous_var_1);
+      background-color: var(--ppx_css__none__anon_variable_1);
     }
     |}];
   test
@@ -305,9 +317,9 @@ let%expect_test _ =
       background-color: red;
       background-color: var(--foo);
       --tom: tomato;
-      --tom: var(--ppx_css_anonymous_var_1);
-      background-color: var(--ppx_css_anonymous_var_2);
-      background-color: var(--ppx_css_anonymous_var_3);
+      --tom: var(--ppx_css__none__anon_variable_1);
+      background-color: var(--ppx_css__none__anon_variable_2);
+      background-color: var(--ppx_css__none__anon_variable_3);
     }
     |}]
 ;;

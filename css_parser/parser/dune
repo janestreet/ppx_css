@@ -1,7 +1,7 @@
 (library
  (name css_parser)
  (public_name ppx_css.css_parser)
- (libraries core compiler-libs.common css_parser_common css_parser_lexer
+ (libraries core css_parser_common css_parser_lexer compiler-libs.common
    core_kernel.reversed_list)
  (preprocess
   (pps ppx_jane ppxlib.traverse)))

@@ -49,7 +49,7 @@ module%test [@name "inline css"] _ = struct
     [%expect
       {|
       <div class="test_css_bonsai_integration__inline_class_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_1_hash_replaced_in_test tomato))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_1_hash_replaced_in_test tomato))> </div>
       |}]
   ;;
 
@@ -59,7 +59,7 @@ module%test [@name "inline css"] _ = struct
     [%expect
       {|
       <div class="test_css_bonsai_integration__inline_class_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_2_hash_replaced_in_test #ff0000))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_2_hash_replaced_in_test #ff0000))> </div>
       |}]
   ;;
 
@@ -74,7 +74,7 @@ module%test [@name "inline css"] _ = struct
     [%expect
       {|
       <div class="test_css_bonsai_integration__inline_class_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_3_hash_replaced_in_test #ff0000))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_3_hash_replaced_in_test #ff0000))> </div>
       |}]
   ;;
 
@@ -103,7 +103,7 @@ module%test [@name "inline css"] _ = struct
       fifth
       sixth
       <div class="test_css_bonsai_integration__inline_class_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_4_hash_replaced_in_test #ff0000)(--ppx_css_anonymous_var_5_hash_replaced_in_test #ff0000)(--ppx_css_anonymous_var_6_hash_replaced_in_test #ff0000)(--ppx_css_anonymous_var_7_hash_replaced_in_test #ff0000)(--ppx_css_anonymous_var_8_hash_replaced_in_test #ff0000)(--ppx_css_anonymous_var_9_hash_replaced_in_test #ff0000))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_4_hash_replaced_in_test #ff0000)(--ppx_css_test_css_bonsai_integration_anon_variable_5_hash_replaced_in_test #ff0000)(--ppx_css_test_css_bonsai_integration_anon_variable_6_hash_replaced_in_test #ff0000)(--ppx_css_test_css_bonsai_integration_anon_variable_7_hash_replaced_in_test #ff0000)(--ppx_css_test_css_bonsai_integration_anon_variable_8_hash_replaced_in_test #ff0000)(--ppx_css_test_css_bonsai_integration_anon_variable_9_hash_replaced_in_test #ff0000))> </div>
       |}]
   ;;
 end
@@ -133,7 +133,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
     [%expect
       {|
       <div class="foo_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_10_hash_replaced_in_test tomato))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_10_hash_replaced_in_test tomato))> </div>
       |}]
   ;;
 
@@ -157,7 +157,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
     [%expect
       {|
       <div class="bar_hash_replaced_in_test baz_hash_replaced_in_test foo_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_11_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_12_hash_replaced_in_test hotpink)(--ppx_css_anonymous_var_11_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_12_hash_replaced_in_test hotpink)(--ppx_css_anonymous_var_11_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_12_hash_replaced_in_test hotpink))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_11_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_12_hash_replaced_in_test hotpink)(--ppx_css_test_css_bonsai_integration_anon_variable_11_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_12_hash_replaced_in_test hotpink)(--ppx_css_test_css_bonsai_integration_anon_variable_11_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_12_hash_replaced_in_test hotpink))> </div>
       |}]
   ;;
 
@@ -183,7 +183,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
     [%expect
       {|
       <div class="bar_hash_replaced_in_test baz_hash_replaced_in_test foo_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_13_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_14_hash_replaced_in_test #FF00FF)(--ppx_css_anonymous_var_15_hash_replaced_in_test 1px)(--ppx_css_anonymous_var_13_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_14_hash_replaced_in_test #FF00FF)(--ppx_css_anonymous_var_15_hash_replaced_in_test 1px)(--ppx_css_anonymous_var_13_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_14_hash_replaced_in_test #FF00FF)(--ppx_css_anonymous_var_15_hash_replaced_in_test 1px))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_13_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_14_hash_replaced_in_test #FF00FF)(--ppx_css_test_css_bonsai_integration_anon_variable_15_hash_replaced_in_test 1px)(--ppx_css_test_css_bonsai_integration_anon_variable_13_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_14_hash_replaced_in_test #FF00FF)(--ppx_css_test_css_bonsai_integration_anon_variable_15_hash_replaced_in_test 1px)(--ppx_css_test_css_bonsai_integration_anon_variable_13_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_14_hash_replaced_in_test #FF00FF)(--ppx_css_test_css_bonsai_integration_anon_variable_15_hash_replaced_in_test 1px))> </div>
       |}]
   ;;
 
@@ -206,7 +206,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
     [%expect
       {|
       <div class="bar_hash_replaced_in_test baz_hash_replaced_in_test foo_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_16_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_16_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_16_hash_replaced_in_test tomato))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_16_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_16_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_16_hash_replaced_in_test tomato))> </div>
       |}]
   ;;
 
@@ -239,7 +239,7 @@ module%test [@name "interpolated stylesheet css"] _ = struct
       third
       fourth
       <div class="bar_hash_replaced_in_test baz_hash_replaced_in_test foo_hash_replaced_in_test"
-           custom-css-vars=((--ppx_css_anonymous_var_17_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_18_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_19_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_20_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_17_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_18_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_19_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_20_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_17_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_18_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_19_hash_replaced_in_test tomato)(--ppx_css_anonymous_var_20_hash_replaced_in_test tomato))> </div>
+           custom-css-vars=((--ppx_css_test_css_bonsai_integration_anon_variable_17_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_18_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_19_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_20_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_17_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_18_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_19_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_20_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_17_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_18_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_19_hash_replaced_in_test tomato)(--ppx_css_test_css_bonsai_integration_anon_variable_20_hash_replaced_in_test tomato))> </div>
       |}]
   ;;
 end

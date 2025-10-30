@@ -1,7 +1,7 @@
 (library
  (name css_parser_lexer)
  (public_name ppx_css.css_parser_lexer)
- (libraries compiler-libs.common core_kernel.reversed_list sedlex core
-   ocaml-compiler-libs.common css_parser_common)
+ (libraries core css_parser_common ocaml-compiler-libs.common
+   compiler-libs.common core_kernel.reversed_list sedlex)
  (preprocess
   (pps ppx_jane sedlex.ppx)))

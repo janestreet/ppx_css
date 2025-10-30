@@ -65,7 +65,7 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__005_ = (((color)
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_1_hash_6b357a741b|},
+                  [({|--ppx_css_foo_anon_variable_1_hash_6b357a741b|},
                      ppx_css_temp_variable__005_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
@@ -91,7 +91,7 @@ module%test [@name "basic"] _ = struct
       /* app/foo/foo.ml */
 
       .foo__inline_class_hash_6b357a741b {
-        background-color: var(--ppx_css_anonymous_var_1_hash_6b357a741b);
+        background-color: var(--ppx_css_foo_anon_variable_1_hash_6b357a741b);
       }|})
       |xxx}]
   ;;
@@ -114,7 +114,7 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__009_ = (((Mod.Foo.to_string_css color)
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_2_hash_18eb8b8bc0|},
+                  [({|--ppx_css_foo_anon_variable_2_hash_18eb8b8bc0|},
                      ppx_css_temp_variable__009_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
@@ -140,7 +140,7 @@ module%test [@name "basic"] _ = struct
       /* app/foo/foo.ml */
 
       .foo__inline_class_hash_18eb8b8bc0 {
-        background-color: var(--ppx_css_anonymous_var_2_hash_18eb8b8bc0);
+        background-color: var(--ppx_css_foo_anon_variable_2_hash_18eb8b8bc0);
       }|})
       |xxx}]
   ;;
@@ -169,11 +169,11 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__015_ = (((color3)
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_3_hash_9e12f590b9|},
+                  [({|--ppx_css_foo_anon_variable_3_hash_9e12f590b9|},
                      ppx_css_temp_variable__013_);
-                  ({|--ppx_css_anonymous_var_4_hash_9e12f590b9|},
+                  ({|--ppx_css_foo_anon_variable_4_hash_9e12f590b9|},
                     ppx_css_temp_variable__014_);
-                  ({|--ppx_css_anonymous_var_5_hash_9e12f590b9|},
+                  ({|--ppx_css_foo_anon_variable_5_hash_9e12f590b9|},
                     ppx_css_temp_variable__015_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
@@ -199,9 +199,9 @@ module%test [@name "basic"] _ = struct
       /* app/foo/foo.ml */
 
       .foo__inline_class_hash_9e12f590b9 {
-        background-color: var(--ppx_css_anonymous_var_3_hash_9e12f590b9);
-        background: var(--ppx_css_anonymous_var_4_hash_9e12f590b9);
-        background-color: var(--ppx_css_anonymous_var_5_hash_9e12f590b9);
+        background-color: var(--ppx_css_foo_anon_variable_3_hash_9e12f590b9);
+        background: var(--ppx_css_foo_anon_variable_4_hash_9e12f590b9);
+        background-color: var(--ppx_css_foo_anon_variable_5_hash_9e12f590b9);
       }|})
       |xxx}]
   ;;
@@ -230,11 +230,11 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__021_ = (((f ())
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_6_hash_f3ab95e4a3|},
+                  [({|--ppx_css_foo_anon_variable_6_hash_f3ab95e4a3|},
                      ppx_css_temp_variable__019_);
-                  ({|--ppx_css_anonymous_var_7_hash_f3ab95e4a3|},
+                  ({|--ppx_css_foo_anon_variable_7_hash_f3ab95e4a3|},
                     ppx_css_temp_variable__020_);
-                  ({|--ppx_css_anonymous_var_8_hash_f3ab95e4a3|},
+                  ({|--ppx_css_foo_anon_variable_8_hash_f3ab95e4a3|},
                     ppx_css_temp_variable__021_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
@@ -260,9 +260,9 @@ module%test [@name "basic"] _ = struct
       /* app/foo/foo.ml */
 
       .foo__inline_class_hash_f3ab95e4a3 {
-        background-color: var(--ppx_css_anonymous_var_6_hash_f3ab95e4a3);
-        background: var(--ppx_css_anonymous_var_7_hash_f3ab95e4a3);
-        background-color: var(--ppx_css_anonymous_var_8_hash_f3ab95e4a3);
+        background-color: var(--ppx_css_foo_anon_variable_6_hash_f3ab95e4a3);
+        background: var(--ppx_css_foo_anon_variable_7_hash_f3ab95e4a3);
+        background-color: var(--ppx_css_foo_anon_variable_8_hash_f3ab95e4a3);
       }|})
       |xxx}]
   ;;
@@ -296,13 +296,13 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__028_ = (((fourth ())
                   [@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_9_hash_3f252dc622|},
+                  [({|--ppx_css_foo_anon_variable_9_hash_3f252dc622|},
                      ppx_css_temp_variable__025_);
-                  ({|--ppx_css_anonymous_var_10_hash_3f252dc622|},
+                  ({|--ppx_css_foo_anon_variable_10_hash_3f252dc622|},
                     ppx_css_temp_variable__026_);
-                  ({|--ppx_css_anonymous_var_11_hash_3f252dc622|},
+                  ({|--ppx_css_foo_anon_variable_11_hash_3f252dc622|},
                     ppx_css_temp_variable__027_);
-                  ({|--ppx_css_anonymous_var_12_hash_3f252dc622|},
+                  ({|--ppx_css_foo_anon_variable_12_hash_3f252dc622|},
                     ppx_css_temp_variable__028_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
@@ -328,10 +328,10 @@ module%test [@name "basic"] _ = struct
       /* app/foo/foo.ml */
 
       .foo__inline_class_hash_3f252dc622 {
-        background-color: var(--ppx_css_anonymous_var_9_hash_3f252dc622);
-        background: var(--ppx_css_anonymous_var_10_hash_3f252dc622);
-        background-color: var(--ppx_css_anonymous_var_11_hash_3f252dc622);
-        background-color: var(--ppx_css_anonymous_var_12_hash_3f252dc622);
+        background-color: var(--ppx_css_foo_anon_variable_9_hash_3f252dc622);
+        background: var(--ppx_css_foo_anon_variable_10_hash_3f252dc622);
+        background-color: var(--ppx_css_foo_anon_variable_11_hash_3f252dc622);
+        background-color: var(--ppx_css_foo_anon_variable_12_hash_3f252dc622);
       }|})
       |xxx}]
   ;;
@@ -485,7 +485,7 @@ module%test [@name "basic"] _ = struct
                 let ppx_css_temp_variable__034_ =
                   (((Css_gen.Color.to_string_css foo)[@merlin.focus ]) : string) in
                 Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                  [({|--ppx_css_anonymous_var_13_hash_7669ac6eee|},
+                  [({|--ppx_css_foo_anon_variable_13_hash_7669ac6eee|},
                      ppx_css_temp_variable__034_)]
               let foo__inline_class =
                 Virtual_dom.Vdom.Attr.lazy_
@@ -511,7 +511,7 @@ module%test [@name "basic"] _ = struct
       /* app/foo/foo.ml */
 
       .foo__inline_class_hash_7669ac6eee {
-        background-color: var(--ppx_css_anonymous_var_13_hash_7669ac6eee);
+        background-color: var(--ppx_css_foo_anon_variable_13_hash_7669ac6eee);
         color: var(--background-color1);
       }|})
       |xxx}]

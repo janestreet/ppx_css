@@ -49,40 +49,51 @@ let get_ocaml_code =
       in
       raise (Errors.Lexing_error { start_pos; end_pos; message })
   in
+  let f ~sigil ~start_pos buf =
+    let left_braces = ref 1 in
+    let right_braces = ref 0 in
+    let potential_ocaml_code = ref "" in
+    while !left_braces <> !right_braces do
+      let ocaml_code_part = match_closing_brace_for_ocaml ~start_pos buf in
+      potential_ocaml_code := !potential_ocaml_code ^ ocaml_code_part;
+      let ocaml_code_to_tokenize =
+        (* We still have to use the [ %{ ] sigil here because [ #{ ] isn't a standard 
+           string interpolation sigil. We omit interpolation open + close in AST node 
+           for [OCAML_CODE] anyways *)
+        "%{" ^ !potential_ocaml_code
+      in
+      match Ocaml_tokenizer.tokens_with_loc ocaml_code_to_tokenize with
+      | Error _ -> ()
+      | Ok tokens ->
+        (* This should be incrementing by 1 every loop, but calculating 
+           the same way as [left_braces] is more consistent
+        *)
+        right_braces
+        := Core.List.count tokens ~f:(function
+             | Ocaml_common.Parser.RBRACE, _ -> true
+             | _ -> false);
+        left_braces
+        := Core.List.count tokens ~f:(function
+             | Ocaml_common.Parser.LBRACE, _ -> true
+             | _ -> false)
+    done;
+    (* Need to remove the trailing right brace as it matches the omitted opening 
+       interpolation block *)
+    let ocaml_code = !potential_ocaml_code |> Core.String.chop_suffix_exn ~suffix:"}" in
+    Token.OCAML_CODE (ocaml_code, sigil)
+  in
   fun buf ->
     match%sedlex buf with
     | "%{" ->
       let token =
         Lex_buffer.with_loc' buf ~f:(fun ~start_pos ->
-          let left_braces = ref 1 in
-          let right_braces = ref 0 in
-          let potential_ocaml_code = ref "" in
-          while !left_braces <> !right_braces do
-            let ocaml_code_part = match_closing_brace_for_ocaml ~start_pos buf in
-            potential_ocaml_code := !potential_ocaml_code ^ ocaml_code_part;
-            let ocaml_code_to_tokenize = "%{" ^ !potential_ocaml_code in
-            match Ocaml_tokenizer.tokens_with_loc ocaml_code_to_tokenize with
-            | Error _ -> ()
-            | Ok tokens ->
-              (* This should be incrementing by 1 every loop, but calculating 
-           the same way as [left_braces] is more consistent
-              *)
-              right_braces
-              := Core.List.count tokens ~f:(function
-                   | Ocaml_common.Parser.RBRACE, _ -> true
-                   | _ -> false);
-              left_braces
-              := Core.List.count tokens ~f:(function
-                   | Ocaml_common.Parser.LBRACE, _ -> true
-                   | _ -> false)
-          done;
-          (* Need to remove the trailing right brace as it matches the omitted opening 
-              %{
-          *)
-          let ocaml_code =
-            !potential_ocaml_code |> Core.String.chop_suffix_exn ~suffix:"}"
-          in
-          Token.OCAML_CODE ocaml_code)
+          f ~sigil:Token.Sigil.Percent ~start_pos buf)
+      in
+      Some token
+    | "#{" ->
+      let token =
+        Lex_buffer.with_loc' buf ~f:(fun ~start_pos ->
+          f ~sigil:Token.Sigil.Hash ~start_pos buf)
       in
       Some token
     | _ -> None

@@ -1,5 +1,5 @@
 (library
  (name inline_css_test)
- (libraries async_js core inline_css js_of_ocaml ppx_expect.config_types)
+ (libraries async_js core ppx_expect.config_types inline_css js_of_ocaml)
  (preprocess
   (pps ppx_jane)))

@@ -1,7 +1,7 @@
 (library
  (name ppx_css_test)
- (libraries core ppx_css ppx_css_syntax css_parser expect_test_sexp_diff
-   expect_test_helpers_core.expect_test_helpers_base core_kernel.nonempty_set
-   ppxlib core_kernel.reversed_list compiler-libs.common)
+ (libraries core css_parser expect_test_helpers_core.expect_test_helpers_base
+   expect_test_sexp_diff core_kernel.nonempty_set compiler-libs.common
+   ppx_css ppx_css_syntax ppxlib core_kernel.reversed_list)
  (preprocess
   (pps ppx_jane ppxlib.metaquot)))
