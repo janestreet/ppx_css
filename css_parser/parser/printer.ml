@@ -291,8 +291,9 @@ and component_value_to_string ?(whitespace_behavior = `Convert_to_single_space) 
   | Delim delim -> delim
   | Ampersand -> "&"
   | Comment (comment, _loc) -> comment_to_string comment
-  | Ocaml_code (code, _loc) ->
-    let ocaml_code_leader = "%{" in
+  | Ocaml_code ((code, sigil), _loc) ->
+    let sigil = Interpolation_sigil.to_sigil_string sigil in
+    let ocaml_code_leader = [%string "%{sigil}{"] in
     [%string {|%{ocaml_code_leader}%{code}}|}]
   | Function ((fn, _), c_list) ->
     let c_list = component_value_list_to_string c_list in

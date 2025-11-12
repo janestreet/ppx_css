@@ -1,6 +1,18 @@
 open! Core
 open Types
 
+module Sigil = struct
+  type t =
+    | Percent
+    | Hash
+  [@@deriving equal, compare, variants, sexp_of, typed_variants, to_string]
+
+  let to_sigil_string = function
+    | Percent -> "%"
+    | Hash -> "#"
+  ;;
+end
+
 type t =
   | WHITESPACE of string
   | URL of string
@@ -10,7 +22,7 @@ type t =
   | RIGHT_BRACKET
   | RIGHT_BRACE
   | PERCENTAGE of (string * Numeric_value.t * Exponent.t option)
-  | OCAML_CODE of string
+  | OCAML_CODE of (string * Sigil.t)
   | NUMBER of (string * Numeric_value.t * Exponent.t option)
   | LEFT_PAREN
   | LEFT_BRACKET
@@ -51,7 +63,7 @@ let to_string = function
   | BAD_STRING str -> {%string|BAD_STRING(%{str})|}
   | URL url -> {%string|URL(%{url})|}
   | STRING str -> {%string|STRING(%{str#String_token})|}
-  | OCAML_CODE code -> {%string|OCAML_CODE(%{code})|}
+  | OCAML_CODE (code, sigil) -> {%string|OCAML_CODE(%{code}, %{sigil#Sigil})|}
   | COMMENT comment -> {%string|COMMENT(%{comment})|}
   | DELIM code_point -> {%string|DELIM(%{code_point})|}
   | CDO -> "CDO"

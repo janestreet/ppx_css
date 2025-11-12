@@ -87,7 +87,7 @@ and component_value = Component_value.t =
   | Delim of string
   | Ampersand
   | Comment of comment
-  | Ocaml_code of string with_loc
+  | Ocaml_code of (string * interpolation_sigil) with_loc
   | Function of string with_loc * component_value with_loc list
   | Hash of (string * hash_flag)
   | Number of num_with_exponent
@@ -148,8 +148,11 @@ and selector_or_combinator = Complex_selector.selector_or_combinator =
 
 and complex_selector = selector_or_combinator with_comments list with_loc
 and for_apply_style = component_value with_loc list with_loc
-
 and selector_list = complex_selector with_comments list with_loc
+
+and interpolation_sigil = Interpolation_sigil.t =
+  | Percent
+  | Hash
 [@@deriving traverse_map, traverse_iter]
 
 class map' =

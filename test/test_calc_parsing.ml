@@ -24,7 +24,7 @@ let%expect_test "Bug, whitespace is required around '-'." =
                 (((Css_gen.Length.to_string_css width)[@merlin.focus ]) :
                 string) in
               Virtual_dom.Vdom.Attr.__css_vars_no_kebabs
-                [({|--ppx_css_anonymous_var_1_hash_d6328e8b40|},
+                [({|--ppx_css_foo_anon_variable_1_hash_d6328e8b40|},
                    ppx_css_temp_variable__003_)]
             let foo__inline_class =
               ((Virtual_dom.Vdom.Attr.combine
@@ -45,7 +45,7 @@ let%expect_test "Bug, whitespace is required around '-'." =
     /* app/foo/foo.ml */
 
     .foo__inline_class_hash_d6328e8b40 {
-      width: calc(100vw - var(--ppx_css_anonymous_var_1_hash_d6328e8b40));
+      width: calc(100vw - var(--ppx_css_foo_anon_variable_1_hash_d6328e8b40));
     }|}
     |xxx}];
   (* The bug here is that we are not setting the css variable for [width]. *)
@@ -83,7 +83,7 @@ let%expect_test "Bug, whitespace is required around '-'." =
     /* app/foo/foo.ml */
 
     .foo__inline_class_hash_72f96e86b0 {
-      width: calc(100vw-var(--ppx_css_anonymous_var_2));
+      width: calc(100vw-var(--ppx_css_foo_anon_variable_2));
     }|}
     |xxx}];
   test_expression
@@ -120,7 +120,7 @@ let%expect_test "Bug, whitespace is required around '-'." =
     /* app/foo/foo.ml */
 
     .foo__inline_class_hash_f3953363de {
-      width: calc(100vw -var(--ppx_css_anonymous_var_3));
+      width: calc(100vw -var(--ppx_css_foo_anon_variable_3));
     }|}
     |xxx}]
 ;;

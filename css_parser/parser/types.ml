@@ -26,6 +26,8 @@ and dimension_with_exponent = string * Numeric_value.t * Exponent.t option * str
 and numeric_value = Numeric_value.t
 and exponent = Exponent.t
 
+module Interpolation_sigil = Token.Sigil
+
 module rec Stylesheet : sig
   type t = Rule.t list with_loc [@@deriving sexp_of, equal]
 end = struct
@@ -179,7 +181,7 @@ and Component_value : sig
     | Delim of string
     | Ampersand
     | Comment of comment
-    | Ocaml_code of string with_loc
+    | Ocaml_code of (string * Interpolation_sigil.t) with_loc
     | Function of string with_loc * t with_loc list
     | Hash of (string * Hash_flag.t)
     | Number of num_with_exponent
@@ -209,7 +211,7 @@ end = struct
     | Delim of string
     | Ampersand
     | Comment of comment
-    | Ocaml_code of string with_loc
+    | Ocaml_code of (string * Interpolation_sigil.t) with_loc
     | Function of string with_loc * t with_loc list
     | Hash of (string * Hash_flag.t)
     | Number of num_with_exponent
@@ -242,7 +244,8 @@ end = struct
     | Delim delim -> [%sexp Delim (delim : string)]
     | Ampersand -> [%sexp Ampersand]
     | Comment comment -> [%sexp Comment (comment : comment)]
-    | Ocaml_code code -> [%sexp Ocaml_code (code : string with_loc)]
+    | Ocaml_code code ->
+      [%sexp Ocaml_code (code : (string * Interpolation_sigil.t) with_loc)]
     | Function (fn_, args) ->
       [%sexp Function ((fn_, args) : string with_loc * Component_value.t with_loc list)]
     | Hash (hash, kind) -> [%sexp Hash ((hash, kind) : string * Hash_flag.t)]

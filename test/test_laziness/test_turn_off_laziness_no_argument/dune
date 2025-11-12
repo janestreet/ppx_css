@@ -1,6 +1,6 @@
 (library
  (name test_turn_off_laziness_no_argument)
- (libraries core test_setup_lib core_kernel.reversed_list bonsai_web
-   js_of_ocaml bonsai_web_test virtual_dom.css_gen)
+ (libraries bonsai_web bonsai_web_test core virtual_dom.css_gen js_of_ocaml
+   core_kernel.reversed_list test_setup_lib)
  (preprocess
   (pps ppx_jane ppx_css)))

@@ -15,9 +15,23 @@ end
 
 let curr = ref 0
 
-let mint_name () =
+let sanitize_filename filename =
+  (* Extract just the basename without extension *)
+  let basename = Filename.basename filename in
+  let without_extension =
+    match String.rsplit2 basename ~on:'.' with
+    | Some (base, _ext) -> base
+    | None -> basename
+  in
+  (* Replace any non-alphanumeric characters with underscores *)
+  String.map without_extension ~f:(fun c -> if Char.is_alphanum c then c else '_')
+;;
+
+let mint_name ~loc =
   incr curr;
-  Name.of_string [%string "ppx_css_anonymous_var_%{!curr#Int}"]
+  let filename = Ppx_here_expander.expand_filename loc.loc_start.pos_fname in
+  let sanitized_filename = sanitize_filename filename in
+  Name.of_string [%string "ppx_css_%{sanitized_filename}_anon_variable_%{!curr#Int}"]
 ;;
 
 type t =
@@ -26,8 +40,8 @@ type t =
   }
 [@@deriving fields ~getters]
 
-let of_expression expression =
-  let name = mint_name () in
+let of_expression ~loc expression =
+  let name = mint_name ~loc in
   { name; expression }
 ;;
 

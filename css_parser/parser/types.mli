@@ -7,6 +7,8 @@ type 'a with_comments = 'a * comment list
 type num_with_exponent = string * Numeric_value.t * Exponent.t option
 type dimension_with_exponent = string * Numeric_value.t * Exponent.t option * string
 
+module Interpolation_sigil = Token.Sigil
+
 module rec Stylesheet : sig
   type t = Rule.t list with_loc [@@deriving sexp_of, equal]
 end
@@ -87,7 +89,7 @@ and Component_value : sig
     | Delim of string
     | Ampersand
     | Comment of comment
-    | Ocaml_code of string with_loc
+    | Ocaml_code of (string * Interpolation_sigil.t) with_loc
     | Function of string with_loc * t with_loc list
     | Hash of (string * Hash_flag.t)
     | Number of num_with_exponent

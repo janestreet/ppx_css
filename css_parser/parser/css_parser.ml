@@ -5,6 +5,7 @@ module Partial_parsing_behavior = Partial_parsing_behavior
 module Parsing_config = Parsing_config
 include Types
 module Traverse = Traverse
+module Normalize = Normalize
 
 let get_filename_and_position (pos : Css_parser_common.Position.t option) =
   match pos with
