@@ -217,7 +217,7 @@ end = struct
     | Number of num_with_exponent
     | Dimension of dimension_with_exponent
     (* Have to add an override here because whitespace values are not significant in CSS,
-       we are just allowing the component values to contain the actual whitespace for 
+       we are just allowing the component values to contain the actual whitespace for
        printing purposes *)
     | Whitespace of (string[@equal.ignore])
     | Semicolon

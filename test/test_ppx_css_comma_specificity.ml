@@ -207,8 +207,8 @@ let%expect_test "Duplicated version" =
 ;;
 
 let%expect_test "Merged version - with a specificity battle later" =
-  (* NOTE: This is OK and expected, it will follow whatever specificity the CSS engine
-     has the order + selectors are preserved. *)
+  (* NOTE: This is OK and expected, it will follow whatever specificity the CSS engine has
+     the order + selectors are preserved. *)
   Test_util.test_struct
     [%expr
       stylesheet

@@ -1,7 +1,8 @@
 open! Core
 open Ppxlib
 
-(* Helper that makes it easier to consistently generate the same string but in different formats *)
+(* Helper that makes it easier to consistently generate the same string but in different
+   formats *)
 type 'a t
 
 val create

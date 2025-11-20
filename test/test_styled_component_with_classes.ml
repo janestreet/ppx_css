@@ -64,7 +64,7 @@ let%expect_test "with classes - dont hash is supplied" =
 
 let%expect_test "with classes - dont hash prefixes is provided" =
   (* In non-stylesheet [%css] invocations, identifiers aren't hashed, so prefixes are
-     always unused.*)
+     always unused. *)
   test
     [%expr
       {|

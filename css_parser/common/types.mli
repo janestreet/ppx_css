@@ -14,13 +14,12 @@ module Numeric_value : sig
   [@@deriving to_string, sexp_of, equal, compare]
 end
 
-(* We need to maintain the capitalization here so that we can keep the E consistent
-   for things such as unicode ranges
+(* We need to maintain the capitalization here so that we can keep the E consistent for
+   things such as unicode ranges
 
-   Without the capitalization parameter, we'd be formatting this unicode range:
-   U+0EFF
+   Without the capitalization parameter, we'd be formatting this unicode range: U+0EFF
 
-   to 
+   to
 
    U+0eFF
 

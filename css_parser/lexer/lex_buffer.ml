@@ -2,8 +2,8 @@ open! Core
 
 type t = Sedlexing.lexbuf
 
-(* This marker occasionally shows up at the beginning of a file and denotes endianness for 
-   certain encodings. We need to remove it or it's parsed as an identifier by the lexer 
+(* This marker occasionally shows up at the beginning of a file and denotes endianness for
+   certain encodings. We need to remove it or it's parsed as an identifier by the lexer
    and causes the parser to error out due to identifiers not being where they're expected.
 
    utf8 does not have endianness which is why this marker can be ignored
@@ -19,7 +19,7 @@ let of_utf8_string ?(filename = "<n/a>") ?pos str =
     match pos with
     | None ->
       { Lexing.pos_fname =
-          (* This value is ignored by Sedlexing in [set_position]. The actual filename is 
+          (* This value is ignored by Sedlexing in [set_position]. The actual filename is
              set below using [set_filename] *)
           filename
       ; pos_lnum = 1

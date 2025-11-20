@@ -79,7 +79,8 @@ and print_complex_selector ~buffer (complex_selector, _complex_selector_loc) =
     complex_selector
     ~f:(fun ((selector_or_combinator : Complex_selector.selector_or_combinator), _) ->
       (* We are printing spaces between elements of this list, so we have to filter out
-       descendant combinators so that multiple spaces aren't printed when we only want one.
+         descendant combinators so that multiple spaces aren't printed when we only want
+         one.
       *)
       let is_descendant_combinator =
         match selector_or_combinator with
@@ -102,7 +103,7 @@ and print_selector_combinator_list ~buffer (complex_selector_list, _) =
       (fun
         index
         ( complex_selector
-        , (* These comments are the comments that come after the commas*)
+        , (* These comments are the comments that come after the commas *)
           comments_after_comma )
       ->
       (* The first selector in a list of selectors should not prepend a space. If it did,
@@ -122,8 +123,8 @@ and print_selector_combinator_list ~buffer (complex_selector_list, _) =
         complex_selector;
       let is_last_element_in_list = index = List.length complex_selector_list - 1 in
       if (not is_last_element_in_list)
-         || (* The comments attached to the selector are the comments that come after
-               a comma, so we do have to add the comma even if it's the last element.
+         || (* The comments attached to the selector are the comments that come after a
+               comma, so we do have to add the comma even if it's the last element.
 
                The parser should have thrown an error in that case, though.
             *)
@@ -143,25 +144,24 @@ and print_combinator ~buffer ((c, _) : Combinator.t with_loc) =
   in
   Print_buffer.append buffer combinator
 
-(* A compound selector is an ordered sequence of selectors that are not separated by 
-   whitespace or combinators. They are allowed to be separated by comments, and the 
+(* A compound selector is an ordered sequence of selectors that are not separated by
+   whitespace or combinators. They are allowed to be separated by comments, and the
    comments _must_be maintained in order to prevent the following:
 
+   div/* */a
 
-   div/* */a 
+   from being output as
 
-   from being output as 
-
-   diva 
+   diva
 
    which is a completely selector.
 
    There should not be any spaces between the selectors and the comments, or the semantic
    meaning of the selector changes.
 
-   [div/* */a] is NOT equivalent to [div /* */ a] as the former selects for something which
-   is both [div] and [a], while the latter selects for an [a] that is a child of a [div] 
-   due to the whitespaces
+   [div/* */a] is NOT equivalent to [div /* */ a] as the former selects for something
+   which is both [div] and [a], while the latter selects for an [a] that is a child of a
+   [div] due to the whitespaces
 *)
 and print_compound_selector ~buffer (selector_list, _) =
   List.iter selector_list ~f:(fun (selector, comments) ->
@@ -171,14 +171,13 @@ and print_compound_selector ~buffer (selector_list, _) =
 and print_selector ~buffer ((selector, _) : Selector.t with_loc) =
   match selector with
   | Id (id, _)
-  (* The CSS spec mentions that:
-   A <hash-token> with the "unrestricted" type flag may not need as much escaping as the 
-   same token with the "id" type flag.
-   https://www.w3.org/TR/css-syntax-3/#serialization 
+  (* The CSS spec mentions that: A <hash-token> with the "unrestricted" type flag may not
+     need as much escaping as the same token with the "id" type flag.
+     https://www.w3.org/TR/css-syntax-3/#serialization
 
-   This doesn't apply to us since we aren't "parsing" the escape sequence into the character
-   it represents, and are instead preserving the escape string verbatim. This means that
-   we do not have to escape the value when serializing it
+     This doesn't apply to us since we aren't "parsing" the escape sequence into the
+     character it represents, and are instead preserving the escape string verbatim. This
+     means that we do not have to escape the value when serializing it
   *) -> Print_buffer.append buffer {%string|#%{id}|}
   | Class name -> Print_buffer.append buffer {%string|.%{name}|}
   | Attribute (c_list, _) ->
@@ -206,9 +205,9 @@ and print_pseudoclass_like_selector ~buffer (p : Pseudoclass_element_selector.t)
       [%string "%{fn}(%{component_value_list_to_string  c_list})"]
   | Function_with_selectors (((fn, _), comments), sc_list) ->
     Print_buffer.append buffer [%string "%{fn}("];
-    (* Prevents a leading space before the comment. Also appends a space after the
-       last comment so that following combinator/selector is not directly attached to 
-       the last comment *)
+    (* Prevents a leading space before the comment. Also appends a space after the last
+       comment so that following combinator/selector is not directly attached to the last
+       comment *)
     print_space_separated_comments
       ~leading_space:false
       ~trailing_space:true

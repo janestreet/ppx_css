@@ -59,7 +59,8 @@ let%expect_test "Selectors inside selector functions were incorrectly transforme
     :has(.a_hash_2bb500d951 .b_hash_2bb500d951) {
     }|})
     |xxx}];
-  (* Nested CSS was always fine - only the top-level selector in this situation was affected. *)
+  (* Nested CSS was always fine - only the top-level selector in this situation was
+     affected. *)
   Test_util.test_struct [%expr stylesheet {|:has(.a .b) { :has(.a .b) { } }|}];
   [%expect
     {xxx|

@@ -54,7 +54,7 @@ module%test Traverse_graph = struct
     match input with
     | [] ->
       (* It's okay for input groups to be an empty list, the autoforce validator will
-           raise if they have not utilized everything required
+         raise if they have not utilized everything required
       *)
       ()
     | input ->
@@ -157,9 +157,9 @@ module%test Traverse_graph = struct
     let missing_identifiers = Css_identifier.Hash_set.of_list (Set.to_list identifiers) in
     let original_identifiers = identifiers in
     let seen_groups = Graph.Group_type.Hash_set.create () in
-    (* Checks to make sure all identifiers grouped together in the input are in the
-       same group when passed to the [get_group_for_identifier] function. The specific
-       group number doesn't really matter.
+    (* Checks to make sure all identifiers grouped together in the input are in the same
+       group when passed to the [get_group_for_identifier] function. The specific group
+       number doesn't really matter.
     *)
     List.iter groups ~f:(fun identifiers ->
       let group =
@@ -983,8 +983,8 @@ module%test Traverse_graph = struct
                    CSS functions that accept strings"
     =
     test
-    (* The comment within the CSS now counts as a "rule" so we need to include it in
-       these indices *)
+    (* The comment within the CSS now counts as a "rule" so we need to include it in these
+       indices *)
       ~autoforced:[ 0; 1; 2; 3; 4; 5; 6; 7; 8; 9 ]
       ~groups:[]
       {|

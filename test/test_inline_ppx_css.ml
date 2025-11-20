@@ -378,11 +378,11 @@ module%test [@name "basic"] _ = struct
   ;;
 
   let%expect_test "no-op dont-hash hashing" =
-    (* NOTE: --foo remains unhashed as it would've been be default. Sending in [--foo]
-         has no effect. Technically we could raise that [dont_hash] is unused, although
-         that would imply that [--foo] is hashed which is not and might be a confusing
-         error message, so no error is raised, giving the user the illusion of having
-         done something that would've happened regardless. *)
+    (* NOTE: --foo remains unhashed as it would've been be default. Sending in [--foo] has
+       no effect. Technically we could raise that [dont_hash] is unused, although that
+       would imply that [--foo] is hashed which is not and might be a confusing error
+       message, so no error is raised, giving the user the illusion of having done
+       something that would've happened regardless. *)
     test
       [%expr
         {|
@@ -394,10 +394,9 @@ module%test [@name "basic"] _ = struct
   ;;
 
   let%expect_test "no op prefix hashing is ignored" =
-    (* NOTE: This is a bit subtle, but here we do decide to raise for variables.
-         The reason why is that the anonymous variables are _always_ hashed and
-         can't be disabled. This results in awkwardness for attempting to not hash
-         [--foo]. *)
+    (* NOTE: This is a bit subtle, but here we do decide to raise for variables. The
+       reason why is that the anonymous variables are _always_ hashed and can't be
+       disabled. This results in awkwardness for attempting to not hash [--foo]. *)
     test
       [%expr
         {|
@@ -411,8 +410,8 @@ module%test [@name "basic"] _ = struct
   let%expect_test "no op prefix hashing is ignored, attempting to not hash the anonymous \
                    variables is disallowed"
     =
-    (* The variable created by the anonymous css inliner is _always_ hashed; attempting
-         to not hash it is an error. *)
+    (* The variable created by the anonymous css inliner is _always_ hashed; attempting to
+       not hash it is an error. *)
     test
       [%expr
         {|

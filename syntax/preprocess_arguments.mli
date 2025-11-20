@@ -11,8 +11,8 @@ type lazy_loading_optimization =
   | Lazy_graph
   (* Eagerly adds all CSS to the page *)
   | Eager
-  (* The user has not explicitly set the value. Will do whatever the default is 
-     (currently Eager) *)
+  (* The user has not explicitly set the value. Will do whatever the default is (currently
+     Eager) *)
   | Default
 
 type t =

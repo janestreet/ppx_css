@@ -88,8 +88,8 @@ let stop_if_past_end ~(token : token_with_loc) t =
     let cur_char = cur_pos.pos_cnum - cur_pos.pos_bol in
     let stop_char = pos_cnum - pos_bol in
     let next_token_is_eof =
-      (* Also stop if we are about to reach the EOF token to prevent parse
-         errors from peeking ahead. *)
+      (* Also stop if we are about to reach the EOF token to prevent parse errors from
+         peeking ahead. *)
       match peek t with
       | Some (EOF, _loc) -> true
       | None | Some _ -> false
@@ -162,7 +162,7 @@ let require_next_token_to_match ~matches ~error_msg tokens =
     match dequeue tokens with
     | None ->
       (* This should be called after already visiting at least one token, so the previous
-      items should never be empty *)
+         items should never be empty *)
       (match token_before_dequeue with
        | Some token -> throw_error_for_token token ~f:error_msg
        | None -> throw_error_for_token ~f:error_msg (Token.EOF, dummy_loc))
@@ -186,7 +186,7 @@ let require_next_token_to_match ~matches ~error_msg tokens =
     match dequeue tokens with
     | None ->
       (* This should be called after already visiting at least one token, so the previous
-      items should never be empty *)
+         items should never be empty *)
       raise_no_location
         "Error while checking if next token matches. No tokens left in queue"
     | Some token -> token
@@ -362,8 +362,8 @@ let with_loc_exn ?(context = None) ~(here : [%call_pos]) ~f tokens =
   let token_before_dequeue = peek tokens in
   match with_loc ~context ~f tokens with
   | None ->
-    (* This acts as a default error message if we didn't parse anything when something
-       was expected. Ideally, [f] will have its own error message
+    (* This acts as a default error message if we didn't parse anything when something was
+       expected. Ideally, [f] will have its own error message
     *)
     let token_list =
       to_list tokens

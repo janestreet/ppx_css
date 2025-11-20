@@ -358,10 +358,10 @@ module%test [@name "styled component parsing tests"] _ = struct
       }|})
       |xxx}];
     (* This shows that the behavior for '+' is currently identical to the behavior for
-         '&', which while the behavior for + is correct, the behavior for & is incorrect.
+       '&', which while the behavior for + is correct, the behavior for & is incorrect.
 
-         The bug was that & was printed as a delimeter which is wrong. The fix was to
-         instead parse ampersands into their own thing.
+       The bug was that & was printed as a delimeter which is wrong. The fix was to
+       instead parse ampersands into their own thing.
     *)
     test
       [%expr
@@ -616,10 +616,9 @@ module%test [@name "styled component parsing tests"] _ = struct
   ;;
 
   let%expect_test "different kinds of delimiters" =
-    (* NOTE: This test is weird, but shows right behavior. ~,-,+,> are delimeters
-         that are fine to remove the whitespace, but other identifiers are not
-         fine to remove the white space. This output shows correct behavior to my
-         understanding. *)
+    (* NOTE: This test is weird, but shows right behavior. ~,-,+,> are delimeters that are
+       fine to remove the whitespace, but other identifiers are not fine to remove the
+       white space. This output shows correct behavior to my understanding. *)
     test
       [%expr
         {|

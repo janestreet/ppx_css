@@ -4,8 +4,8 @@ module Sedlexing = Lex_buffer
 
 (* Keeping this here as a reference. Unfortunately sedlex doesn't allow for non-greedy
    matching. Due to this, we have to non-tail-recursively construct the string. We can
-   prevent the stack from growing too much by stopping each call on [*] and parsing 
-   those individually
+   prevent the stack from growing too much by stopping each call on [*] and parsing those
+   individually
 *)
 let comment_doesn't_work = [%sedlex.regexp? '/', '*', Opt (Star any), '*', '/']
 let not_asterisk = [%sedlex.regexp? Compl "*"]
@@ -21,7 +21,7 @@ let rec consume_comment_body buf =
     let str = Lex_buffer.utf8 buf in
     str ^ consume_comment_body buf
   | "*" ->
-    (* NOTE: We have a separate branch for [*] and [Not *] instead of [any] so that:
+    (*=NOTE: We have a separate branch for [*] and [Not *] instead of [any] so that:
 
        ```
          /* comment 1 */ SOME_OTHER_CSS_VALUE /* comment 2 */

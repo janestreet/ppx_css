@@ -19,7 +19,7 @@ let get_value () =
 
 let print_css () = get_value () |> print_endline
 
-(* This uses the previous value reference to compare the currently available css to the 
+(* This uses the previous value reference to compare the currently available css to the
    value that was available last time we printed the CSS or called this function. Useful
    so that we don't print a gigantic stylesheet every time we need to check what's changed
    in the CSS

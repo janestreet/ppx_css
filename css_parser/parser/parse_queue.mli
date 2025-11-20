@@ -10,16 +10,16 @@ val raise : loc:Location.t -> string -> 'a
 val raise_no_location : string -> 'a
 
 module Match : sig
-  (* Convenience module for matching against specific things. 
+  (* Convenience module for matching against specific things.
 
-     - [Is] will match on the [Token.Typed_variant.t], which means that it will
-     match on the type of the token, disregarding the value
-     - [Matches] allows using a custom function which takes a [Token.t] and returns
-     a boolean
+     - [Is] will match on the [Token.Typed_variant.t], which means that it will match on
+       the type of the token, disregarding the value
+     - [Matches] allows using a custom function which takes a [Token.t] and returns a
+       boolean
      - [Equals] is an exact match function
 
-     [Not] and [Any] are convenience methods. [Not] is just like [not], and [Any] 
-     will return [true] if any of the elements in [t list] return true
+     [Not] and [Any] are convenience methods. [Not] is just like [not], and [Any] will
+     return [true] if any of the elements in [t list] return true
   *)
   type t =
     | Not of t
@@ -70,8 +70,8 @@ val token
 
 val dequeue_and_check_if_next_token_matches : matches:Match.t -> t -> bool
 
-(* As this does not return a value, it can be a bit more permissive in how it matches
-   the next token. Accepts any variant of [Match.t]
+(* As this does not return a value, it can be a bit more permissive in how it matches the
+   next token. Accepts any variant of [Match.t]
 *)
 val require_next_token_to_match_and_ignore
   :  matches:Match.t
@@ -90,7 +90,7 @@ val peek_token : t -> Token.t option
 *)
 val peek_token_exn : t -> Token.t
 
-(* Used for lookaheads. Is done in constant time due to Queues using arrays for their 
+(* Used for lookaheads. Is done in constant time due to Queues using arrays for their
    implementations.
 
    [n] is 0-indexed
@@ -120,14 +120,14 @@ val throw_error_if_next_token_matches : error_msg:string -> f:Match.t -> t -> un
 val maybe_throw_ocaml_code_error : t -> unit
 
 (* Takes the value inside of [Some] and adds it to the list. If [None] is returned, we
-    will dequeue the token and not do anything with it. 
+   will dequeue the token and not do anything with it.
 
-    Note: As this utilizes [process] under the hood, The user must dequeue the token(s)
-    that are utilized whenever [Some] is returned, or the function will error out in the
-    same fashion as [process]. 
+   Note: As this utilizes [process] under the hood, The user must dequeue the token(s)
+   that are utilized whenever [Some] is returned, or the function will error out in the
+   same fashion as [process].
 
-    This function is mainly useful to act as a one-token lookahead, which then passes 
-    the token queue to a function which will process the queue.
+   This function is mainly useful to act as a one-token lookahead, which then passes the
+   token queue to a function which will process the queue.
 *)
 val process_into_list
   :  ?allow_ocaml_code:bool

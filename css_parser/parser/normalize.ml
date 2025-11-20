@@ -1,16 +1,17 @@
 open! Core
 
-(* For context, we have "sanity check" in our auto-formatting integration that
-   asserts that we do not modify the AST upon running the auto-formatter.
+(* For context, we have "sanity check" in our auto-formatting integration that asserts
+   that we do not modify the AST upon running the auto-formatter.
 
    The first version of the check was roughly something like:
 
    [equal before_formatting after_formatting]
 
    This proves tricky, because sometimes we do want to edit the AST in non-meaningful ways
-   e.g. we would like to treat colors like "#FFFFFF" and "#ffffff" as "equivalent". 
+   e.g. we would like to treat colors like "#FFFFFF" and "#ffffff" as "equivalent".
 
-   as such, we "normalize" the AST to some common ground, so that our AST equivalence check is:
+   as such, we "normalize" the AST to some common ground, so that our AST equivalence
+   check is:
 
    [equal (normalize before_formatting) (normalize after_formatting)]
 

@@ -284,7 +284,7 @@ let%expect_test "groups are forced properly" =
   [%expect {| <div class="b_hash_replaced_in_test"> hi </div> |}];
   compare_against_prev ();
   [%expect {| No change in css |}];
-  (* This one should show that ordering within the stylesheet is maintained whenever the 
+  (* This one should show that ordering within the stylesheet is maintained whenever the
      style is forced. The [.d] class here should appear right after the autoforced ones *)
   let handle = css_attr_handle Style.d in
   Handle.show handle;

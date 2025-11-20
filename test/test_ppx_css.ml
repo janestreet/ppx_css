@@ -759,10 +759,10 @@ let%expect_test "will rewrite if all values are same" =
 ;;
 
 (* NOTE: This test case checks an internal function of ppx_css which is weird, but the
-   reason we want to assert that identifiers are iterated in the same order as
-   they appeared which is useful for the way the[~reference] parameter. This behavior
-   ordering behavior is already tested for in the above expect tests, but this
-   is just extra assurance. *)
+   reason we want to assert that identifiers are iterated in the same order as they
+   appeared which is useful for the way the[~reference] parameter. This behavior ordering
+   behavior is already tested for in the above expect tests, but this is just extra
+   assurance. *)
 let%test_unit "ordering of mapping iteration is the same as the css string." =
   let open Quickcheck.Let_syntax in
   let id_generator =
@@ -2564,5 +2564,158 @@ let%expect_test "Doesn't throw on pseudoclasses without selectors" =
 
     div:bar {
     }|}
+    |xxx}]
+;;
+
+let%expect_test "Can hash the selectors in known conditional atrules" =
+  test_struct
+    [%expr
+      stylesheet
+        {|
+    /* These are currently known to be conditional at rules*/
+    @layer { .a {} }
+    @media print { .b {} }
+    @supports  { .c {} }
+   
+    @container page (width <= 980px) {
+      .d { }
+    }
+
+    @when media (width > 3px) { .e {} }
+    @else { .f {} }
+
+
+    
+       |}];
+  [%expect
+    {xxx|
+    [@@@ocaml.warning "-32"]
+    let __type_info_for_ppx_css :
+      ?dont_hash:string list -> ?dont_hash_prefixes:string list -> string -> unit
+      = fun ?dont_hash:_  ?dont_hash_prefixes:_  _ -> ()
+    module type S  =
+      sig
+        module For_referencing :
+        sig
+          val a : string
+          val b : string
+          val c : string
+          val d : string
+          val e : string
+          val f : string
+        end
+        val a : Virtual_dom.Vdom.Attr.t
+        val b : Virtual_dom.Vdom.Attr.t
+        val c : Virtual_dom.Vdom.Attr.t
+        val d : Virtual_dom.Vdom.Attr.t
+        val e : Virtual_dom.Vdom.Attr.t
+        val f : Virtual_dom.Vdom.Attr.t
+      end
+    type t = (module S)
+    module Default : S =
+      struct
+        module For_referencing =
+          struct
+            let a = {|a_hash_c7ae61994f|}
+            let b = {|b_hash_c7ae61994f|}
+            let c = {|c_hash_c7ae61994f|}
+            let d = {|d_hash_c7ae61994f|}
+            let e = {|e_hash_c7ae61994f|}
+            let f = {|f_hash_c7ae61994f|}
+          end
+        let a =
+          Virtual_dom.Vdom.Attr.lazy_
+            (lazy
+               (Inline_css.Ppx_css_runtime.force
+                  Ppx_css_hoister_do_not_collide.update_sheet_lazy_fn_x__045___c7ae61994f__group_0;
+                Virtual_dom.Vdom.Attr.class_ {|a_hash_c7ae61994f|}))
+        let b = Virtual_dom.Vdom.Attr.class_ {|b_hash_c7ae61994f|}
+        let c = Virtual_dom.Vdom.Attr.class_ {|c_hash_c7ae61994f|}
+        let d = Virtual_dom.Vdom.Attr.class_ {|d_hash_c7ae61994f|}
+        let e = Virtual_dom.Vdom.Attr.class_ {|e_hash_c7ae61994f|}
+        let f = Virtual_dom.Vdom.Attr.class_ {|f_hash_c7ae61994f|}
+      end
+    include Default
+    let default : t = (module Default)
+
+    Hoisted module:
+
+    let sheet_x__045___c7ae61994f__0 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__045___c7ae61994f__1 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__045___c7ae61994f__2 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__045___c7ae61994f__3 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__045___c7ae61994f__4 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__045___c7ae61994f__5 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let sheet_x__045___c7ae61994f__6 =
+      let sheet = Inline_css.Private.create_stylesheet () in
+      Inline_css.Private.append_stylesheet sheet; sheet
+    let () =
+      ((((Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__0
+            {|
+    /* app/foo/foo.ml */
+
+    /* These are currently known to be conditional at rules*/|};
+          Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__2
+            {|
+    /* app/foo/foo.ml */
+
+    @media print {
+      .b_hash_c7ae61994f {
+      }
+    }|});
+         Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__3
+           {|
+    /* app/foo/foo.ml */
+
+    @supports {
+      .c_hash_c7ae61994f {
+      }
+    }|});
+        Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__4
+          {|
+    /* app/foo/foo.ml */
+
+    @container page (width <= 980px) {
+      .d_hash_c7ae61994f {
+      }
+    }|});
+       Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__5
+         {|
+    /* app/foo/foo.ml */
+
+    @when media (width > 3px) {
+      .e_hash_c7ae61994f {
+      }
+    }|});
+      Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__6
+        {|
+    /* app/foo/foo.ml */
+
+    @else {
+      .f_hash_c7ae61994f {
+      }
+    }|}
+    let update_sheet_lazy_fn_x__045___c7ae61994f__group_0 =
+      lazy
+        (Inline_css.Private.update_stylesheet sheet_x__045___c7ae61994f__1
+           {|
+    /* app/foo/foo.ml */
+
+    @layer {
+      .a_hash_c7ae61994f {
+      }
+    }|})
     |xxx}]
 ;;
