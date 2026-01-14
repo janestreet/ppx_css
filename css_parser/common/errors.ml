@@ -7,9 +7,14 @@ type error =
   }
 [@@deriving sexp_of]
 
-exception Lexing_error of error [@@deriving sexp_of]
-exception Unknown_error of error [@@deriving sexp_of]
-exception Parse_error of error [@@deriving sexp_of]
+exception Lexing_error of error
+[@@deriving sexp_of ~nonportable__magic_unsafe_in_parallel_programs]
+
+exception Unknown_error of error
+[@@deriving sexp_of ~nonportable__magic_unsafe_in_parallel_programs]
+
+exception Parse_error of error
+[@@deriving sexp_of ~nonportable__magic_unsafe_in_parallel_programs]
 
 let make_loc ?(loc_ghost = false) start_pos end_pos : Location.t =
   { Warnings.loc_start = start_pos; loc_end = end_pos; loc_ghost }

@@ -3,10 +3,10 @@ open Css_parser_common
 module Sedlexing = Lex_buffer
 module Errors = Errors
 
-(* Keeping the below as a reference. The CSS spec says you need to preprocess the
-   input by replacing all of these characters with \n, but that seems to mess with
-   the source code positions. We're already matching on these in the lexer itself,
-   so it shouldn't really matter
+(* Keeping the below as a reference. The CSS spec says you need to preprocess the input by
+   replacing all of these characters with \n, but that seems to mess with the source code
+   positions. We're already matching on these in the lexer itself, so it shouldn't really
+   matter
 *)
 (* Converts \r\n, \f, and \r to \n *)
 let filtered_code_points_to_line_feed =

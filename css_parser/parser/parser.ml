@@ -805,7 +805,7 @@ and consume_declaration ~ambiguity tokens =
   in
   let name = Ident_like.to_string name in
   let is_custom_property =
-    (* Custom properties are allowed to have empty declaration values 
+    (* Custom properties are allowed to have empty declaration values
        https://www.w3.org/TR/css-values-4/#dashed-idents
     *)
     String.is_prefix ~prefix:"--" name && String.length name > 2
