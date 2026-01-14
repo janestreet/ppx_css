@@ -41,10 +41,10 @@ let starts_with_number = [%sedlex.regexp? Opt ('+' | '-'), Opt '.', '0' .. '9']
 let int_digit = [%sedlex.regexp? '0' .. '9']
 let valid_int = [%sedlex.regexp? Opt ('+' | '-'), Plus int_digit]
 
-(* Tail-call recursion doesn't work properly with sedlex, for some reason
-   it returns an empty lexeme if done that way. That should be fine unless
-   for some reason the user is using a billion escape sequences in their
-   selectors, which is doubtful because unicode escape sequences are rarely used
+(* Tail-call recursion doesn't work properly with sedlex, for some reason it returns an
+   empty lexeme if done that way. That should be fine unless for some reason the user is
+   using a billion escape sequences in their selectors, which is doubtful because unicode
+   escape sequences are rarely used
 *)
 let rec parse_trailing_ident buf =
   match%sedlex buf with
@@ -61,8 +61,8 @@ let rec parse_trailing_ident buf =
   | _ -> []
 ;;
 
-(* Rollback doesn't work properly if the match arm doesn't match anything which
-   is why we have to return DELIM @ and DELIM # here
+(* Rollback doesn't work properly if the match arm doesn't match anything which is why we
+   have to return DELIM @ and DELIM # here
 
    See above for why we are not using tail-call recursion
 *)
@@ -102,8 +102,8 @@ let tokenize_number buf =
     | _ -> None
   in
   (* This seems a bit unintuitive, but this works because we call [lexing_positions]
-     _before_ the second match occurs. This means that we retrieve the start position
-     of the previous match, which is [number]
+     _before_ the second match occurs. This means that we retrieve the start position of
+     the previous match, which is [number]
   *)
   Lex_buffer.with_loc buf ~f:(fun () ->
     let exponent_value = exponent_value buf in
@@ -146,9 +146,8 @@ let tokenize buf =
             | unrestricted_hash -> HASH (unrestricted_hash, Hash_flag.Unrestricted))
          | Some ident -> HASH (ident, Hash_flag.Id)))
   | _ ->
-    (* We can't use [with_loc] as we're using the previous end
-       position as the start position due to the fact that we haven't
-       actually matched on a lexeme yet.
+    (* We can't use [with_loc] as we're using the previous end position as the start
+       position due to the fact that we haven't actually matched on a lexeme yet.
     *)
     let _, start_pos = Lex_buffer.lexing_positions buf in
     let%map.Option ident = parse_ident buf in

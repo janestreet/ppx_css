@@ -80,8 +80,8 @@ let parse_expr_list ~on_error expression =
     match expression.pexp_desc with
     | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
       (* NOTE: This list is reversed, but it does not matter since currently it is only
-         used to populate a map, but if it ever were to matter that the list is
-         reversed, then this list would need to be reversed here.   *)
+         used to populate a map, but if it ever were to matter that the list is reversed,
+         then this list would need to be reversed here. *)
       acc
     | Pexp_construct ({ txt = Lident "::"; _ }, Some { pexp_desc; pexp_loc; _ }) ->
       (match Ppxlib_jane.Shim.Expression_desc.of_parsetree pexp_desc ~loc:pexp_loc with
@@ -112,7 +112,7 @@ let raise_due_to_malformed_rewrite ~loc =
 
    to:
 
-   [String.Map.of_alist_exn ["class1", Style.x; "class2"; "class2"]]  *)
+   [String.Map.of_alist_exn ["class1", Style.x; "class2"; "class2"]] *)
 let parse_rewrite ~loc:_ expression =
   parse_expr_list expression ~on_error:raise_due_to_malformed_rewrite
   |> List.map ~f:(fun expression ->
@@ -356,8 +356,8 @@ let parse_inline_expression_exn (expression : expression) =
     { css_string
     ; dont_hash
     ; dont_hash_prefixes
-      (* Lazy loading optimization is ignored here as the value is pulled from the
-         jbuild and not the individual calls to ppx_css *)
+      (* Lazy loading optimization is ignored here as the value is pulled from the jbuild
+         and not the individual calls to ppx_css *)
     ; lazy_loading_optimization = Preprocess_arguments.Eager
     }
 ;;

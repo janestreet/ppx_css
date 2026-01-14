@@ -17,10 +17,10 @@ let mapper ~(f : Css_identifier.t -> Location.t -> string) =
       in
       (selector, selector_loc) |> super#selector_with_loc
 
-    (* Fetching custom css property declarations. This assumes that all custom property 
+    (* Fetching custom css property declarations. This assumes that all custom property
        declarations are css variables, which is not always the case.
 
-       We may want to consider parsing declarations with variants for custom and 
+       We may want to consider parsing declarations with variants for custom and
        non-custom sometime in the future *)
     method! declaration (declaration : Declaration.t) =
       let (name, name_loc), comments = declaration.name in
@@ -33,8 +33,8 @@ let mapper ~(f : Css_identifier.t -> Location.t -> string) =
       let declaration = { declaration with name = name, comments } in
       super#declaration declaration
 
-    (* Fetching all variables that refer to a custom css property. We may want to
-       consider parsing css vars as their own thing in the future *)
+    (* Fetching all variables that refer to a custom css property. We may want to consider
+       parsing css vars as their own thing in the future *)
     method! component_value (component_value : Component_value.t) =
       let component_value =
         match component_value with
@@ -69,12 +69,12 @@ module Components = Graph_lib.Components.Make (Stylesheet_graph)
 
    I think :has, :where, and :is are relatively safe to use, as none of those will
    actually apply unless the selectors inside them are available in the DOM. However, if
-   the selector is something like :has(div, .class1) or :where(.unhashed-class, .class2-hashed),
-   then it must immediately be forced as the function can be applied whenever ANY of the
-   selectors in the list are valid. :not must always be forced
+   the selector is something like :has(div, .class1) or :where(.unhashed-class,
+   .class2-hashed), then it must immediately be forced as the function can be applied
+   whenever ANY of the selectors in the list are valid. :not must always be forced
 
-   I think there may be other unconsidered edge cases, so functional selectors should
-   be eagerly evaluated.
+   I think there may be other unconsidered edge cases, so functional selectors should be
+   eagerly evaluated.
 *)
 
 let retrieve_the_contents_of_these_selector_functions = String.Set.of_list [ "has" ]
@@ -123,22 +123,23 @@ let rec split_layers ((stylesheet, loc) : Stylesheet.t) : Stylesheet.t =
       ~f:(fun acc rule ->
         match rule with
         (* [At_rule]s within the [splittable_at_rules] list will be split into multiple
-         rules that each contain one declaration within them *)
+           rules that each contain one declaration within them *)
         | Rule.At_rule ({ name; prelude = _; block; _ } as at_rule)
           when Set.mem splittable_at_rules name ->
           (match block with
            (* If the block is empty, there's nothing to process *)
            | None -> rule :: acc
            (* [Declaration_list]s can contain key-value pairs of CSS declarations. I don't
-              think `@layer` can contain a [Declaration_list], so for now I think it is okay
-              to eagerly force this and not process [At_rule]s with [Declaration_list]s *)
+              think `@layer` can contain a [Declaration_list], so for now I think it is
+              okay to eagerly force this and not process [At_rule]s with
+              [Declaration_list]s *)
            | Some (Declaration_list (_, loc)) ->
              Location.raise_errorf
                ~loc
                {|PPX_CSS Bug: Layer [At_rules]s should not contain [Declaration_list]s. Please report this bug.|}
            | Some (Style_block (block, block_loc)) ->
-             (* Split each individual rule within the at-rule into a rule wrapped by 
-                the at-rule and add it to the overall list of rules *)
+             (* Split each individual rule within the at-rule into a rule wrapped by the
+                at-rule and add it to the overall list of rules *)
              List.fold block ~init:acc ~f:(fun acc rule ->
                match rule with
                | Comment (comment, comment_loc) ->
@@ -194,7 +195,7 @@ let remove_unhashed_identifiers
 ;;
 
 module Graph_node_identifiers = struct
-  (* This is a 2d list because we need to represent a selector list. A selector list is
+  (*=This is a 2d list because we need to represent a selector list. A selector list is
      something like
 
      ```css
@@ -233,8 +234,8 @@ module Graph_node_identifiers = struct
 
      (index of t) = [x] and (index of t[x]) = [y]
 
-     We need to recursively check to make sure that at least one [x] returns true.
-     If so, we must autoforce the rule.
+     We need to recursively check to make sure that at least one [x] returns true. If so,
+     we must autoforce the rule.
   *)
   let rec should_be_autoforced ~is_top_level ~is_unhashed_identifier t =
     List.exists t ~f:(should_selector_be_autoforced ~is_top_level ~is_unhashed_identifier)
@@ -242,8 +243,8 @@ module Graph_node_identifiers = struct
   (* Every identifier in t[x] must be an autoforced identifier for t[x] to be considered
      autoforceable
 
-     We need to know which identifiers are unhashed because those should be excluded
-     from the calculation
+     We need to know which identifiers are unhashed because those should be excluded from
+     the calculation
   *)
   and should_selector_be_autoforced ~is_top_level ~is_unhashed_identifier = function
     | [] -> true
@@ -260,18 +261,18 @@ module Graph_node_identifiers = struct
       is_an_unknown_function
       || should_be_autoforced ~is_top_level ~is_unhashed_identifier selectors
     | Identifier identifier -> is_unhashed_identifier identifier
-    (* If this is being called for a top-level selector, we would need to autoforce this 
-       as it then refers to the scoping root. This means that it could refer to [:root]
-       or something similiar to [:root] which ppx_css has no context about, so we 
-       need to autoforce the ampersand
+    (* If this is being called for a top-level selector, we would need to autoforce this
+       as it then refers to the scoping root. This means that it could refer to [:root] or
+       something similiar to [:root] which ppx_css has no context about, so we need to
+       autoforce the ampersand
 
        https://www.w3.org/TR/css-nesting-1/#nest-selector
     *)
     | Ampersand -> is_top_level
   ;;
 
-  (* If any nested rule inside of a top-level rule has a selector function that 
-     uses an explicit ampersand, we will autoforce the top-level rule.
+  (* If any nested rule inside of a top-level rule has a selector function that uses an
+     explicit ampersand, we will autoforce the top-level rule.
   *)
   let rec contains_ampersand t =
     List.exists t ~f:(function
@@ -301,8 +302,8 @@ module Graph_node_identifiers = struct
                   | Selector.Class ident -> Identifier (Class ident) :: acc
                   | Id (ident, _hash_flag) -> Identifier (Id ident) :: acc
                   | Ampersand -> Ampersand :: acc
-                  (* We're processing both pseudoclass and pseudoelement selector 
-                     functions that contain selectors here. We'll be checking later on to 
+                  (* We're processing both pseudoclass and pseudoelement selector
+                     functions that contain selectors here. We'll be checking later on to
                      see if they should be included within the graph calculation *)
                   | Pseudoclass pseudo | Pseudoelement pseudo ->
                     (match pseudo with
@@ -333,7 +334,7 @@ module Graph_node_identifiers = struct
       else init
     | Identifier identifier -> Set.add init identifier
     (* The ampersand is only useful for seeing if this rule should be autoforced. It
-       doesn't really affect the total amount of selectors, so we ignore it.*)
+       doesn't really affect the total amount of selectors, so we ignore it. *)
     | Ampersand -> init
   ;;
 
@@ -417,8 +418,8 @@ and get_identifiers_for_style_rule ~read_contents_of_functions = function
 ;;
 
 (* Checks to make sure all selectors in child rules do not have to be autoforced. This
-   mainly deals with nested selector functions like [:not(&)] which should cause the parent
-   rule to be autoforced
+   mainly deals with nested selector functions like [:not(&)] which should cause the
+   parent rule to be autoforced
 *)
 let rec check_child_style_rules_for_autoforcing
   ~is_unhashed_identifier
@@ -429,9 +430,9 @@ let rec check_child_style_rules_for_autoforcing
     List.exists
       ~f:(fun selector ->
         match Graph_node_identifiers.contains_ampersand selector with
-        (* If this selector does not contain an ampersand, it has an implicit
-           ampersand + descendant selector, which makes it so that it will not
-           be autoforced so long as the parent isn't
+        (* If this selector does not contain an ampersand, it has an implicit ampersand +
+           descendant selector, which makes it so that it will not be autoforced so long
+           as the parent isn't
         *)
         | false -> false
         | true ->
@@ -453,11 +454,11 @@ and check_should_style_rule_children_be_autoforced
       (match rule with
        | Style_rule rule ->
          check_child_style_rules_for_autoforcing ~is_unhashed_identifier rule
-       (* If there's an at-rule nested within this style rule, we're going to eagerly force
-       the parent rule. This is because there are several different ways that nested
-       at-rules can interact with the parent style rule, and codifying all of those 
-       interactions does not seem to be worth it. I doubt at-rules nested inside style
-       rules will occur very frequently, either
+       (* If there's an at-rule nested within this style rule, we're going to eagerly
+          force the parent rule. This is because there are several different ways that
+          nested at-rules can interact with the parent style rule, and codifying all of
+          those interactions does not seem to be worth it. I doubt at-rules nested inside
+          style rules will occur very frequently, either
        *)
        | At_rule _ -> true
        | Qualified_rule _ | Comment _ -> false)
@@ -466,33 +467,32 @@ and check_should_style_rule_children_be_autoforced
 
 let rec get_inner_rule (rule : Rule.t) =
   match rule with
-  (* Processed [At_rule]s should only have a single element within their
-     [Style_block]. It __must__ be a [Rule]. The rule will act as the top-level rule
-     for this [At_rule]. Recursively extract the inner rule for use as
-     the top-level identifiers *)
+  (* Processed [At_rule]s should only have a single element within their [Style_block]. It
+     __must__ be a [Rule]. The rule will act as the top-level rule for this [At_rule].
+     Recursively extract the inner rule for use as the top-level identifiers *)
   | At_rule
       { name
       ; block = Some (Style_block (Rule (inner_rule, _inner_rule_loc) :: [], _))
       ; _
       }
     when Set.mem splittable_at_rules name -> get_inner_rule inner_rule
-  (* All other [At_rule]s, including ones that were supposed to be processed but
-     were seemingly processed incorrectly, will do the default *)
+  (* All other [At_rule]s, including ones that were supposed to be processed but were
+     seemingly processed incorrectly, will do the default *)
   | At_rule _ | Style_rule _ | Comment _ | Qualified_rule _ -> rule
 ;;
 
 let retrieve_all_utilized_identifiers ~is_hashed_identifier rule =
   let rule = get_inner_rule rule in
   match rule with
-  (* [At_rule]s that were not processed will have no utilized identifiers as
-     they are currently eagerly forced *)
+  (* [At_rule]s that were not processed will have no utilized identifiers as they are
+     currently eagerly forced *)
   | At_rule _ | Comment _ | Qualified_rule _ -> Css_identifier.Set.empty
   | Style_rule ({ selectors; _ } as style_rule) as rule ->
     let is_unhashed_identifier identifier = not (is_hashed_identifier identifier) in
-    (* These are the identifiers from the top-level declaration/rule before
-       traversing child rules. These are necessary because we need to know if
-       the rule needs to be eagerly forced. If no identifiers are utilized
-       at the top level, the entire rule needs to be eagerly forced *)
+    (* These are the identifiers from the top-level declaration/rule before traversing
+       child rules. These are necessary because we need to know if the rule needs to be
+       eagerly forced. If no identifiers are utilized at the top level, the entire rule
+       needs to be eagerly forced *)
     let should_autoforce =
       Graph_node_identifiers.of_selectors selectors
       |> Graph_node_identifiers.should_be_autoforced
@@ -541,9 +541,9 @@ module Graph = struct
     | Preprocess_arguments.Lazy_graph ->
       let is_hashed_identifier = is_hashed_identifier ~should_hash_identifier in
       (* [all_identifiers] is the complete list of identifiers for the stylesheet,
-       regardless of where they're from. It is used to see which identifiers are not being 
-       utilized within a group, which gives us the list of identifiers that are being 
-       autoforced *)
+         regardless of where they're from. It is used to see which identifiers are not
+         being utilized within a group, which gives us the list of identifiers that are
+         being autoforced *)
       let all_identifiers =
         Map.fold
           ~init:Css_identifier.Set.empty
@@ -577,8 +577,8 @@ module Graph = struct
                 | Some existing -> Set.add existing rule_index)))
       in
       (* [all_utilized_identifiers] ignores identifiers if they will not be considered for
-       dependency generation. Non-utilized identifiers are treated similarly to top-level 
-       tags such as [div]
+         dependency generation. Non-utilized identifiers are treated similarly to
+         top-level tags such as [div]
       *)
       let all_utilized_identifiers =
         Map.fold
@@ -590,12 +590,12 @@ module Graph = struct
         let sheet_graph = Stylesheet_graph.create () in
         (* If two identifiers show up within the same rule, add an edge between them *)
         Map.iter utilized_identifiers_by_rule ~f:(fun deduped_identifiers ->
-          (* Only using fold as a way to create edges between two vertices, 
-           the resulting value doesn't actually matter and should always
-           be an empty set.
+          (* Only using fold as a way to create edges between two vertices, the resulting
+             value doesn't actually matter and should always be an empty set.
 
-           For position x in starting set [n(x), n(x + 1), n(x + 2), n(x + 3), .... n(x + k)]:
-             Add vertex from n(x) -> [n(x + 1), n(x + 2), n(x + 3), ... n(x + k)]
+             For position x in starting set
+             [n(x), n(x + 1), n(x + 2), n(x + 3), .... n(x + k)]: Add vertex from n(x) ->
+             [n(x + 1), n(x + 2), n(x + 3), ... n(x + k)]
           *)
           Set.fold deduped_identifiers ~init:deduped_identifiers ~f:(fun remainder hd ->
             let remainder = Set.remove remainder hd in
@@ -606,11 +606,11 @@ module Graph = struct
         sheet_graph
       in
       let _num_groups, get_group_num_from_identifier = Components.scc sheet_graph in
-      (* Map of [Group_type.t] to a set of all rule indices that contain an identifier that
-       is in the [Group_type.t] *)
+      (* Map of [Group_type.t] to a set of all rule indices that contain an identifier
+         that is in the [Group_type.t] *)
       let group_to_rule_indices =
         (* This is a list of lists where list[x][y] is an identifier and x = the group
-         number that the identifier belongs to *)
+           number that the identifier belongs to *)
         let group_identifiers = Components.scc_list sheet_graph in
         List.foldi
           group_identifiers
@@ -645,12 +645,12 @@ module Graph = struct
       in
       let autoforced_identifiers =
         (* Subtract the list of all utilized identifiers from the list of all identifiers
-         so we have the list of all identifiers that are in rules that are autoforced
+           so we have the list of all identifiers that are in rules that are autoforced
         *)
         Set.diff all_identifiers all_utilized_identifiers
       in
-      (* All group numbers will be wrapped in a variant type so that we can discern if 
-       a group is autoforced or not.
+      (* All group numbers will be wrapped in a variant type so that we can discern if a
+         group is autoforced or not.
       *)
       let get_group_for_identifier identifier =
         match Set.mem autoforced_identifiers identifier with
@@ -670,8 +670,8 @@ module Graph = struct
                     converted properly"]
            | Ok group_number ->
              (* We are filtering out the indices that are empty after we filter out
-              autoforced rule indices. This check is to ensure that we aren't 
-              erroneously filtering out rules that shouldn't have been *)
+                autoforced rule indices. This check is to ensure that we aren't
+                erroneously filtering out rules that shouldn't have been *)
              (match Map.find group_to_rule_indices (Group_type.Group group_number) with
               | None ->
                 Core.raise_s
@@ -689,8 +689,8 @@ module Graph = struct
           group_to_rule_indices
           ~f:
             (Nonempty_set.fold ~init:[] ~f:(fun acc rule_index ->
-               (* This should always exist as it's what we've used to calculate which index 
-                belongs to which rule.
+               (* This should always exist as it's what we've used to calculate which
+                  index belongs to which rule.
                *)
                Map.find_exn stylesheet rule_index :: acc))
       in
@@ -782,7 +782,7 @@ let raise_if_identifier_collides_with_existing
       ~other_matching_ocaml_identifier
   | `Check_ocaml_identifier (Some _), _ -> ()
   | `Check_ocaml_identifier None, `Check_css_identifier None ->
-    (* If there's no collision and there's no other matching css identifier, we need to 
+    (* If there's no collision and there's no other matching css identifier, we need to
        add the current [css_identifier] to the hashmap to keep track of it
     *)
     Hashtbl.set
@@ -795,7 +795,7 @@ let raise_if_identifier_collides_with_existing
       ~data:ocaml_identifier
   | `Check_ocaml_identifier _, `Check_css_identifier (Some other_matching_css_identifier)
     when not (String.equal other_matching_css_identifier css_identifier) ->
-    (* If previously a different [css_identifier] mapped to this [ocaml_identifier], we 
+    (* If previously a different [css_identifier] mapped to this [ocaml_identifier], we
        will raise
     *)
     raise_due_to_collision_with_newly_minted_identifier

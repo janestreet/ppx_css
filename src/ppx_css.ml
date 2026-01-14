@@ -170,9 +170,8 @@ let module_type_of_identifiers ~loc ~identifiers =
 let create_type_info_function ~loc ~stylesheet_location =
   let open (val Ast_builder.make loc) in
   let name =
-    (* We give ppat_var the same exact location as the css string so that
-       MerlinTypeOf thinks the string is of the the type with all of the
-       that ppx_css can take. *)
+    (* We give ppat_var the same exact location as the css string so that MerlinTypeOf
+       thinks the string is of the the type with all of the that ppx_css can take. *)
     let open (val Ast_builder.make stylesheet_location) in
     ppat_var (Located.mk "__type_info_for_ppx_css")
   in
@@ -207,8 +206,10 @@ end
      module Variables = struct
        let set ?var1 ?var_2 () =
          let acc = [] in
-         let acc = match var1 with | None -> acc
-                                   | Some value -> ("--var1", value) :: acc
+         let acc =
+           match var1 with
+           | None -> acc
+           | Some value -> ("--var1", value) :: acc
          in
          Vdom.Attr.__vars_kebabless acc
        ;;
@@ -235,15 +236,18 @@ let var_builder_structure ~loc ~variables ~maybe_combine_with_anonymous_variable
       (* Produces:
 
          {[
-           let acc = match var1 with
+           let acc =
+             match var1 with
              | None -> acc
              | Some value -> ("--var1", value) :: acc
            in
-           let acc = match var2 with
+           let acc =
+             match var2 with
              | None -> acc
              | Some value -> ("--var2", value) :: acc
            in
-           in_ ]}
+           in_
+         ]}
       *)
       let { Mint_hygenic_identifier.expression = value_expression
           ; pattern = value_pattern
@@ -353,7 +357,7 @@ let validate_no_collisions_after_warnings_and_rewrites
   =
   (* This function only checks that there are no collisions from the potentially newly
      minted names that occur from occurrances on `Both. Since original ^ "_id" and
-     original ^ "_class"  are added, these conditions must be checked for. *)
+     original ^ "_class" are added, these conditions must be checked for. *)
   let all_identifiers =
     String.Set.map identifiers ~f:Css_identifier.extract_ocaml_identifier
   in
@@ -392,12 +396,12 @@ let stylesheet_to_rule_strings (sheet, loc) =
 ;;
 
 (* Creates the struct that contains the side effects required to create the
-   [CSSStylesheet]s as well as update them. 
+   [CSSStylesheet]s as well as update them.
 
-   Also creates functions necessary for accessing the lazy functions created within the 
+   Also creates functions necessary for accessing the lazy functions created within the
    hoisted module and forcing them
 
-   [assert_post_conditions] makes sure that all expressions and patterns that were 
+   [assert_post_conditions] makes sure that all expressions and patterns that were
    generated in the hoisting module were called symmetrically, meaning that each variable
    created was referenced at least once in an expression.
 *)
@@ -423,8 +427,8 @@ let generate_struct_to_hoist
   =
   let open (val Ast_builder.make loc) in
   let create_sheet_items =
-    (* NOTE: We _always_ create all stylesheets up-front. This preserves
-       the order of stylesheets independent of the order in which they are forced. *)
+    (* NOTE: We _always_ create all stylesheets up-front. This preserves the order of
+       stylesheets independent of the order in which they are forced. *)
     Map.mapi css_strings ~f:(fun ~key:index ~data:_ ->
       [%stri
         let [%p Identifier_helper.pattern sheet_name ~index] =
@@ -552,28 +556,31 @@ let create_hoisted_module_struct
   }
 ;;
 
-(* Creates the module struct that - given "var1" and "var2" as variables, and "classname_1"
-   as an identifier  will create the below code:
+(* Creates the module struct that - given "var1" and "var2" as variables, and
+   "classname_1" as an identifier will create the below code:
 
    {[
      module Default = struct
        module Variables = struct
          let set ?var1 ?var2 () =
            let acc = [] in
-           let acc = match var1 with
+           let acc =
+             match var1 with
              | None -> acc
              | Some value -> ("--var1", value) :: acc
            in
-           let acc = match var2 with
+           let acc =
+             match var2 with
              | None -> acc
              | Some value -> ("--var2", value) :: acc
            in
            Vdom.Attr.__vars_kebabless acc
          ;;
        end
+
        let classname_1 = "classname-1_hash_2341"
      end
-   ]}*)
+   ]} *)
 let create_default_module_struct
   ~loc
   ~(identifiers : (Css_identifier.Set.t * expression) String.Map.t)
@@ -807,8 +814,7 @@ let create_default_module_struct
 let create_should_hash_identifier ~dont_hash ~dont_hash_prefixes ~always_hash =
   let is_matched_by_a_prefix =
     let dont_hash_prefixes =
-      (* Sorted from most general to least general (i.e. shorter prefix to longest
-           prefix)*)
+      (* Sorted from most general to least general (i.e. shorter prefix to longest prefix) *)
       List.sort
         ~compare:(fun a_1 b_1 ->
           Comparable.lexicographic
@@ -1097,8 +1103,8 @@ module For_css_inliner = struct
       generate_struct_from_css_string_and_options
         ~lazy_loading_optimization
         ~pos_for_hashing:stylesheet_location.loc_start
-          (* Have to pass in the [loc_start] of the stylesheet as it's the only location we
-           have *)
+          (* Have to pass in the [loc_start] of the stylesheet as it's the only location
+             we have *)
         ~expansion_kind:Stylesheet
         ~original_css_string:css_string
         ~loc
@@ -1200,9 +1206,9 @@ let register_hoisted_css =
       (* NOTE: Registering the CSS at the top of files means that the registry happens
          before the call to Ppx_module_timer_runtime.record_start. This makes us lose
          profiling information on CSS registration, which unfortunately, has also
-         historically been one of the slowest things that happens on startup (7/8th's worth
-         of time for some apps). This function attempts to put the ppx_css registry after the
-         timer starts so that the work done by ppx_css is timed.
+         historically been one of the slowest things that happens on startup (7/8th's
+         worth of time for some apps). This function attempts to put the ppx_css registry
+         after the timer starts so that the work done by ppx_css is timed.
       *)
       Ppx_module_timer_helpers
       .attempt_to_put_structure_item_after_the_ppx_module_timer_start

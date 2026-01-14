@@ -55,7 +55,8 @@ and is_declaration_or_qualified_rule tokens =
     ~f:(fun seen (token, _) ->
       match seen with
       (* Check if starts with identifier. If it does and the next non-whitespace and
-         non-comment token is a colon, this could be either a qualified rule or a declaration *)
+         non-comment token is a colon, this could be either a qualified rule or a
+         declaration *)
       | `Neither ->
         (match token with
          | WHITESPACE _ | COMMENT _ -> Continue `Neither
@@ -70,14 +71,14 @@ and is_declaration_or_qualified_rule tokens =
         let continue = Continue_or_stop.Continue (`Ident_and_colon `Stale) in
         (match token with
          (* If we see whitespace directly after the first ident-colon pair, we know it
-            must be a declaration.  *)
+            must be a declaration. *)
          | WHITESPACE _ | COMMENT _ ->
            (match processing_state with
             | `Just_seen -> Stop (`Declaration `Definite)
             | `Stale -> continue)
          | SEMICOLON -> Stop (`Declaration `Definite)
          (* Including right brace here so that we throw the proper error if the last
-         declaration in a block does not end in a semicolon *)
+            declaration in a block does not end in a semicolon *)
          | RIGHT_BRACE -> Stop (`Declaration `Maybe_selector)
          (* We're making the distinction here that a brace block cannot exist as a
             component value inside a declaration value *)
@@ -134,7 +135,7 @@ and consume_style_block tokens =
     ~error_msg:(fun _ -> "Error while parsing style block. Expected closing right brace");
   rules
 
-(* This function checks to see if there are comments and/or whitespaces between a
+(*=This function checks to see if there are comments and/or whitespaces between a
    namespace and the namespace selector. It should only be called after a type selector
    or an asterisk, as those are the only two selectors that are allowed to have namespace
    separators
@@ -150,7 +151,7 @@ and consume_style_block tokens =
    You can read about namespaces here: https://developer.mozilla.org/en-US/docs/Web/CSS/@namespace
 *)
 and matches_namespace_separator tokens =
-  (* Returns false for [selector] "||", as "||" is a valid selector. *)
+  (*=Returns false for [selector] "||", as "||" is a valid selector. *)
   Parse_queue.fold_until
     tokens
     ~init:`Init
@@ -180,7 +181,7 @@ and matches_namespace_separator tokens =
 
 and consume_type_selector tokens =
   let get_type_selector_part tokens =
-    (* Parses the namespace and the selector as they both have the same requirements
+    (*=Parses the namespace and the selector as they both have the same requirements
 
        The selector can be something along these lines:
        - *
@@ -277,9 +278,9 @@ and parse_pseudo_class_like_selector ~kind tokens =
     let fn_name_with_loc = fn, Location.from_token fn_token in
     (match kind, `Match_pseudoclass pseudoclass_functions_with_selectors_matches_fn with
      (* Pseudoelements do technically have a function that take selectors as an argument,
-        which is [::slotted]. However, it is a function that targets elements within
-        the shadow DOM, and should probably be audited to see if we should allow the
-        arguments to be parsed as a selector.
+        which is [::slotted]. However, it is a function that targets elements within the
+        shadow DOM, and should probably be audited to see if we should allow the arguments
+        to be parsed as a selector.
 
         [::slotted] also only accepts a <compound-selector>
      *)
@@ -391,7 +392,7 @@ and is_last_compound_selector_part_ignore_comments tokens =
       | RIGHT_PAREN
       (* Commas separate complex selectors in lists of complex selectors *)
       | COMMA
-      (* Left braces end the list of selectors for style rules*)
+      (* Left braces end the list of selectors for style rules *)
       | LEFT_BRACE -> Stop true
       | _ -> Stop false)
     ~finish:(fun () -> true)
@@ -420,8 +421,8 @@ and consume_compound_selector_part ~stage tokens =
     in
     Parse_queue.dequeue_exn tokens
     |> Parse_queue.throw_error_for_token ~f:(fun token ->
-      (* Consume remaining tokens. This ensures any stop exceptions have priority over
-         a parse error. *)
+      (* Consume remaining tokens. This ensures any stop exceptions have priority over a
+         parse error. *)
       Parse_queue.consume_and_ignore ~while_matches:(Not (Is EOF)) tokens;
       let stage_name = Option.value ~default:"a" stage_name in
       [%string
@@ -429,7 +430,7 @@ and consume_compound_selector_part ~stage tokens =
          %{token#Token}"])
   in
   match Parse_queue.peek_token_exn tokens, stage with
-  | ( (* These delimiters as well as whitespace are considered combinators, which appear
+  | ( (*=These delimiters as well as whitespace are considered combinators, which appear
          between compound selectors.
 
          "|" specifically is a namespace separator and is
@@ -444,10 +445,10 @@ and consume_compound_selector_part ~stage tokens =
       | RIGHT_PAREN
       (* Commas separate complex selectors in lists of complex selectors *)
       | COMMA
-      (* Left braces end the list of selectors for style rules*)
+      (* Left braces end the list of selectors for style rules *)
       | LEFT_BRACE
-      (* If we haven't parsed these comments out, it's because they're on the last 
-         part of a compound selector. See [is_last_compound_selector_part_ignore_comments] for an 
+      (* If we haven't parsed these comments out, it's because they're on the last part of
+         a compound selector. See [is_last_compound_selector_part_ignore_comments] for an
          explanation as to why we're not parsing these out here
       *)
       | COMMENT _ )
@@ -477,8 +478,8 @@ and consume_compound_selector_part ~stage tokens =
     let comment = consume_comments_if_not_last_compound_selector_part tokens in
     (subclass_selector, comment) :: consume_compound_selector_part ~stage:`Subclass tokens
   | COLON, stage ->
-    (* Checking the token after the colon we matched on to see if this is a
-       pseudoelement or pseudoclass selector *)
+    (* Checking the token after the colon we matched on to see if this is a pseudoelement
+       or pseudoclass selector *)
     (match Parse_queue.get_nth_token_exn ~n:1 tokens with
      | COLON ->
        let stage =
@@ -587,19 +588,20 @@ and consume_complex_selector_list
             ((* Each iteration of this function returns a one or two item list so that we
                 can ensure that combinators are always followed by a selector.
 
-                The selector-combinator list is then flattened before returning the values.
+                The selector-combinator list is then flattened before returning the
+                values.
 
                 The one-or-two-item list can be one of:
 
-                1.[ <selector> ]
-                2.[ <selector> ; <combinator> ]
+                1. [ <selector> ]
+                2. [ <selector> ; <combinator> ]
 
                 Due to the way selectors are parsed, if we receive a one-item list, it
                 means we have reached the end of the selector.
 
-                If we receive a two-item list, we must also check if the next token
-                in the queue starts a selector, as a selector-combinator list cannot
-                end in a combinator
+                If we receive a two-item list, we must also check if the next token in the
+                queue starts a selector, as a selector-combinator list cannot end in a
+                combinator
              *)
              Parse_queue.process_into_list
                ~while_:(Not (Any [ Matches list_terminator; Is EOF; Is COMMA ]))
@@ -608,13 +610,13 @@ and consume_complex_selector_list
                  Parse_queue.consume_and_ignore_whitespaces tokens;
                  (* We have to consume at least one selector here *)
                  let current_selector = consume_compound_selector tokens in
-                 (* Remove the whitespace tokens and comments if they exist. This
-                  will be used to generate a descendant selector if needed.
+                 (* Remove the whitespace tokens and comments if they exist. This will be
+                    used to generate a descendant selector if needed.
 
-                  If there are any comments produced by this function, we know
-                  they have a leading whitespace, as [consume_compound_selector]
-                  calls [consume_compound_selector_parts], which consumes all cosecutive
-                  trailing comments.
+                    If there are any comments produced by this function, we know they have
+                    a leading whitespace, as [consume_compound_selector] calls
+                    [consume_compound_selector_parts], which consumes all cosecutive
+                    trailing comments.
                  *)
                  let comments_and_whitespaces, comment_loc =
                    Parse_queue.with_loc
@@ -657,8 +659,8 @@ and consume_complex_selector_list
                      Some (Complex_selector.Combinator combinator, comment)
                    | `Starts_combinator false, `Is_descendant_combinator true ->
                      (* If the token after the whitespace could potentially start a
-                       selector, we will assume this is a descendant selector and try to
-                       parse a selector. Otherwise we will toss the whitespace
+                        selector, we will assume this is a descendant selector and try to
+                        parse a selector. Otherwise we will toss the whitespace
                      *)
                      let loc = comment_loc in
                      Some
@@ -668,7 +670,7 @@ and consume_complex_selector_list
                             being consumed by the end of the compound selector *)
                        )
                    (* If neither are true, we're probably at the end of the list and the
-                     next token is either a comma or the terminating character. *)
+                      next token is either a comma or the terminating character. *)
                    | `Starts_combinator false, `Is_descendant_combinator false -> None
                    | `Starts_combinator true, `Is_descendant_combinator true ->
                      Parse_queue.raise
@@ -770,10 +772,9 @@ and process_important_from_declaration_value declaration_value =
   match tl with
   | (Component_value.Ident (ident, _), _) :: tl
     when String.lowercase ident |> String.equal "important" ->
-    (* After removing all whitespaces and comments from the end of the list, check
-       to see if the first element in the reversed list (last element in the regular list
-       after removing whitespaces and comments) is the case-insensitive string
-       "important"
+    (* After removing all whitespaces and comments from the end of the list, check to see
+       if the first element in the reversed list (last element in the regular list after
+       removing whitespaces and comments) is the case-insensitive string "important"
     *)
     let tl = remove_whitespace_from_end_of_component_values_list tl in
     (* Any number of whitespaces is allowed between [!] and [important] *)
@@ -785,8 +786,8 @@ and process_important_from_declaration_value declaration_value =
        , (true, Reversed_list.rev end_comments) )
      (* If the next token is not a !, return the original list *)
      | _ -> Reversed_list.rev component_values, (false, []))
-  (* Ignore the value from the match statement as that has both comments and
-     whitespaces removed from the start of the reversed list *)
+  (* Ignore the value from the match statement as that has both comments and whitespaces
+     removed from the start of the reversed list *)
   | _ -> Reversed_list.rev component_values, (false, [])
 
 and consume_declaration ~ambiguity tokens =
@@ -797,14 +798,14 @@ and consume_declaration ~ambiguity tokens =
       tokens
   and
     (* Any number of whitespace is allowed around the colon that separates the declaration
-     name and values *)
+       name and values *)
     name_comments
     =
     Parse_queue.consume_comments_and_ignore_whitespaces tokens
   in
   let name = Ident_like.to_string name in
   let is_custom_property =
-    (* Custom properties are allowed to have empty declaration values 
+    (* Custom properties are allowed to have empty declaration values
        https://www.w3.org/TR/css-values-4/#dashed-idents
     *)
     String.is_prefix ~prefix:"--" name && String.length name > 2
@@ -840,14 +841,14 @@ and consume_declaration ~ambiguity tokens =
            should still match here in case
         *)
         | (`Nothing | `Ident), Token.IDENT _ ->
-          (* We're using the token before the start of a declaration as the end of the 
-             last declaration. This is probably a whitespace token. We're going to use the 
+          (* We're using the token before the start of a declaration as the end of the
+             last declaration. This is probably a whitespace token. We're going to use the
              start of that token's location as the end of the location of the error *)
           non_whitespace_component_value_before_ident_loc := Some !previous_token_loc;
           `Ident
         | `Ident, Token.(WHITESPACE _ | COMMENT _) -> `Ident
-        (* If we see a colon after an ident, we're throwing an error as this means there's 
-         probably a missing semicolon
+        (* If we see a colon after an ident, we're throwing an error as this means there's
+           probably a missing semicolon
         *)
         | `Ident, Token.COLON ->
           let loc_end =
@@ -865,7 +866,7 @@ and consume_declaration ~ambiguity tokens =
           non_whitespace_component_value_before_ident_loc := None;
           `Nothing
       in
-      (* Finding the last non-whitespace component value location to be the end of the 
+      (*=Finding the last non-whitespace component value location to be the end of the 
          declaration that is missing the semicolon.
 
          Ex:
@@ -895,8 +896,8 @@ and consume_declaration ~ambiguity tokens =
     in
     match maybe_declaration_value_list with
     | None ->
-      (* This branch allows us to have a location for empty declaration values, which
-        are allowed for custom properties *)
+      (* This branch allows us to have a location for empty declaration values, which are
+         allowed for custom properties *)
       let loc_end = Parse_queue.peek_exn tokens |> snd in
       let loc =
         Location.of_positions ~start:colon_loc.loc_start ~end_:loc_end.loc_start
@@ -905,16 +906,16 @@ and consume_declaration ~ambiguity tokens =
     | Some value -> value
   in
   if (* We have to dequeue the semicolon if it exists even if we don't require the
-       terminating semicolon. We've already implicitly checked for EOF and RIGHT_BRACE
-       in [consume_component_value_list], so we don't need to check again
+        terminating semicolon. We've already implicitly checked for EOF and RIGHT_BRACE in
+        [consume_component_value_list], so we don't need to check again
      *)
      Parse_queue.dequeue_and_check_if_next_token_matches
        ~matches:(Not (Is SEMICOLON))
        tokens
   then (
-    (* Get the location of the last element in the declaration value list, which should
-       be a non-whitespace component value. If that doesn't exist, return the location
-       of the entire list
+    (* Get the location of the last element in the declaration value list, which should be
+       a non-whitespace component value. If that doesn't exist, return the location of the
+       entire list
     *)
     let declaration_value_loc =
       fst declaration_value_with_loc
@@ -927,8 +928,8 @@ and consume_declaration ~ambiguity tokens =
       (Missing_semicolon_at_end_of_declaration_list { loc }));
   match declaration_value_with_loc with
   | [], loc when not is_custom_property ->
-    (* Consume the closing brace in the case that we are partial-parsing within
-       an incomplete block *)
+    (* Consume the closing brace in the case that we are partial-parsing within an
+       incomplete block *)
     ignore
     @@ Parse_queue.with_context
          ~f:(fun tokens -> Parse_queue.dequeue tokens)
@@ -969,7 +970,7 @@ and consume_at_rule tokens : At_rule.t =
       tokens
   in
   let at_rule_name = Ident_like.to_string at_rule_name in
-  (* Make sure to remove leading whitespace as we always add a whitespace after the at
+  (*=Make sure to remove leading whitespace as we always add a whitespace after the at
      rule name. 
 
      This is required because this 
@@ -1008,13 +1009,16 @@ and consume_at_rule tokens : At_rule.t =
       None, Location.from_token semicolon_token
     | Some (Token.LEFT_BRACE, _) ->
       (match String.lowercase at_rule_name with
-       | "layer" | "media" | "supports" ->
-         (* Special-case some at-rules so that we can parse their contents as style
+       | "layer" | "media" | "supports" | "when" | "else" | "container" ->
+         (*=Special-case some at-rules so that we can parse their contents as style
             blocks. 
 
             All [conditional group rules] can be special-cased as they can contain
             any rule that is normally allowed at the top-level of a stylesheet
-            https://drafts.csswg.org/css-conditional-3/#contents-of
+
+            https://www.w3.org/TR/css-conditional-3/
+            https://www.w3.org/TR/css-conditional-4/
+            https://www.w3.org/TR/css-conditional-5/
          *)
          let block, block_loc = Parse_queue.with_loc_exn ~f:consume_style_block tokens in
          Some (At_rule.Style_block (block, block_loc)), block_loc
@@ -1112,7 +1116,7 @@ and consume_block
 
 and consume_component_value_list
   :  remove_surrounding_whitespaces:bool -> allow_ocaml_code:bool
-  -> (* [maybe_throw_token_error] is passed the token that started the parsing, as well as 
+  -> (* [maybe_throw_token_error] is passed the token that started the parsing, as well as
         the component value that is parsed from this iteration of the loop.
      *)
      ?maybe_throw_error:(Token.t -> Component_value.t with_loc -> unit)
@@ -1198,8 +1202,8 @@ and consume_component_value
   tokens
   =
   let potentially_function_or_block =
-    (* These functions parse the leading character within the function body itself, so 
-    we cannot advance the queue for these *)
+    (* These functions parse the leading character within the function body itself, so we
+       cannot advance the queue for these *)
     match Parse_queue.peek_token_exn tokens with
     | FUNCTION fn_name ->
       let loc = Parse_queue.dequeue_exn tokens |> Location.from_token in
@@ -1238,9 +1242,8 @@ and consume_component_value
   match potentially_function_or_block with
   | Some fn_or_block -> fn_or_block
   | None ->
-    (* We only need to check if the next token is Ocaml code here because the other 
-       branch should be checking its contents within the [potentially_function_or_block]
-       branches
+    (* We only need to check if the next token is Ocaml code here because the other branch
+       should be checking its contents within the [potentially_function_or_block] branches
     *)
     if not allow_ocaml_code then Parse_queue.maybe_throw_ocaml_code_error tokens;
     let token, token_loc =

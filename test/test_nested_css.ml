@@ -71,8 +71,8 @@ module%test [@name "styled components tests"] _ = struct
   ;;
 
   let%expect_test "single class - not hashed prefixes" =
-    (* NOTE: This test demonstrates that hashing is turned off in the css for
-         classnames as they are otherwise not accessible from the styled component syntax.
+    (* NOTE: This test demonstrates that hashing is turned off in the css for classnames
+       as they are otherwise not accessible from the styled component syntax.
     *)
     test
       [%expr

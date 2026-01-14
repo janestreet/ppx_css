@@ -116,8 +116,8 @@ module Ident_like = struct
   let string_of_ident_like_part = function
     | String value -> value
     | Hex_escape value ->
-      (* We have to add this space after the value to maintain the semantic meaning
-         of the ident_like token. *)
+      (* We have to add this space after the value to maintain the semantic meaning of the
+         ident_like token. *)
       {%string|%{value} |}
   ;;
 

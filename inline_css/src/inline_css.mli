@@ -16,8 +16,8 @@ module Private : sig
   module Dynamic = Inline_css_dynamic
 end
 
-(* Runtime module for ppx_css that makes sure that commonly-shadowed functions cannot be 
-shadowed*)
+(* Runtime module for ppx_css that makes sure that commonly-shadowed functions cannot be
+   shadowed *)
 module Ppx_css_runtime : sig
   val force : 'a lazy_t -> 'a
 end

@@ -18,12 +18,12 @@ module Transform : sig
 
   val generate_hash : disable_hashing:bool -> pos:position -> string -> string
 
-  (* Transform takes a string of css and produces a new css string, with
-     all of the identifiers ammended with a hash.  The mapping from
-     original identifier to hashed identifier is also returned.
+  (* Transform takes a string of css and produces a new css string, with all of the
+     identifiers ammended with a hash. The mapping from original identifier to hashed
+     identifier is also returned.
 
-     [pos] is the source-code-position of the css string in the ocaml file, so
-     that error messages from parsing the css show up in the right location. *)
+     [pos] is the source-code-position of the css string in the ocaml file, so that error
+     messages from parsing the css show up in the right location. *)
   val f
     :  pos_for_hashing:position
     -> original_css_string:string
@@ -106,8 +106,8 @@ val raise_if_unused_dont_hash_or_prefixes_or_collisions
   -> Stable_stylesheet.t
   -> unit
 
-(* Takes a [Stylesheet.t] and pre-processes it so that some rules are split into
-     multiple top-level rules *)
+(* Takes a [Stylesheet.t] and pre-processes it so that some rules are split into multiple
+   top-level rules *)
 val split_layers : Stylesheet.t -> Stylesheet.t
 
 module For_testing : sig

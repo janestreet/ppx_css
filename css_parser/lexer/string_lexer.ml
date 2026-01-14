@@ -16,7 +16,7 @@ let escape =
     '\\', (not_newline_or_hex_digit | up_to_6_hex_digits, Opt css_whitespace)]
 ;;
 
-(* Disallowing literal '\' because just a '\' and then EOF is considered a parse error. We 
+(* Disallowing literal '\' because just a '\' and then EOF is considered a parse error. We
    will allow for valid escape characters by joining on [escape] *)
 let disallowed_chars_in_string = [%sedlex.regexp? css_newline_single_char | '\\']
 
@@ -32,8 +32,8 @@ let string_double_quote_body = [%sedlex.regexp? allowed_double_quote_chars | esc
 let string_single_quote_body = [%sedlex.regexp? allowed_single_quote_chars | escape]
 
 let get_double_quote_string buf =
-  (* [string_double_quote_body] should catch any character that is not double-quote, \n, 
-     or EOF  *)
+  (* [string_double_quote_body] should catch any character that is not double-quote, \n,
+     or EOF *)
   let open Token in
   let%map.Option token =
     match%sedlex buf with

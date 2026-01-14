@@ -1,8 +1,8 @@
 open! Core
 open Virtual_dom
 
-(* NOTE: This file is used for testing syntax highlighting behaviors on all supported
-   text editors vim, emacs, and vscode. *)
+(* NOTE: This file is used for testing syntax highlighting behaviors on all supported text
+   editors vim, emacs, and vscode. *)
 
 [@@@warning "-60-32"]
 
@@ -32,9 +32,9 @@ let message : string = "foo"
 let styled_component_syntax : Virtual_dom.Vdom.Attr.t list =
   [ [%css {|background-color: tomato;|}]
   ; [%css {|background-color: tomato;|}]
-  ; (* No whitespace after %css|*)
+  ; (*=No whitespace after %css|*)
     {%css|background-color: tomato;|}
-  ; (* Whitespace after %css| *)
+  ; (*=Whitespace after %css| *)
     {%css|background-color: tomato;|}
   ; (* Semi-colon at the end. *)
     {%css|background-color: tomato;|}

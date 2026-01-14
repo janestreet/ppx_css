@@ -1,9 +1,9 @@
 open! Core
 open Ppx_css
 
-(* We need to format the error message from these exceptions in a specific way so that 
-   the (css ()) stanzas in the jbuild direct the user to the appropriate file whenever
-   errors are thrown
+(* We need to format the error message from these exceptions in a specific way so that the
+   (css ()) stanzas in the jbuild direct the user to the appropriate file whenever errors
+   are thrown
 *)
 let format_message { Css_parser_common.Errors.start_pos; end_pos; message } =
   let filename = start_pos.pos_fname in
@@ -34,7 +34,7 @@ let standalone ~serializable_options ~src =
   let css_string = Core.In_channel.read_all src in
   let start_pos = { Lexing.pos_fname = src; pos_lnum = 1; pos_bol = 0; pos_cnum = 0 } in
   (* We have to assign a filename and a starting [pos_lnum] of 1, otherwise the css
-  inliner will not report the filename nor the proper line number*)
+     inliner will not report the filename nor the proper line number *)
   let start_loc =
     { Ppxlib.Location.loc_start = start_pos; loc_end = start_pos; loc_ghost = true }
   in

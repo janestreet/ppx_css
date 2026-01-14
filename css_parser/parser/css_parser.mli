@@ -5,6 +5,7 @@ module Partial_parsing_behavior = Partial_parsing_behavior
 module Parsing_config = Parsing_config
 include module type of Types
 module Traverse = Traverse
+module Normalize = Normalize
 
 val parse_stylesheet
   :  ?pos:Css_parser_common.Position.t

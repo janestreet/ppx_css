@@ -21,13 +21,13 @@ val clear_working_line : t -> unit
 *)
 val undo_and_return : t -> string
 
-(* Same as above but ignores the values*)
+(* Same as above but ignores the values *)
 val undo_and_ignore : t -> unit
 
 (* Returns the current working line as a string *)
 val get_current_working_line : t -> string
 
-(* Appends the current working line to the contents*)
+(* Appends the current working line to the contents *)
 val flush : t -> unit
 
 (* Appends input string to the current working line *)

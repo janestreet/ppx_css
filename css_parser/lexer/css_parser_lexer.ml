@@ -3,10 +3,10 @@ open Css_parser_common
 module Sedlexing = Lex_buffer
 module Errors = Errors
 
-(* Keeping the below as a reference. The CSS spec says you need to preprocess the
-   input by replacing all of these characters with \n, but that seems to mess with
-   the source code positions. We're already matching on these in the lexer itself,
-   so it shouldn't really matter
+(* Keeping the below as a reference. The CSS spec says you need to preprocess the input by
+   replacing all of these characters with \n, but that seems to mess with the source code
+   positions. We're already matching on these in the lexer itself, so it shouldn't really
+   matter
 *)
 (* Converts \r\n, \f, and \r to \n *)
 let filtered_code_points_to_line_feed =
@@ -15,7 +15,7 @@ let filtered_code_points_to_line_feed =
 
 (* Keeping the below two as a reference. The CSS spec says you need to preprocess the
    input by replacing this character with the null character, but it seems to mess with
-   the source code positions. We don't really process this or the null character any 
+   the source code positions. We don't really process this or the null character any
    differently so it shouldn't really matter
 *)
 let filter_null_to_replacement = [%sedlex.regexp? "\u{0000}"]
@@ -57,16 +57,16 @@ let get_ocaml_code =
       let ocaml_code_part = match_closing_brace_for_ocaml ~start_pos buf in
       potential_ocaml_code := !potential_ocaml_code ^ ocaml_code_part;
       let ocaml_code_to_tokenize =
-        (* We still have to use the [ %{ ] sigil here because [ #{ ] isn't a standard 
-           string interpolation sigil. We omit interpolation open + close in AST node 
-           for [OCAML_CODE] anyways *)
+        (* We still have to use the [ %{ ] sigil here because [ #{ ] isn't a standard
+           string interpolation sigil. We omit interpolation open + close in AST node for
+           [OCAML_CODE] anyways *)
         "%{" ^ !potential_ocaml_code
       in
       match Ocaml_tokenizer.tokens_with_loc ocaml_code_to_tokenize with
       | Error _ -> ()
       | Ok tokens ->
-        (* This should be incrementing by 1 every loop, but calculating 
-           the same way as [left_braces] is more consistent
+        (* This should be incrementing by 1 every loop, but calculating the same way as
+           [left_braces] is more consistent
         *)
         right_braces
         := Core.List.count tokens ~f:(function
@@ -77,7 +77,7 @@ let get_ocaml_code =
              | Ocaml_common.Parser.LBRACE, _ -> true
              | _ -> false)
     done;
-    (* Need to remove the trailing right brace as it matches the omitted opening 
+    (* Need to remove the trailing right brace as it matches the omitted opening
        interpolation block *)
     let ocaml_code = !potential_ocaml_code |> Core.String.chop_suffix_exn ~suffix:"}" in
     Token.OCAML_CODE (ocaml_code, sigil)
@@ -118,8 +118,8 @@ let default_tokenizer buf =
     | ')' -> Some RIGHT_PAREN
     | '(' -> Some LEFT_PAREN
     | ',' -> Some COMMA
-    (* NOTE: HTML-like comments are surprisingly in the CSS spec! We support them here too.
-     Spec: https://www.w3.org/TR/css-syntax-3/#parser-entry-points *)
+    (* NOTE: HTML-like comments are surprisingly in the CSS spec! We support them here
+       too. Spec: https://www.w3.org/TR/css-syntax-3/#parser-entry-points *)
     | "<!--" -> Some CDO
     | "-->" -> Some CDC
     | any -> Some (DELIM (Lex_buffer.utf8 buf))
@@ -128,17 +128,17 @@ let default_tokenizer buf =
   Lex_buffer.with_loc buf ~f:(fun () -> token)
 ;;
 
-(* This pattern allows us to choose the order in which the tokenizers are applied. Sedlex 
+(* This pattern allows us to choose the order in which the tokenizers are applied. Sedlex
    does not really honor the ordering of the match arms within its ppx match statement, so
    this is a way around that.
 
    This also allows us to somewhat split the code into modules. Unfortunately due to how
-   sedlex works, we have to redeclare some of the regexes, but the code is much more readable
-   without us having to sift through 100 lines of regexes in a single file.
+   sedlex works, we have to redeclare some of the regexes, but the code is much more
+   readable without us having to sift through 100 lines of regexes in a single file.
 
-   Note that this pattern is slightly less efficient, as it creates multiple automata that 
-   the lexer has to step through in order to find the matching token, but it should only be
-   marginally less efficient.
+   Note that this pattern is slightly less efficient, as it creates multiple automata that
+   the lexer has to step through in order to find the matching token, but it should only
+   be marginally less efficient.
 *)
 let matching_token buf =
   List.find_map
@@ -148,8 +148,8 @@ let matching_token buf =
     ; Url.tokenize
     ; Ident.tokenize_number
     ; Ident.tokenize
-      (* [Ident] contains [FUNCTION] token, which is more permissive than [url] and has 
-       to go after [url] *)
+      (* [Ident] contains [FUNCTION] token, which is more permissive than [url] and has to
+         go after [url] *)
     ; String_lexer.get_double_quote_string
     ; String_lexer.get_single_quote_string
     ; default_tokenizer

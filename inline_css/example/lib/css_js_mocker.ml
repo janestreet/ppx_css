@@ -2,7 +2,7 @@ open! Core
 open Js_of_ocaml
 
 (* We have to establish a fake global/window so that we can run this example as it doesn't
-run in the browser*)
+   run in the browser *)
 let mock_constructed_stylesheet =
   lazy
     (let global = Js.Unsafe.global in
