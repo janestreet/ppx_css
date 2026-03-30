@@ -6,14 +6,11 @@
 
 (rule
  (targets ppx_css_test_preprocess_arguments.pp-output)
+ (alias default)
  (deps
   (:first_dep ppx_css_test_preprocess_arguments.ml.pp))
  (action
   (bash "cp %{first_dep} %{targets}")))
-
-(alias
- (name default)
- (deps ppx_css_test_preprocess_arguments.pp-output))
 
 (rule
  (targets other_module.ml)
@@ -31,11 +28,8 @@
 
 (rule
  (targets other_module.pp-output)
+ (alias default)
  (deps
   (:first_dep other_module.ml.pp))
  (action
   (bash "cp %{first_dep} %{targets}")))
-
-(alias
- (name default)
- (deps other_module.pp-output))
