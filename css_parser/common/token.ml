@@ -5,7 +5,8 @@ module Sigil = struct
   type t =
     | Percent
     | Hash
-  [@@deriving equal, compare, variants, sexp_of, typed_variants, to_string]
+  [@@deriving
+    equal ~localize, compare ~localize, variants, sexp_of, typed_variants, to_string]
 
   let to_sigil_string = function
     | Percent -> "%"
@@ -41,7 +42,7 @@ type t =
   | BAD_URL of string
   | BAD_STRING of string
   | AT_KEYWORD of Ident_like.t
-[@@deriving equal, compare, variants, sexp_of, typed_variants]
+[@@deriving equal ~localize, compare ~localize, variants, sexp_of, typed_variants]
 
 let to_string = function
   | EOF -> "EOF"

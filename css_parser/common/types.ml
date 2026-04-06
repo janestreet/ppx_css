@@ -4,14 +4,14 @@ module Hash_flag = struct
   type t =
     | Id
     | Unrestricted
-  [@@deriving to_string, sexp_of, equal, compare]
+  [@@deriving to_string, sexp_of, equal ~localize, compare ~localize]
 end
 
 module Numeric_value = struct
   type t =
     | Integer
     | Float
-  [@@deriving to_string, sexp_of, equal, compare]
+  [@@deriving to_string, sexp_of, equal ~localize, compare ~localize]
 end
 
 module Exponent = struct
@@ -19,7 +19,7 @@ module Exponent = struct
     { value : string
     ; capitalized : bool
     }
-  [@@deriving sexp_of, equal, compare]
+  [@@deriving sexp_of, equal ~localize, compare ~localize]
 
   let to_string { value; capitalized } =
     let leading_e = if capitalized then "E" else "e" in
@@ -34,7 +34,7 @@ module Position = struct
     ; pos_bol : int
     ; pos_cnum : int
     }
-  [@@deriving sexp_of, equal, compare]
+  [@@deriving sexp_of, equal ~localize, compare ~localize]
 
   let to_string t =
     let filename =
@@ -51,13 +51,13 @@ module String_token = struct
   type quote_type =
     | Single
     | Double
-  [@@deriving sexp_of, to_string, equal, compare]
+  [@@deriving sexp_of, to_string, equal ~localize, compare ~localize]
 
   type t =
     { value : string
     ; quote_type : quote_type
     }
-  [@@deriving sexp_of, equal, compare]
+  [@@deriving sexp_of, equal ~localize, compare ~localize]
 
   let to_string { value; quote_type } =
     match quote_type with
@@ -109,9 +109,9 @@ module Ident_like = struct
   type ident_like_part =
     | String of string
     | Hex_escape of string
-  [@@deriving equal, compare, variants, sexp_of]
+  [@@deriving equal ~localize, compare ~localize, variants, sexp_of]
 
-  type t = ident_like_part list [@@deriving equal, compare, sexp_of]
+  type t = ident_like_part list [@@deriving equal ~localize, compare ~localize, sexp_of]
 
   let string_of_ident_like_part = function
     | String value -> value

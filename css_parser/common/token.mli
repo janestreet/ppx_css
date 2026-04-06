@@ -5,7 +5,7 @@ module Sigil : sig
   type t =
     | Percent
     | Hash
-  [@@deriving equal, compare, variants, sexp_of, typed_variants]
+  [@@deriving equal ~localize, compare ~localize, variants, sexp_of, typed_variants]
 
   val to_sigil_string : t -> string
 end
@@ -40,6 +40,6 @@ type t =
   | BAD_URL of string
   | BAD_STRING of string
   | AT_KEYWORD of Ident_like.t
-[@@deriving equal, compare, variants, sexp_of, typed_variants]
+[@@deriving equal ~localize, compare ~localize, variants, sexp_of, typed_variants]
 
 val to_string : t -> string

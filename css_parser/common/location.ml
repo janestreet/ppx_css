@@ -5,7 +5,7 @@ type t = Warnings.loc =
   ; loc_end : Types.Position.t
   ; loc_ghost : bool
   }
-[@@deriving sexp_of, equal]
+[@@deriving sexp_of, equal ~localize]
 
 let to_string { loc_start; loc_end; loc_ghost = _ } =
   [%string "(%{loc_start#Types.Position}, %{loc_end#Types.Position})"]

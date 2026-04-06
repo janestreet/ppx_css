@@ -3,4 +3,4 @@
  (public_name ppx_css.syntax)
  (libraries core ppxlib ppxlib_jane core_kernel.reversed_list)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane -compare-require-explicit-locality)))

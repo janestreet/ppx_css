@@ -6,11 +6,8 @@
 
 (rule
  (targets test_moves_module_timer_above.pp-output)
+ (alias default)
  (deps
   (:first_dep test_moves_module_timer_above.ml.pp))
  (action
   (bash "cp %{first_dep} %{targets}")))
-
-(alias
- (name default)
- (deps test_moves_module_timer_above.pp-output))

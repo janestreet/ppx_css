@@ -7,10 +7,7 @@
 
 (rule
  (targets style.css)
+ (alias default)
  (deps make_css.bc.js)
  (action
   (bash "node %{deps} > %{targets}")))
-
-(alias
- (name default)
- (deps style.css))

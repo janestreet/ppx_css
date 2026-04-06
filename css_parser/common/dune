@@ -3,4 +3,4 @@
  (public_name ppx_css.css_parser_common)
  (libraries core ocaml-compiler-libs.common compiler-libs.common)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane -compare-require-explicit-locality)))

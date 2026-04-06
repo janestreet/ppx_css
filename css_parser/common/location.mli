@@ -5,7 +5,7 @@ type t = Warnings.loc =
   ; loc_end : Lexing.position
   ; loc_ghost : bool
   }
-[@@deriving sexp_of, equal, to_string]
+[@@deriving sexp_of, equal ~localize, to_string]
 
 val of_positions : start:Lexing.position -> end_:Lexing.position -> t
 val merge : start:t -> end_:t -> t
