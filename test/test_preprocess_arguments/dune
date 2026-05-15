@@ -1,6 +1,6 @@
 (library
  (name ppx_css_test_preprocess_arguments)
- (libraries core)
+ (libraries)
  (preprocess
   (pps ppx_css -dont-hash=class1 -dont-hash-prefixes=--)))
 

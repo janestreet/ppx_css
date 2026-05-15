@@ -667,8 +667,7 @@ and consume_complex_selector_list
                        ( Combinator (Descendant, loc)
                        , []
                          (* Descendant combinator will never have comments due to them
-                            being consumed by the end of the compound selector *)
-                       )
+                            being consumed by the end of the compound selector *) )
                    (* If neither are true, we're probably at the end of the list and the
                       next token is either a comma or the terminating character. *)
                    | `Starts_combinator false, `Is_descendant_combinator false -> None

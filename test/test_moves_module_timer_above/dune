@@ -1,6 +1,6 @@
 (library
  (name test_moves_module_timer_above)
- (libraries core)
+ (libraries)
  (preprocess
   (pps ppx_css -lazy-loading-optimization=true ppx_jane)))
 

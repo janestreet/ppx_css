@@ -1,11 +1,10 @@
 (library
  (name ppx_css)
  (public_name ppx_css)
- (kind ppx_deriver)
+ (kind ppx_rewriter)
  (ppx_runtime_libraries ppx_css.inline_css virtual_dom)
- (libraries core css_parser css_parser_common ocamlgraph
-   core_kernel.nonempty_set compiler-libs.common ppx_css_syntax
-   ppx_here.expander ppx_module_timer.helpers ppxlib
-   core_kernel.reversed_list)
+ (libraries core css_parser ocamlgraph core_kernel.nonempty_set
+   compiler-libs.common ppx_css_syntax ppx_here.expander
+   ppx_module_timer.helpers ppxlib core_kernel.reversed_list)
  (preprocess
   (pps ppx_jane ppxlib.metaquot ppx_sexp_conv)))
