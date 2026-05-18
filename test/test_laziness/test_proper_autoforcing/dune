@@ -1,6 +1,5 @@
 (library
  (name test_proper_autoforcing)
- (libraries bonsai_web bonsai_web_test core virtual_dom.css_gen js_of_ocaml
-   core_kernel.reversed_list test_setup_lib)
+ (libraries test_setup_lib)
  (preprocess
   (pps ppx_jane ppx_css)))

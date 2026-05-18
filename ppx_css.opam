@@ -34,7 +34,7 @@ depends: [
   "ppxlib"              {= "0.33.0+ox"}
   "sedlex"              {= "3.6+ox"}
 ]
-available: arch != "arm32" & arch != "x86_32"
+available: arch != "x86_32"
 synopsis: "A ppx that takes in css strings and produces a module for accessing the unique names defined within"
 description: "
 A ppx that takes in css strings and produces a module for accessing the unique names defined within.
