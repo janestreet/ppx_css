@@ -1,7 +1,7 @@
 open! Core
 
 let print_or_fail_silently err =
-  match Am_running_how_js.am_in_browser with
+  match Am_running_how_js.(am_in_browser am_running_how) with
   | true -> eprint_s [%message (err : Error.t)]
   | false -> ()
 ;;

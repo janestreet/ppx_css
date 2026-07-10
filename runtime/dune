@@ -1,0 +1,6 @@
+(library
+ (name ppx_css_runtime)
+ (public_name ppx_css.runtime)
+ (libraries css_values)
+ (preprocess
+  (pps ppx_jane -compare-require-explicit-locality)))
