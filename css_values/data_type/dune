@@ -1,0 +1,6 @@
+(library
+ (name css_data_type)
+ (public_name ppx_css.css_values.data_type)
+ (preprocess
+  (pps ppx_jane))
+ (libraries core))
